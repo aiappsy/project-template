@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFD Trading Guide: Long vs. Short</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a2b3c;
+            --secondary: #2c3e50;
+            --accent: #2ecc71;
+            --accent-light: #27ae60;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --long: #2ecc71;
+            --short: #e74c3c;
+            --warning: #f1c40f;
+            --info: #3498db;
+            --transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f1a24 0%, #1a2b3c 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Sidebar Styles - NO SCROLLBAR */
+        .sidebar {
+            width: 320px;
+            background: rgba(15, 26, 36, 0.95);
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo-icon {
+            width: 35px;
+            height: 35px;
+            background: var(--accent);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .guide-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--light);
+            line-height: 1.3;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .section-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: flex-start;
+            gap: 5px;
+        }
+        
+        .section-nav li {
+            flex-shrink: 0;
+        }
+        
+        .section-nav a {
+            display: block;
+            padding: 10px 12px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            font-size: 14px;
+            line-height: 1.3;
+        }
+        
+        .section-nav a:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .section-nav a.active {
+            color: white;
+            background: rgba(46, 204, 113, 0.2);
+            border-left: 3px solid var(--accent);
+            font-weight: 600;
+        }
+        
+        .section-nav a.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent);
+        }
+        
+        /* Content Styles */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            overflow-y: auto;
+            opacity: 0;
+            transform: translateX(50px);
+            transition: var(--transition);
+            pointer-events: none;
+        }
+        
+        .section.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+        
+        .section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: var(--accent);
+            border-bottom: 2px solid rgba(46, 204, 113, 0.3);
+            padding-bottom: 12px;
+        }
+        
+        .section h3 {
+            font-size: 22px;
+            margin: 25px 0 12px;
+            color: var(--accent-light);
+        }
+        
+        .section p {
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .example-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .example-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent-light);
+        }
+        
+        .comparison {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .position-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            transition: var(--transition);
+            text-align: center;
+        }
+        
+        .position-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .long-card {
+            border-top: 3px solid var(--long);
+        }
+        
+        .short-card {
+            border-top: 3px solid var(--short);
+        }
+        
+        .position-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .long-name {
+            color: var(--long);
+        }
+        
+        .short-name {
+            color: var(--short);
+        }
+        
+        .profit {
+            color: var(--long);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .loss {
+            color: var(--short);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .highlight {
+            background: rgba(46, 204, 113, 0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            color: var(--accent-light);
+        }
+        
+        /* Navigation Controls */
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 30px;
+            background: rgba(15, 26, 36, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-btn {
+            padding: 10px 25px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+        
+        .nav-btn:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        .nav-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .progress-bar {
+            width: 180px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 12.5%;
+            transition: var(--transition);
+        }
+        
+        .progress-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Position Flow Visualization */
+        .position-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .flow-step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        
+        .flow-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 18px;
+        }
+        
+        /* Key Takeaways */
+        .key-takeaways {
+            background: rgba(39, 174, 96, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--long);
+        }
+        
+        .key-takeaways h3 {
+            color: var(--long);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        .key-takeaways ul {
+            padding-left: 18px;
+        }
+        
+        .key-takeaways li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        /* Warning Box */
+        .warning-box {
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--short);
+        }
+        
+        .warning-box h3 {
+            color: var(--short);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        /* Info Box */
+        .info-box {
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--info);
+        }
+        
+        .info-box h3 {
+            color: var(--info);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Formula Box */
+        .formula-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        
+        /* Price Movement Visualization */
+        .price-movement {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .price-level {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 5px 0;
+            text-align: center;
+        }
+        
+        .level-long {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--long);
+        }
+        
+        .level-short {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--short);
+        }
+        
+        .level-neutral {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Market Type Cards */
+        .market-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            border-top: 3px solid var(--accent);
+        }
+        
+        .market-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .market-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .app-container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+            }
+            
+            .content-area {
+                height: 60vh;
+            }
+            
+            .comparison {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .position-flow {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .flow-step:not(:last-child)::after {
+                display: none;
+            }
+            
+            .price-movement {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+        
+        /* Custom scrollbar for sections */
+        .section::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .section::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .section::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 8px;
+        }
+        
+        .section::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">CFD</div>
+                <div class="logo-text">TRADER PRO</div>
+            </div>
+            
+            <div class="guide-title">
+                Long vs. Short – The Mechanics of Selling Something You Don't Own in Forex and CFDs, and How Crypto Shorts Work on Exchanges
+            </div>
+            
+            <ul class="section-nav">
+                <li><a href="#intro" class="nav-link active">Introduction: Two-Way Trading</a></li>
+                <li><a href="#long-basics" class="nav-link">Going Long: The Basics</a></li>
+                <li><a href="#short-basics" class="nav-link">Going Short: The Basics</a></li>
+                <li><a href="#forex-shorting" class="nav-link">Shorting in Forex</a></li>
+                <li><a href="#cfd-shorting" class="nav-link">Shorting with CFDs</a></li>
+                <li><a href="#crypto-shorting" class="nav-link">Shorting Cryptocurrencies</a></li>
+                <li><a href="#strategies" class="nav-link">Long/Short Strategies</a></li>
+                <li><a href="#conclusion" class="nav-link">Conclusion: Market Neutrality</a></li>
+            </ul>
+        </div>
+        
+        <div class="content-area">
+            <div class="content-container">
+                <!-- Section 1 -->
+                <section id="intro" class="section active">
+                    <h2>Introduction: Two-Way Trading</h2>
+                    <p>Welcome, directional trader. In our previous guides, we've covered order types, price measurements, and trading costs. Now we'll explore one of the most powerful concepts in trading: the ability to profit from both rising <span class="highlight">AND</span> falling markets.</p>
+                    
+                    <p>Traditional investing only allows you to profit when prices rise (going long). But in forex, CFDs, and modern crypto trading, you can also profit when prices fall (going short). This opens up twice as many trading opportunities.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">The Trader's Advantage</div>
+                        <p>Imagine two scenarios:</p>
+                        <p><strong>Scenario A (Traditional Investor):</strong> Apple stock is in a clear downtrend from $180 to $150. The investor can only watch or sell their existing holdings.</p>
+                        <p><strong>Scenario B (CFD Trader):</strong> The same Apple downtrend occurs. The trader can <span class="loss">short sell</span> Apple CFDs and profit from the decline.</p>
+                        <p>While traditional investors are limited to bull markets, traders can profit in any market condition.</p>
+                    </div>
+                    
+                    <p>In this guide, we'll master the mechanics of both long and short trading across different asset classes.</p>
+                    
+                    <div class="key-takeaways">
+                        <h3>Key Insight</h3>
+                        <p>The ability to go short transforms trading from a one-way street into a two-way highway. It allows you to profit in bear markets, hedge existing positions, and implement sophisticated trading strategies.</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">Long</div>
+                            <div class="stat-label">Buy First, Sell Later<br>Profit from Rising Prices</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Short</div>
+                            <div class="stat-label">Sell First, Buy Later<br>Profit from Falling Prices</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Forex</div>
+                            <div class="stat-label">Always Long One Currency<br>Short Another</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">CFDs</div>
+                            <div class="stat-label">Synthetic Positions<br>No Physical Ownership</div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section 2 -->
+                <section id="long-basics" class="section">
+                    <h2>Going Long: The Basics</h2>
+                    
+                    <p><span class="highlight">Going Long</span> means buying an asset with the expectation that its price will rise. It's the traditional "buy low, sell high" approach that most people are familiar with.</p>
+                    
+                    <div class="position-flow">
+                        <div class="flow-step">
+                            <div class="step-icon">💰</div>
+                            <div class="step-title">Buy Asset</div>
+                            <div class="step-desc">Purchase at current price</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">⏳</div>
+                            <div class="step-title">Hold Position</div>
+                            <div class="step-desc">Wait for price to increase</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">📈</div>
+                            <div class="step-title">Sell Higher</div>
+                            <div class="step-desc">Sell at higher price for profit</div>
+                        </div>
+                    </div>
+                    
+                    <h3>Long Position Example</h3>
+                    
+                    <div class="price-movement">
+                        <div style="flex: 1;">
+                            <strong>Stock Long Example</strong><br>
+                            Instrument: Apple (AAPL)<br>
+                            Action: Buy 100 shares<br>
+                            Entry Price: $150.00<br>
+                            Investment: $15,000
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>Price Movement</strong><br>
+                            <div class="price-level level-long">Price rises to $160.00</div>
+                            <div class="price-level level-neutral">Action: Sell 100 shares</div>
+                            <div class="price-level level-long">Proceeds: $16,000</div>
+                            <div class="price-level level-long">Profit: $1,000 (+6.67%)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison">
+                        <div class="position-card long-card">
+                            <div class="position-name long-name">Long Position Psychology</div>
+                            <p>"I believe this asset will increase in value"</p>
+                            <p>"The current price represents good value"</p>
+                            <p>"I want to own this asset at this price"</p>
+                            <p>"The trend is upward, I'll ride it"</p>
+                        </div>
+                        
+                        <div class="position-card long-card">
+                            <div class="position-name long-name">When to Go Long</div>
+                            <p>Bullish market conditions</p>
+                            <p>Uptrend identification</p>
+                            <p>Undervalued assets</p>
+                            <p>Positive news/catalyst</p>
+                            <p>Technical breakout upward</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Long Position Math</h3>
+                    
+                    <div class="formula-box">
+                        Profit/Loss Calculation for Long Positions:<br>
+                        Profit = (Exit Price - Entry Price) × Position Size<br>
+                        <br>
+                        Example: Forex Long<br>
+                        Instrument: EUR/USD<br>
+                        Action: Buy 1 standard lot<br>
+                        Entry Price: 1.1050<br>
+                        Exit Price: 1.1100<br>
+                        Position Size: 100,000 units<br>
+                        <br>
+                        Profit = (1.1100 - 1.1050) × 100,000<br>
+                        = 0.0050 × 100,000 = <span class="profit">500 pips = $5,000</span>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Long Position Advantages</h3>
+                        <p><strong>Unlimited Profit Potential:</strong> In theory, prices can rise infinitely</p>
+                        <p><strong>Time is Your Friend:</strong> You can hold indefinitely (subject to swap costs)</p>
+                        <p><strong>Psychological Comfort:</strong> More intuitive for most traders</p>
+                        <p><strong>Dividends/Interest:</strong> Some long positions earn ongoing income</p>
+                    </div>
+                </section>
+                
+                <!-- Section 3 -->
+                <section id="short-basics" class="section">
+                    <h2>Going Short: The Basics</h2>
+                    
+                    <p><span class="highlight">Going Short</span> means selling an asset you don't own, with the expectation that its price will fall. You aim to buy it back later at a lower price, pocketing the difference.</p>
+                    
+                    <div class="position-flow">
+                        <div class="flow-step">
+                            <div class="step-icon">📉</div>
+                            <div class="step-title">Borrow & Sell</div>
+                            <div class="step-desc">Sell borrowed asset at current price</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">⏳</div>
+                            <div class="step-title">Wait for Drop</div>
+                            <div class="step-desc">Hope price decreases</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">🔄</div>
+                            <div class="step-title">Buy Back Cheaper</div>
+                            <div class="step-desc">Purchase at lower price to return borrowed asset</div>
+                        </div>
+                    </div>
+                    
+                    <h3>Short Position Example</h3>
+                    
+                    <div class="price-movement">
+                        <div style="flex: 1;">
+                            <strong>Stock Short Example</strong><br>
+                            Instrument: Tesla (TSLA)<br>
+                            Action: Short 100 shares<br>
+                            Entry Price: $250.00<br>
+                            Proceeds from Sale: $25,000
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>Price Movement</strong><br>
+                            <div class="price-level level-short">Price falls to $220.00</div>
+                            <div class="price-level level-neutral">Action: Buy 100 shares to cover</div>
+                            <div class="price-level level-short">Cost to Cover: $22,000</div>
+                            <div class="price-level level-short">Profit: $3,000 (+12%)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison">
+                        <div class="position-card short-card">
+                            <div class="position-name short-name">Short Position Psychology</div>
+                            <p>"I believe this asset is overvalued"</p>
+                            <p>"The current price is unsustainable"</p>
+                            <p>"I want to profit from this decline"</p>
+                            <p>"The trend is downward, I'll ride it"</p>
+                        </div>
+                        
+                        <div class="position-card short-card">
+                            <div class="position-name short-name">When to Go Short</div>
+                            <p>Bearish market conditions</p>
+                            <p>Downtrend identification</p>
+                            <p>Overvalued assets</p>
+                            <p>Negative news/catalyst</p>
+                            <p>Technical breakdown downward</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Short Position Math</h3>
+                    
+                    <div class="formula-box">
+                        Profit/Loss Calculation for Short Positions:<br>
+                        Profit = (Entry Price - Exit Price) × Position Size<br>
+                        <br>
+                        Example: Forex Short<br>
+                        Instrument: EUR/USD<br>
+                        Action: Sell 1 standard lot<br>
+                        Entry Price: 1.1050<br>
+                        Exit Price: 1.1000<br>
+                        Position Size: 100,000 units<br>
+                        <br>
+                        Profit = (1.1050 - 1.1000) × 100,000<br>
+                        = 0.0050 × 100,000 = <span class="loss">500 pips = $5,000</span>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Short Position Risks</h3>
+                        <p><strong>Unlimited Loss Potential:</strong> In theory, prices can rise infinitely, creating unlimited losses</p>
+                        <p><strong>Time is Your Enemy:</strong> Borrowing costs accumulate over time</p>
+                        <p><strong>Squeeze Risk:</strong> Short squeezes can force rapid covering at bad prices</p>
+                        <p><strong>Psychological Stress:</strong> Going against the natural "buy low" instinct</p>
+                        <p><strong>Regulatory Risk:</strong> Short selling may be restricted during crises</p>
+                    </div>
+                </section>
+                
+                <!-- Section 4 -->
+                <section id="forex-shorting" class="section">
+                    <h2>Shorting in Forex</h2>
+                    
+                    <p>In forex trading, you're always simultaneously long one currency and short another. This is fundamentally different from stock shorting and doesn't involve borrowing in the traditional sense.</p>
+                    
+                    <div class="market-card">
+                        <div class="market-header">
+                            <div class="market-icon">💱</div>
+                            <div>
+                                <h3>Forex Pairs Explained</h3>
+                                <p>Every forex trade involves two currencies</p>
+                            </div>
+                        </div>
+                        <div class="formula-box">
+                            Currency Pair: EUR/USD<br>
+                            Base Currency: EUR (the first one)<br>
+                            Quote Currency: USD (the second one)<br>
+                            <br>
+                            Going Long EUR/USD means:<br>
+                            - Buying EUR (base currency)<br>
+                            - Selling USD (quote currency)<br>
+                            <br>
+                            Going Short EUR/USD means:<br>
+                            - Selling EUR (base currency)<br>
+                            - Buying USD (quote currency)
+                        </div>
+                    </div>
+                    
+                    <h3>Forex Shorting Mechanics</h3>
+                    
+                    <div class="price-movement">
+                        <div style="flex: 1;">
+                            <strong>Short EUR/USD Example</strong><br>
+                            Current Price: 1.1050<br>
+                            Your View: Euro will weaken vs Dollar<br>
+                            Action: Sell EUR/USD<br>
+                            Position: 1 standard lot (€100,000)
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>Trade Outcome</strong><br>
+                            Price drops to 1.1000<br>
+                            Action: Buy EUR/USD to close<br>
+                            Profit Calculation:<br>
+                            (1.1050 - 1.1000) × 100,000<br>
+                            = 0.0050 × 100,000<br>
+                            = <span class="loss">500 pips = $5,000 profit</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Why Forex Shorting is Different</h3>
+                        <p><strong>No Borrowing Required:</strong> You're not actually borrowing euros to sell them</p>
+                        <p><strong>No Locate Needed:</strong> Unlike stock shorting, no need to locate shares to borrow</p>
+                        <p><strong>Instant Execution:</strong> Short positions execute as easily as long positions</p>
+                        <p><strong>No Dividend Risk:</strong> Currencies don't pay dividends that short sellers must cover</p>
+                        <p><strong>Swap Rates:</strong> Instead of borrowing fees, you pay or receive swap interest</p>
+                    </div>
+                    
+                    <h3>Forex Shorting Scenarios</h3>
+                    
+                    <div class="comparison">
+                        <div class="position-card short-card">
+                            <div class="position-name short-name">Economic Short</div>
+                            <p><strong>Situation:</strong> US economy strengthening, EU economy weakening</p>
+                            <p><strong>Trade:</strong> Short EUR/USD</p>
+                            <p><strong>Rationale:</strong> Dollar should strengthen vs Euro</p>
+                            <p><strong>Catalyst:</strong> Interest rate differentials, economic data</p>
+                        </div>
+                        
+                        <div class="position-card short-card">
+                            <div class="position-name short-name">Technical Short</div>
+                            <p><strong>Situation:</strong> EUR/USD breaks below key support at 1.1000</p>
+                            <p><strong>Trade:</strong> Short EUR/USD on breakdown</p>
+                            <p><strong>Rationale:</strong> Technical breakdown suggests further declines</p>
+                            <p><strong>Catalyst:</strong> Chart patterns, momentum indicators</p>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Forex Shorting Considerations</h3>
+                        <p><strong>Carry Trade Risk:</strong> If you short a high-interest currency against a low-interest one, you'll pay negative swap</p>
+                        <p><strong>Central Bank Intervention:</strong> Central banks can dramatically move currency pairs against shorts</p>
+                        <p><strong>Leverage Magnification:</strong> High leverage means both profits AND losses are amplified</p>
+                    </div>
+                </section>
+                
+                <!-- Section 5 -->
+                <section id="cfd-shorting" class="section">
+                    <h2>Shorting with CFDs</h2>
+                    
+                    <p>CFD (Contract for Difference) shorting allows you to profit from falling prices without owning or borrowing the underlying asset. It's a synthetic position between you and your broker.</p>
+                    
+                    <div class="market-card">
+                        <div class="market-header">
+                            <div class="market-icon">📊</div>
+                            <div>
+                                <h3>How CFD Shorting Works</h3>
+                                <p>You're trading price movements, not the actual asset</p>
+                            </div>
+                        </div>
+                        <div class="position-flow">
+                            <div class="flow-step">
+                                <div class="step-icon">🤝</div>
+                                <div class="step-title">Open Short CFD</div>
+                                <div class="step-desc">Agree to exchange price difference</div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-icon">📉</div>
+                                <div class="step-title">Price Falls</div>
+                                <div class="step-desc">Asset price decreases</div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-icon">💰</div>
+                                <div class="step-title">Close Position</div>
+                                <div class="step-desc">Broker pays you the difference</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>CFD Short Example: Apple Stock</h3>
+                    
+                    <div class="price-movement">
+                        <div style="flex: 1;">
+                            <strong>Trade Setup</strong><br>
+                            Instrument: Apple CFD<br>
+                            Current Price: $150.00<br>
+                            Your View: Bearish on Apple<br>
+                            Action: Sell 100 CFDs<br>
+                            Contract Value: $15,000
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>Trade Execution</strong><br>
+                            Price drops to $140.00<br>
+                            Action: Buy 100 CFDs to close<br>
+                            Profit Calculation:<br>
+                            ($150 - $140) × 100 contracts<br>
+                            = $10 × 100<br>
+                            = <span class="loss">$1,000 profit</span>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison">
+                        <div class="position-card short-card">
+                            <div class="position-name short-name">CFD vs Traditional Shorting</div>
+                            <p><strong>CFD Advantages:</strong></p>
+                            <p>• No borrowing/locate needed</p>
+                            <p>• No uptick rule restrictions</p>
+                            <p>• Access to global markets</p>
+                            <p>• Lower capital requirements</p>
+                            <p>• Wide range of instruments</p>
+                        </div>
+                        
+                        <div class="position-card short-card">
+                            <div class="position-name short-name">CFD Considerations</div>
+                            <p><strong>CFD Specifics:</strong></p>
+                            <p>• Financing costs on overnight positions</p>
+                            <p>• Counterparty risk with broker</p>
+                            <p>• Not available in all countries (US)</p>
+                            <p>• Leverage amplifies risk</p>
+                            <p>• No physical ownership</p>
+                        </div>
+                    </div>
+                    
+                    <h3>CFD Financing Costs</h3>
+                    
+                    <div class="formula-box">
+                        Overnight Financing Calculation for Short CFDs:<br>
+                        Daily Financing = Position Value × Financing Rate ÷ 365<br>
+                        <br>
+                        Example: Short Apple CFD<br>
+                        Position: $15,000 (100 shares × $150)<br>
+                        Annual Financing Rate: 5%<br>
+                        Daily Cost = $15,000 × 5% ÷ 365<br>
+                        = $750 ÷ 365 = <span class="loss">$2.05 per day</span><br>
+                        <br>
+                        Note: Financing rates vary by broker and instrument.<br>
+                        Short positions typically pay higher financing than longs.
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>CFD Shorting Strategies</h3>
+                        <p><strong>Hedging:</strong> Short CFDs to hedge existing long positions in your portfolio</p>
+                        <p><strong>Sector Rotation:</strong> Short weak sectors while going long strong ones</p>
+                        <p><strong>Pairs Trading:</strong> Short one stock while going long a correlated competitor</p>
+                        <p><strong>Market Neutral:</strong> Balance long and short positions to be market-direction neutral</p>
+                    </div>
+                </section>
+                
+                <!-- Section 6 -->
+                <section id="crypto-shorting" class="section">
+                    <h2>Shorting Cryptocurrencies</h2>
+                    
+                    <p>Cryptocurrency shorting has evolved significantly, with multiple methods available to profit from crypto price declines. Each method has different mechanics, risks, and requirements.</p>
+                    
+                    <div class="market-card">
+                        <div class="market-header">
+                            <div class="market-icon">₿</div>
+                            <div>
+                                <h3>Crypto Shorting Methods</h3>
+                                <p>Multiple ways to short cryptocurrencies</p>
+                            </div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value">Spot Margin</div>
+                                <div class="stat-label">Borrow Crypto<br>Sell & Buy Back</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">Perpetual Swaps</div>
+                                <div class="stat-label">CFD-like Contracts<br>Funding Rate Mechanism</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">Futures</div>
+                                <div class="stat-label">Dated Contracts<br>Set Expiration</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">Options</div>
+                                <div class="stat-label">Put Options<br>Limited Risk</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Spot Margin Shorting</h3>
+                    
+                    <div class="price-movement">
+                        <div style="flex: 1;">
+                            <strong>Bitcoin Margin Short Example</strong><br>
+                            Exchange: Binance, Coinbase, etc.<br>
+                            Action: Borrow 1 BTC<br>
+                            Borrow Rate: 5% annual<br>
+                            Current Price: $40,000<br>
+                            Sell borrowed BTC for $40,000
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>Covering the Short</strong><br>
+                            Price drops to $35,000<br>
+                            Action: Buy 1 BTC for $35,000<br>
+                            Return borrowed BTC to lender<br>
+                            Profit: $40,000 - $35,000<br>
+                            = <span class="loss">$5,000 profit</span><br>
+                            Minus borrowing fees
+                        </div>
+                    </div>
+                    
+                    <h3>Perpetual Swap Shorting</h3>
+                    
+                    <div class="formula-box">
+                        Perpetual Swap Short Mechanics:<br>
+                        - Trade BTC/USD perpetual contract<br>
+                        - No expiration date<br>
+                        - Funding rate exchanged every 8 hours<br>
+                        - Leverage up to 100x on some exchanges<br>
+                        <br>
+                        Funding Rate Calculation:<br>
+                        If more longs than shorts → Longs pay shorts<br>
+                        If more shorts than longs → Shorts pay longs<br>
+                        <br>
+                        Example: Short BTC perpetual with 10x leverage<br>
+                        Position: $10,000 notional (0.25 BTC at $40,000)<br>
+                        Margin: $1,000 (10% of notional)<br>
+                        Price drops 10% → $4,000 profit (400% on margin)
+                    </div>
+                    
+                    <div class="comparison">
+                        <div class="position-card short-card">
+                            <div class="position-name short-name">Exchange Shorting</div>
+                            <p><strong>Platforms:</strong> Binance, FTX, Bybit, Deribit</p>
+                            <p><strong>Pros:</strong></p>
+                            <p>• High leverage available</p>
+                            <p>• Deep liquidity</p>
+                            <p>• Multiple instrument types</p>
+                            <p><strong>Cons:</strong></p>
+                            <p>• Counterparty risk</p>
+                            <p>• Regulatory uncertainty</p>
+                            <p>• Funding rate costs</p>
+                        </div>
+                        
+                        <div class="position-card short-card">
+                            <div class="position-name short-name">Broker Shorting</div>
+                            <p><strong>Platforms:</strong> IG, Plus500, eToro</p>
+                            <p><strong>Pros:</strong></p>
+                            <p>• Regulatory protection</p>
+                            <p>• Familiar interface</p>
+                            <p>• Integrated with other assets</p>
+                            <p><strong>Cons:</strong></p>
+                            <p>• Lower leverage typically</p>
+                            <p>• Higher spreads</p>
+                            <p>• Limited coin selection</p>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Crypto Shorting Risks</h3>
+                        <p><strong>Extreme Volatility:</strong> Crypto can move 20%+ in hours, causing rapid liquidation</p>
+                        <p><strong>Funding Rate Risk:</strong> Can pay substantial funding if heavily shorted</p>
+                        <p><strong>Exchange Risk:</strong> Some exchanges have failed with user funds</p>
+                        <p><strong>Regulatory Risk:</strong> Changing regulations can impact shorting ability</p>
+                        <p><strong>Short Squeezes:</strong> Rapid price rises can liquidate short positions</p>
+                    </div>
+                </section>
+                
+                <!-- Section 7 -->
+                <section id="strategies" class="section">
+                    <h2>Long/Short Strategies</h2>
+                    
+                    <p>Now that we understand the mechanics, let's explore practical trading strategies that utilize both long and short positions for various market conditions and objectives.</p>
+                    
+                    <h3>Directional Strategies</h3>
+                    
+                    <div class="market-card">
+                        <div class="market-header">
+                            <div class="market-icon">🎯</div>
+                            <div>
+                                <h3>Trend Following</h3>
+                                <p>Go with the prevailing market direction</p>
+                            </div>
+                        </div>
+                        <div class="comparison">
+                            <div class="position-card long-card">
+                                <div class="position-name long-name">Uptrend Strategy</div>
+                                <p><strong>Setup:</strong> Higher highs, higher lows</p>
+                                <p><strong>Action:</strong> Go long on pullbacks</p>
+                                <p><strong>Stop Loss:</strong> Below recent low</p>
+                                <p><strong>Take Profit:</strong> At resistance or trailing stop</p>
+                                <p><strong>Mindset:</strong> "The trend is your friend"</p>
+                            </div>
+                            
+                            <div class="position-card short-card">
+                                <div class="position-name short-name">Downtrend Strategy</div>
+                                <p><strong>Setup:</strong> Lower highs, lower lows</p>
+                                <p><strong>Action:</strong> Go short on rallies</p>
+                                <p><strong>Stop Loss:</strong> Above recent high</p>
+                                <p><strong>Take Profit:</strong> At support or trailing stop</p>
+                                <p><strong>Mindset:</strong> "Sell the rips, don't buy the dips"</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Market Neutral Strategies</h3>
+                    
+                    <div class="market-card">
+                        <div class="market-header">
+                            <div class="market-icon">⚖️</div>
+                            <div>
+                                <h3>Pairs Trading</h3>
+                                <p>Go long one asset, short a correlated one</p>
+                            </div>
+                        </div>
+                        <div class="formula-box">
+                            Pairs Trading Example: Tech Stocks<br>
+                            <br>
+                            Setup:<br>
+                            - Microsoft (MSFT) and Apple (AAPL) are highly correlated<br>
+                            - MSFT drops 5% while AAPL only drops 2%<br>
+                            - The spread between them has widened<br>
+                            <br>
+                            Trade:<br>
+                            Long MSFT (the underperformer)<br>
+                            Short AAPL (the overperformer)<br>
+                            <br>
+                            Profit when the spread narrows back to normal<br>
+                            Market direction doesn't matter
+                        </div>
+                    </div>
+                    
+                    <h3>Hedging Strategies</h3>
+                    
+                    <div class="market-card">
+                        <div class="market-header">
+                            <div class="market-icon">🛡️</div>
+                            <div>
+                                <h3>Portfolio Protection</h3>
+                                <p>Use shorts to protect long positions</p>
+                            </div>
+                        </div>
+                        <div class="price-movement">
+                            <div style="flex: 1;">
+                                <strong>Scenario</strong><br>
+                                You own $100,000 stock portfolio<br>
+                                Market looks vulnerable to correction<br>
+                                You don't want to sell your stocks (taxes, conviction)<br>
+                                How to protect against downturn?
+                            </div>
+                            <div style="flex: 1;">
+                                <strong>Hedging Solution</strong><br>
+                                Short S&P 500 ETF or futures<br>
+                                Notional value: $50,000 (50% hedge)<br>
+                                If market drops 10%:<br>
+                                Stocks lose: $10,000<br>
+                                Short hedge gains: $5,000<br>
+                                Net loss: $5,000 (instead of $10,000)<br>
+                                Cost: Hedge financing/roll costs
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Sector Rotation Strategy</h3>
+                    
+                    <div class="formula-box">
+                        Sector Rotation Implementation:<br>
+                        <br>
+                        Economic Analysis:<br>
+                        - Economy entering late cycle<br>
+                        - Interest rates rising<br>
+                        - Consumer spending slowing<br>
+                        <br>
+                        Long Positions (Defensive):<br>
+                        - Utilities sector (stable dividends)<br>
+                        - Consumer staples (essential goods)<br>
+                        - Healthcare (recession resistant)<br>
+                        <br>
+                        Short Positions (Cyclical):<br>
+                        - Technology (growth sensitive)<br>
+                        - Consumer discretionary (optional spending)<br>
+                        - Real estate (interest rate sensitive)<br>
+                        <br>
+                        Goal: Profit from relative performance, not absolute market direction
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Strategy Selection Framework</h3>
+                        <p><strong>Market Conditions:</strong> Choose strategies that match current market environment</p>
+                        <p><strong>Risk Tolerance:</strong> Directional strategies have higher risk than market neutral</p>
+                        <p><strong>Time Horizon:</strong> Short-term traders vs long-term investors need different approaches</p>
+                        <p><strong>Capital Size:</strong> Some strategies require significant capital for proper diversification</p>
+                        <p><strong>Skill Level:</strong> Start simple, add complexity as you gain experience</p>
+                    </div>
+                </section>
+                
+                <!-- Section 8 -->
+                <section id="conclusion" class="section">
+                    <h2>Conclusion: Market Neutrality</h2>
+                    
+                    <p>Congratulations! You've now mastered one of the most powerful concepts in trading: the ability to profit in both rising and falling markets. This knowledge fundamentally transforms your relationship with financial markets.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">The Evolved Trader's Mindset</div>
+                        <p><strong>Before:</strong> "I hope the market goes up so I can make money"</p>
+                        <p><strong>After:</strong> "I will find opportunities whether markets rise, fall, or move sideways"</p>
+                        <p>This shift from hope to strategic execution is what separates professional traders from amateurs.</p>
+                    </div>
+                    
+                    <h3>Your Long/Short Toolkit</h3>
+                    
+                    <div class="key-takeaways">
+                        <h3>Essential Knowledge Checklist</h3>
+                        <ul>
+                            <li>✓ Understand long position mechanics and psychology</li>
+                            <li>✓ Master short position mechanics across different asset classes</li>
+                            <li>✓ Know the risks and limitations of each approach</li>
+                            <li>✓ Understand financing costs for leveraged positions</li>
+                            <li>✓ Develop strategies for different market conditions</li>
+                            <li>✓ Practice proper risk management for both directions</li>
+                        </ul>
+                    </div>
+                    
+                    <h3>Continuing Your Journey</h3>
+                    
+                    <div class="comparison">
+                        <div class="position-card long-card">
+                            <div class="position-name long-name">Next Steps: Practice</div>
+                            <p>Open demo accounts with multiple brokers</p>
+                            <p>Practice both long and short trades</p>
+                            <p>Test different strategies in various market conditions</p>
+                            <p>Track your performance and refine your approach</p>
+                            <p>Start small when transitioning to live trading</p>
+                        </div>
+                        
+                        <div class="position-card short-card">
+                            <div class="position-name short-name">Next Steps: Education</div>
+                            <p>Study successful short sellers and their methods</p>
+                            <p>Learn about advanced hedging techniques</p>
+                            <p>Understand macroeconomic factors affecting markets</p>
+                            <p>Explore quantitative approaches to long/short investing</p>
+                            <p>Consider professional certifications (CFA, CMT)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>The Psychological Challenge</h3>
+                        <p>Short selling goes against our natural "buy low" instinct and can be psychologically challenging. Many traders struggle with:</p>
+                        <ul>
+                            <li><strong>Fear of unlimited losses:</strong> Use strict position sizing and stops</li>
+                            <li><strong>Going against the crowd:</strong> Develop conviction in your analysis</li>
+                            <li><strong>Timing difficulties:</strong> Shorts often work better over longer timeframes</li>
+                            <li><strong>Regret from covering too early:</strong> Use trailing stops and scaling</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Final Thought: The Complete Trader</h3>
+                        <p>The ability to trade both long and short doesn't just double your opportunity set—it transforms you from a passive market participant into an active risk manager and opportunity seeker.</p>
+                        <p>You're no longer at the mercy of market direction. You have the tools to profit in any environment, protect your capital in downturns, and implement sophisticated strategies that most investors can only dream of.</p>
+                    </div>
+                    
+                    <p>Now go forth and trade with the confidence that comes from true market neutrality. Your journey to becoming a complete trader has taken a monumental leap forward.</p>
+                </section>
+            </div>
+            
+            <div class="nav-controls">
+                <button id="prev-btn" class="nav-btn" disabled>
+                    <span>←</span> Previous
+                </button>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="current-section">1</span> / <span id="total-sections">8</span>
+                    </div>
+                </div>
+                
+                <button id="next-btn" class="nav-btn">
+                    Next <span>→</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const progressFill = document.getElementById('progress-fill');
+            const currentSectionEl = document.getElementById('current-section');
+            const totalSectionsEl = document.getElementById('total-sections');
+            
+            let currentSectionIndex = 0;
+            const totalSections = sections.length;
+            
+            totalSectionsEl.textContent = totalSections;
+            
+            // Initialize the first section as active
+            updateActiveSection();
+            
+            // Navigation via sidebar
+            navLinks.forEach((link, index) => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentSectionIndex = index;
+                    updateActiveSection();
+                });
+            });
+            
+            // Previous button
+            prevBtn.addEventListener('click', function() {
+                if (currentSectionIndex > 0) {
+                    currentSectionIndex--;
+                    updateActiveSection();
+                }
+            });
+            
+            // Next button
+            nextBtn.addEventListener('click', function() {
+                if (currentSectionIndex < totalSections - 1) {
+                    currentSectionIndex++;
+                    updateActiveSection();
+                }
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') {
+                    if (currentSectionIndex > 0) {
+                        currentSectionIndex--;
+                        updateActiveSection();
+                    }
+                } else if (e.key === 'ArrowRight') {
+                    if (currentSectionIndex < totalSections - 1) {
+                        currentSectionIndex++;
+                        updateActiveSection();
+                    }
+                }
+            });
+            
+            function updateActiveSection() {
+                // Update sections
+                sections.forEach((section, index) => {
+                    if (index === currentSectionIndex) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                
+                // Update navigation links
+                navLinks.forEach((link, index) => {
+                    if (index === currentSectionIndex) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+                
+                // Update buttons
+                prevBtn.disabled = currentSectionIndex === 0;
+                nextBtn.disabled = currentSectionIndex === totalSections - 1;
+                
+                // Update progress
+                const progressPercentage = ((currentSectionIndex + 1) / totalSections) * 100;
+                progressFill.style.width = `${progressPercentage}%`;
+                
+                // Update current section number
+                currentSectionEl.textContent = currentSectionIndex + 1;
+            }
+        });
+    </script>
+</body>
+</html>

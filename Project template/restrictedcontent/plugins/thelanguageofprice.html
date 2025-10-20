@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFD Trading Guide: Pips, Points, Ticks & Satoshis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a2b3c;
+            --secondary: #2c3e50;
+            --accent: #9b59b6;
+            --accent-light: #8e44ad;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
+            --transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f1a24 0%, #1a2b3c 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Sidebar Styles - NO SCROLLBAR */
+        .sidebar {
+            width: 320px;
+            background: rgba(15, 26, 36, 0.95);
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo-icon {
+            width: 35px;
+            height: 35px;
+            background: var(--accent);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .guide-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--light);
+            line-height: 1.3;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .section-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: flex-start;
+            gap: 5px;
+        }
+        
+        .section-nav li {
+            flex-shrink: 0;
+        }
+        
+        .section-nav a {
+            display: block;
+            padding: 10px 12px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            font-size: 14px;
+            line-height: 1.3;
+        }
+        
+        .section-nav a:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .section-nav a.active {
+            color: white;
+            background: rgba(155, 89, 182, 0.2);
+            border-left: 3px solid var(--accent);
+            font-weight: 600;
+        }
+        
+        .section-nav a.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent);
+        }
+        
+        /* Content Styles */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            overflow-y: auto;
+            opacity: 0;
+            transform: translateX(50px);
+            transition: var(--transition);
+            pointer-events: none;
+        }
+        
+        .section.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+        
+        .section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: var(--accent);
+            border-bottom: 2px solid rgba(155, 89, 182, 0.3);
+            padding-bottom: 12px;
+        }
+        
+        .section h3 {
+            font-size: 22px;
+            margin: 25px 0 12px;
+            color: var(--accent-light);
+        }
+        
+        .section p {
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .example-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .example-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent-light);
+        }
+        
+        .comparison {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .trader-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .trader-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .trader-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+        
+        .profit {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .loss {
+            color: var(--danger);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .highlight {
+            background: rgba(155, 89, 182, 0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            color: var(--accent-light);
+        }
+        
+        /* Navigation Controls */
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 30px;
+            background: rgba(15, 26, 36, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-btn {
+            padding: 10px 25px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+        
+        .nav-btn:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
+        }
+        
+        .nav-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .progress-bar {
+            width: 180px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 12.5%;
+            transition: var(--transition);
+        }
+        
+        .progress-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Financial Chart Elements */
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Key Takeaways */
+        .key-takeaways {
+            background: rgba(39, 174, 96, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--success);
+        }
+        
+        .key-takeaways h3 {
+            color: var(--success);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        .key-takeaways ul {
+            padding-left: 18px;
+        }
+        
+        .key-takeaways li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        /* Warning Box */
+        .warning-box {
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--danger);
+        }
+        
+        .warning-box h3 {
+            color: var(--danger);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        /* Info Box */
+        .info-box {
+            background: rgba(155, 89, 182, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .info-box h3 {
+            color: var(--accent);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Formula Box */
+        .formula-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        
+        /* Price Display */
+        .price-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .price-change {
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .price-up {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--success);
+        }
+        
+        .price-down {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--danger);
+        }
+        
+        /* Asset Class Cards */
+        .asset-class-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            border-top: 3px solid var(--accent);
+        }
+        
+        .asset-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .asset-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .app-container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+            }
+            
+            .content-area {
+                height: 60vh;
+            }
+            
+            .comparison {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .price-display {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+        
+        /* Custom scrollbar for sections */
+        .section::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .section::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .section::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 8px;
+        }
+        
+        .section::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">CFD</div>
+                <div class="logo-text">TRADER PRO</div>
+            </div>
+            
+            <div class="guide-title">
+                Pips, Points, Ticks & Satoshis – How to Read Price Quotes and Size Positions in Each Asset Class
+            </div>
+            
+            <ul class="section-nav">
+                <li><a href="#intro" class="nav-link active">Introduction: The Language of Price</a></li>
+                <li><a href="#pips" class="nav-link">Pips in Forex Trading</a></li>
+                <li><a href="#points" class="nav-link">Points in Indices & Stocks</a></li>
+                <li><a href="#ticks" class="nav-link">Ticks in Futures</a></li>
+                <li><a href="#satoshis" class="nav-link">Satoshis in Crypto</a></li>
+                <li><a href="#position-sizing" class="nav-link">Position Sizing Formulas</a></li>
+                <li><a href="#practical" class="nav-link">Practical Examples</a></li>
+                <li><a href="#conclusion" class="nav-link">Conclusion: Mastery</a></li>
+            </ul>
+        </div>
+        
+        <div class="content-area">
+            <div class="content-container">
+                <!-- Section 1 -->
+                <section id="intro" class="section active">
+                    <h2>Introduction: The Language of Price</h2>
+                    <p>Welcome, precision-focused trader. In our previous guides, we've explored leverage and trading costs. Now we'll dive into the fundamental language of trading: how to read and interpret price movements across different asset classes.</p>
+                    
+                    <p>Every financial market has its own unique way of measuring price changes. Understanding these differences is crucial for accurate position sizing and risk management.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">The Trader's Dilemma</div>
+                        <p>Imagine you're analyzing three different opportunities:</p>
+                        <p><strong>Forex:</strong> EUR/USD moves from 1.1050 to 1.1060</p>
+                        <p><strong>Stocks:</strong> Apple moves from $150.00 to $150.50</p>
+                        <p><strong>Crypto:</strong> Bitcoin moves from $40,000 to $40,100</p>
+                        <p>Which move represents the best opportunity? Without understanding the measurement units, you can't accurately compare them.</p>
+                    </div>
+                    
+                    <p>In this guide, we'll master the four key measurement units: <span class="highlight">Pips</span> (Forex), <span class="highlight">Points</span> (Indices & Stocks), <span class="highlight">Ticks</span> (Futures), and <span class="highlight">Satoshis</span> (Cryptocurrencies).</p>
+                    
+                    <div class="key-takeaways">
+                        <h3>Key Insight</h3>
+                        <p>Professional traders don't just see price movements—they understand what those movements mean in dollar terms. This knowledge transforms abstract numbers into concrete risk/reward calculations.</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">Pips</div>
+                            <div class="stat-label">Forex & CFDs<br>Percentage in Point</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Points</div>
+                            <div class="stat-label">Indices & Stocks<br>Whole Number Moves</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Ticks</div>
+                            <div class="stat-label">Futures<br>Minimum Price Movement</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Satoshis</div>
+                            <div class="stat-label">Cryptocurrencies<br>Smallest Bitcoin Unit</div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section 2 -->
+                <section id="pips" class="section">
+                    <h2>Pips in Forex Trading</h2>
+                    
+                    <p>A <span class="highlight">Pip</span> (Percentage in Point) is the standard unit of measurement in forex trading, representing the smallest price move that a currency pair can make.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">How Pips Work</div>
+                        <p>For most currency pairs, a pip is 0.0001 (1/100th of 1%) of the exchange rate.</p>
+                        <p><strong>Example: EUR/USD</strong></p>
+                        <p>Price moves from 1.1050 to 1.1051 = <span class="highlight">1 pip movement</span></p>
+                        <p>Price moves from 1.1050 to 1.1060 = <span class="highlight">10 pip movement</span></p>
+                        <p>For JPY pairs, a pip is 0.01 (1% of 1 yen):</p>
+                        <p>USD/JPY moves from 110.50 to 110.51 = <span class="highlight">1 pip movement</span></p>
+                    </div>
+                    
+                    <h3>Pip Values by Lot Size</h3>
+                    
+                    <div class="formula-box">
+                        Standard Lot (100,000 units):<br>
+                        Pip Value = (0.0001 / Exchange Rate) × 100,000<br>
+                        For EUR/USD at 1.1050: (0.0001 / 1.1050) × 100,000 = <span class="highlight">$9.05 per pip</span><br>
+                        <br>
+                        Mini Lot (10,000 units):<br>
+                        Pip Value = $9.05 × 0.1 = <span class="highlight">$0.91 per pip</span><br>
+                        <br>
+                        Micro Lot (1,000 units):<br>
+                        Pip Value = $9.05 × 0.01 = <span class="highlight">$0.09 per pip</span>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Fractional Pips (Pipettes)</h3>
+                        <p>Many brokers now quote to 5 decimal places for most pairs and 3 decimal places for JPY pairs. The fifth decimal place (or third for JPY) is called a <span class="highlight">pipette</span>, which is 1/10th of a pip.</p>
+                        <p>EUR/USD moving from 1.10500 to 1.10501 = 1 pipette movement</p>
+                    </div>
+                    
+                    <h3>Practical Pip Calculation</h3>
+                    
+                    <div class="price-display">
+                        <div>
+                            <strong>EUR/USD Position</strong><br>
+                            Entry: 1.1050<br>
+                            Current: 1.1075<br>
+                            Movement: 25 pips
+                        </div>
+                        <div>
+                            <strong>Position Size: 2 standard lots</strong><br>
+                            Pip Value: $9.05 × 2 = $18.10<br>
+                            Profit: 25 pips × $18.10 = <span class="profit">$452.50</span>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Important Note on JPY Pairs</h3>
+                        <p>For JPY pairs, the pip value calculation is different because the pip is 0.01 instead of 0.0001:</p>
+                        <p>USD/JPY Pip Value = (0.01 / Exchange Rate) × Position Size</p>
+                        <p>At USD/JPY 110.00: (0.01 / 110.00) × 100,000 = <span class="highlight">$9.09 per pip</span></p>
+                    </div>
+                </section>
+                
+                <!-- Section 3 -->
+                <section id="points" class="section">
+                    <h2>Points in Indices & Stocks</h2>
+                    
+                    <p>In stock and index trading, a <span class="highlight">Point</span> typically represents a one-unit move in the price. However, the dollar value of a point varies significantly between different markets.</p>
+                    
+                    <div class="asset-class-card">
+                        <div class="asset-header">
+                            <div class="asset-icon">📈</div>
+                            <div>
+                                <h3>Stock Indices</h3>
+                                <p>Points represent whole number movements</p>
+                            </div>
+                        </div>
+                        <div class="price-display">
+                            <div>
+                                <strong>S&P 500 (US500)</strong><br>
+                                Moves from 4500 to 4501 = <span class="highlight">1 point</span><br>
+                                Contract Value: $50 per point
+                            </div>
+                            <div>
+                                <strong>Profit Calculation</strong><br>
+                                1 contract × 10 points × $50 = <span class="profit">$500 profit</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="asset-class-card">
+                        <div class="asset-header">
+                            <div class="asset-icon">💼</div>
+                            <div>
+                                <h3>Individual Stocks</h3>
+                                <p>Points typically represent $1 movements</p>
+                            </div>
+                        </div>
+                        <div class="price-display">
+                            <div>
+                                <strong>Apple (AAPL)</strong><br>
+                                Moves from $150.00 to $151.00 = <span class="highlight">1 point</span><br>
+                                Shares: 100 shares
+                            </div>
+                            <div>
+                                <strong>Profit Calculation</strong><br>
+                                100 shares × $1.00 = <span class="profit">$100 profit</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3>Major Index Point Values</h3>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">$50</div>
+                            <div class="stat-label">S&P 500 (US500)<br>Per Point</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$25</div>
+                            <div class="stat-label">NASDAQ (US100)<br>Per Point</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">£10</div>
+                            <div class="stat-label">FTSE 100 (UK100)<br>Per Point</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">€10</div>
+                            <div class="stat-label">DAX 30 (GER30)<br>Per Point</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Fractional Points in Stock CFDs</h3>
+                        <p>While traditional stock trading measures in points ($1 movements), CFD brokers often allow trading in fractional points. For example, Apple moving from $150.00 to $150.50 would be a 0.5 point movement.</p>
+                        <p>With 100 shares: 0.5 points × 100 shares = <span class="highlight">$50 profit</span></p>
+                    </div>
+                    
+                    <h3>Point vs Percentage Movements</h3>
+                    
+                    <div class="comparison">
+                        <div class="trader-card">
+                            <div class="trader-name">Small-Cap Stock</div>
+                            <p>Price: $10.00</p>
+                            <p>1 point move = $1.00</p>
+                            <p>Percentage change: 10%</p>
+                            <p>High volatility in % terms</p>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-name">Large-Cap Stock</div>
+                            <p>Price: $500.00</p>
+                            <p>1 point move = $1.00</p>
+                            <p>Percentage change: 0.2%</p>
+                            <p>Low volatility in % terms</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section 4 -->
+                <section id="ticks" class="section">
+                    <h2>Ticks in Futures</h2>
+                    
+                    <p>In futures trading, a <span class="highlight">Tick</span> is the minimum price movement of a contract. Unlike pips and points, tick sizes and values are fixed for each futures contract.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">How Ticks Work</div>
+                        <p>Each futures contract has:</p>
+                        <p><strong>Tick Size:</strong> Minimum price fluctuation</p>
+                        <p><strong>Tick Value:</strong> Dollar value of one tick</p>
+                        <p><strong>Example: E-mini S&P 500 (ES)</strong></p>
+                        <p>Tick Size: 0.25 points</p>
+                        <p>Tick Value: $12.50 per contract</p>
+                        <p>Price moves from 4500.00 to 4500.25 = <span class="highlight">1 tick movement</span> = $12.50 profit</p>
+                    </div>
+                    
+                    <h3>Major Futures Contracts</h3>
+                    
+                    <div class="asset-class-card">
+                        <div class="asset-header">
+                            <div class="asset-icon">⛽</div>
+                            <div>
+                                <h3>Crude Oil (CL)</h3>
+                                <p>Tick Size: $0.01 per barrel</p>
+                                <p>Contract Size: 1,000 barrels</p>
+                            </div>
+                        </div>
+                        <div class="formula-box">
+                            Tick Value: $0.01 × 1,000 barrels = <span class="highlight">$10.00 per tick</span><br>
+                            Price moves from $75.00 to $75.01 = 1 tick = $10 profit<br>
+                            Price moves from $75.00 to $75.10 = 10 ticks = $100 profit
+                        </div>
+                    </div>
+                    
+                    <div class="asset-class-card">
+                        <div class="asset-header">
+                            <div class="asset-icon">🌽</div>
+                            <div>
+                                <h3>Corn (ZC)</h3>
+                                <p>Tick Size: $0.25 per bushel</p>
+                                <p>Contract Size: 5,000 bushels</p>
+                            </div>
+                        </div>
+                        <div class="formula-box">
+                            Tick Value: $0.25 × 5,000 bushels = <span class="highlight">$12.50 per tick</span><br>
+                            Price moves from $5.00 to $5.01 = 4 ticks = $50 profit<br>
+                            (Note: $0.01 move = 4 ticks at $0.25 each)
+                        </div>
+                    </div>
+                    
+                    <h3>Popular Futures Tick Values</h3>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">$12.50</div>
+                            <div class="stat-label">E-mini S&P 500 (ES)<br>Per 0.25 Point</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$10.00</div>
+                            <div class="stat-label">Crude Oil (CL)<br>Per $0.01</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$6.25</div>
+                            <div class="stat-label">Gold (GC)<br>Per $0.10</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">$31.25</div>
+                            <div class="stat-label">30-Year Treasury (ZB)<br>Per 1/32 Point</div>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Tick Size Variations</h3>
+                        <p>Some futures contracts have different tick sizes for different price ranges. For example, the CME Euro FX contract has:</p>
+                        <p>Regular Tick: 0.00005 = $6.25</p>
+                        <p>Calendar Spread Tick: 0.00001 = $1.25</p>
+                        <p>Always check the specific contract specifications before trading.</p>
+                    </div>
+                </section>
+                
+                <!-- Section 5 -->
+                <section id="satoshis" class="section">
+                    <h2>Satoshis in Crypto</h2>
+                    
+                    <p>In cryptocurrency trading, a <span class="highlight">Satoshi</span> is the smallest unit of Bitcoin, named after its creator Satoshi Nakamoto. One Bitcoin equals 100 million Satoshis.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">Understanding Satoshis</div>
+                        <p>1 Bitcoin (BTC) = 100,000,000 Satoshis</p>
+                        <p>1 Satoshi = 0.00000001 BTC</p>
+                        <p>This allows for precise measurement of small price movements in Bitcoin and other cryptocurrencies.</p>
+                    </div>
+                    
+                    <h3>Satoshis in Practice</h3>
+                    
+                    <div class="price-display">
+                        <div>
+                            <strong>Bitcoin Price Movement</strong><br>
+                            From: $40,000.00<br>
+                            To: $40,001.00<br>
+                            Movement: $1.00
+                        </div>
+                        <div>
+                            <strong>In Satoshis</strong><br>
+                            $40,000 = 1 BTC<br>
+                            $1.00 = 1/40,000 BTC<br>
+                            = 2,500 Satoshis<br>
+                            <span class="highlight">2,500 Satoshi movement</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Why Satoshis Matter</h3>
+                        <p>As Bitcoin's price increases, dollar-based measurements become less precise for small movements. Satoshis provide a consistent measurement unit regardless of Bitcoin's dollar value.</p>
+                        <p>Professional crypto traders often think in Satoshis rather than dollars for precise position sizing.</p>
+                    </div>
+                    
+                    <h3>Altcoin Measurements</h3>
+                    
+                    <div class="asset-class-card">
+                        <div class="asset-header">
+                            <div class="asset-icon">⎈</div>
+                            <div>
+                                <h3>Ethereum (ETH)</h3>
+                                <p>Smallest unit: Wei</p>
+                                <p>1 ETH = 1,000,000,000,000,000,000 Wei</p>
+                            </div>
+                        </div>
+                        <div class="formula-box">
+                            More practical unit: Gwei<br>
+                            1 Gwei = 1,000,000,000 Wei<br>
+                            1 ETH = 1,000,000,000 Gwei<br>
+                            Gas fees typically measured in Gwei
+                        </div>
+                    </div>
+                    
+                    <div class="asset-class-card">
+                        <div class="asset-header">
+                            <div class="asset-icon">♦</div>
+                            <div>
+                                <h3>Other Cryptocurrencies</h3>
+                                <p>Most follow similar patterns with their own smallest units</p>
+                            </div>
+                        </div>
+                        <div class="formula-box">
+                            In practice, most traders use:<br>
+                            - Percentage movements<br>
+                            - Dollar values<br>
+                            - Satoshi equivalents for cross-crypto pairs
+                        </div>
+                    </div>
+                    
+                    <h3>Crypto Position Sizing</h3>
+                    
+                    <div class="formula-box">
+                        Trading Bitcoin against USD:<br>
+                        Position: 0.1 BTC<br>
+                        Entry: $40,000<br>
+                        Stop Loss: $39,600 (1% risk)<br>
+                        Risk: $400 per 0.1 BTC<br>
+                        <br>
+                        Trading ETH/BTC pair:<br>
+                        Position: 1 ETH<br>
+                        Entry: 0.05 BTC (1 ETH = 0.05 BTC)<br>
+                        Stop Loss: 0.0495 BTC (1% risk)<br>
+                        Risk: 0.0005 BTC per 1 ETH
+                    </div>
+                </section>
+                
+                <!-- Section 6 -->
+                <section id="position-sizing" class="section">
+                    <h2>Position Sizing Formulas</h2>
+                    
+                    <p>Now that we understand the different measurement units, let's explore how to use them for precise position sizing across all asset classes.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">The Universal Position Sizing Formula</div>
+                        <p>Regardless of asset class, the core position sizing formula remains the same:</p>
+                        <p><strong>Position Size = (Account Risk / Trade Risk) × Unit Value</strong></p>
+                        <p>Where:</p>
+                        <p><strong>Account Risk:</strong> Amount you're willing to lose (e.g., 1% of account)</p>
+                        <p><strong>Trade Risk:</strong> Distance to stop loss in asset's units</p>
+                        <p><strong>Unit Value:</strong> Value of one unit movement</p>
+                    </div>
+                    
+                    <h3>Forex Position Sizing</h3>
+                    
+                    <div class="formula-box">
+                        Account: $10,000<br>
+                        Risk per trade: 1% = $100<br>
+                        Trade: EUR/USD<br>
+                        Entry: 1.1050<br>
+                        Stop Loss: 1.1020 (30 pips risk)<br>
+                        Pip Value for 1 lot: $10<br>
+                        <br>
+                        Position Size = ($100 / 30 pips) × (1 lot / $10 per pip)<br>
+                        = 3.33 × 0.1 = <span class="highlight">0.33 lots</span>
+                    </div>
+                    
+                    <h3>Stock CFD Position Sizing</h3>
+                    
+                    <div class="formula-box">
+                        Account: $10,000<br>
+                        Risk per trade: 1% = $100<br>
+                        Trade: Apple (AAPL)<br>
+                        Entry: $150.00<br>
+                        Stop Loss: $148.50 (1.5 points risk)<br>
+                        Share Value: $1 per point per share<br>
+                        <br>
+                        Position Size = ($100 / 1.5 points) × (1 share / $1 per point)<br>
+                        = 66.67 × 1 = <span class="highlight">67 shares</span>
+                    </div>
+                    
+                    <h3>Index CFD Position Sizing</h3>
+                    
+                    <div class="formula-box">
+                        Account: $10,000<br>
+                        Risk per trade: 1% = $100<br>
+                        Trade: S&P 500 (US500)<br>
+                        Entry: 4500<br>
+                        Stop Loss: 4480 (20 points risk)<br>
+                        Point Value: $50 per point per contract<br>
+                        <br>
+                        Position Size = ($100 / 20 points) × (1 contract / $50 per point)<br>
+                        = 5 × 0.02 = <span class="highlight">0.1 contracts</span>
+                    </div>
+                    
+                    <div class="key-takeaways">
+                        <h3>Position Sizing Principles</h3>
+                        <ul>
+                            <li><strong>Consistency:</strong> Always use the same risk percentage</li>
+                            <li><strong>Precision:</strong> Calculate exact position sizes</li>
+                            <li><strong>Adaptability:</strong> Adjust for different asset classes</li>
+                            <li><strong>Risk Management:</strong> Position size determines your maximum loss</li>
+                        </ul>
+                    </div>
+                </section>
+                
+                <!-- Section 7 -->
+                <section id="practical" class="section">
+                    <h2>Practical Examples</h2>
+                    
+                    <p>Let's walk through complete trading examples across different asset classes to see how everything comes together.</p>
+                    
+                    <h3>Forex Example: EUR/USD Swing Trade</h3>
+                    
+                    <div class="asset-class-card">
+                        <div class="asset-header">
+                            <div class="asset-icon">💶</div>
+                            <div>
+                                <h3>Trade Setup</h3>
+                                <p>Account: $20,000 | Risk: 1% = $200</p>
+                            </div>
+                        </div>
+                        <div class="formula-box">
+                            Instrument: EUR/USD<br>
+                            Entry: 1.1050<br>
+                            Stop Loss: 1.1020 (30 pips)<br>
+                            Take Profit: 1.1120 (70 pips)<br>
+                            Risk/Reward: 1:2.33<br>
+                            Pip Value (1 lot): $10<br>
+                            <br>
+                            Position Size = ($200 / 30 pips) × (1 lot / $10)<br>
+                            = 6.67 × 0.1 = <span class="highlight">0.67 lots</span><br>
+                            <br>
+                            Actual Risk: 30 pips × 0.67 lots × $10 = <span class="loss">$201</span><br>
+                            Potential Profit: 70 pips × 0.67 lots × $10 = <span class="profit">$469</span>
+                        </div>
+                    </div>
+                    
+                    <h3>Stock Example: Tesla Day Trade</h3>
+                    
+                    <div class="asset-class-card">
+                        <div class="asset-header">
+                            <div class="asset-icon">🚗</div>
+                            <div>
+                                <h3>Trade Setup</h3>
+                                <p>Account: $15,000 | Risk: 1.5% = $225</p>
+                            </div>
+                        </div>
+                        <div class="formula-box">
+                            Instrument: Tesla (TSLA)<br>
+                            Entry: $250.00<br>
+                            Stop Loss: $247.50 (2.5 points)<br>
+                            Take Profit: $257.50 (7.5 points)<br>
+                            Risk/Reward: 1:3<br>
+                            Share Value: $1 per point per share<br>
+                            <br>
+                            Position Size = ($225 / 2.5 points) × (1 share / $1)<br>
+                            = 90 × 1 = <span class="highlight">90 shares</span><br>
+                            <br>
+                            Actual Risk: 2.5 points × 90 shares × $1 = <span class="loss">$225</span><br>
+                            Potential Profit: 7.5 points × 90 shares × $1 = <span class="profit">$675</span>
+                        </div>
+                    </div>
+                    
+                    <h3>Crypto Example: Bitcoin Position</h3>
+                    
+                    <div class="asset-class-card">
+                        <div class="asset-header">
+                            <div class="asset-icon">₿</div>
+                            <div>
+                                <h3>Trade Setup</h3>
+                                <p>Account: $5,000 | Risk: 2% = $100</p>
+                            </div>
+                        </div>
+                        <div class="formula-box">
+                            Instrument: Bitcoin (BTC/USD)<br>
+                            Entry: $40,000<br>
+                            Stop Loss: $39,200 (2% risk)<br>
+                            Take Profit: $42,400 (6% reward)<br>
+                            Risk/Reward: 1:3<br>
+                            <br>
+                            Position Size = $100 / ($40,000 - $39,200)<br>
+                            = $100 / $800 = <span class="highlight">0.125 BTC</span><br>
+                            <br>
+                            Investment: 0.125 BTC × $40,000 = $5,000<br>
+                            Actual Risk: 0.125 × $800 = <span class="loss">$100</span><br>
+                            Potential Profit: 0.125 × $2,400 = <span class="profit">$300</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Cross-Asset Comparison</h3>
+                        <p>Notice how each trade maintains consistent risk management while adapting to the specific measurement units of each asset class. This is the hallmark of professional trading.</p>
+                    </div>
+                </section>
+                
+                <!-- Section 8 -->
+                <section id="conclusion" class="section">
+                    <h2>Conclusion: Measurement Mastery</h2>
+                    
+                    <p>Congratulations! You've now mastered the language of price across all major asset classes. This knowledge transforms you from a casual observer to a precise, professional trader.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">The Professional Trader's Advantage</div>
+                        <p>While amateur traders see random price movements, professional traders see:</p>
+                        <p><strong>Forex:</strong> Pip movements with exact dollar values</p>
+                        <p><strong>Stocks:</strong> Point movements translating to precise risk</p>
+                        <p><strong>Futures:</strong> Tick movements with fixed monetary values</p>
+                        <p><strong>Crypto:</strong> Satoshi movements enabling micro-positioning</p>
+                    </div>
+                    
+                    <h3>Your Measurement Toolkit</h3>
+                    
+                    <div class="key-takeaways">
+                        <h3>Quick Reference Guide</h3>
+                        <ul>
+                            <li><strong>Forex Pips:</strong> 0.0001 for most pairs, 0.01 for JPY</li>
+                            <li><strong>Stock Points:</strong> $1.00 movements for US stocks</li>
+                            <li><strong>Index Points:</strong> Varying dollar values (check specifications)</li>
+                            <li><strong>Futures Ticks:</strong> Fixed minimum movements per contract</li>
+                            <li><strong>Crypto Satoshis:</strong> 0.00000001 BTC</li>
+                        </ul>
+                    </div>
+                    
+                    <h3>Continuing Your Journey</h3>
+                    
+                    <div class="comparison">
+                        <div class="trader-card">
+                            <div class="trader-name">Practice Phase</div>
+                            <p>Open demo accounts</p>
+                            <p>Practice calculating positions</p>
+                            <p>Use position size calculators</p>
+                            <p>Build measurement intuition</p>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-name">Mastery Phase</div>
+                            <p>Calculate positions mentally</p>
+                            <p>Quickly compare opportunities</p>
+                            <p>Adapt sizing to market conditions</p>
+                            <p>Teach others the concepts</p>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>The Most Common Mistake</h3>
+                        <p>New traders often use the same position size across different instruments without adjusting for their unique measurement units. This leads to inconsistent risk and unpredictable results.</p>
+                        <p>Always calculate your position size based on the specific instrument's risk parameters.</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Final Thought</h3>
+                        <p>Measurement mastery isn't about complex mathematics—it's about developing an intuitive understanding of how price movements translate to actual profit and loss.</p>
+                        <p>The best traders don't just see numbers on a screen; they see opportunities with precise risk parameters.</p>
+                    </div>
+                    
+                    <p>Now go forth and trade with the confidence that comes from truly understanding the language of price. Your journey to professional trading has taken a significant leap forward.</p>
+                </section>
+            </div>
+            
+            <div class="nav-controls">
+                <button id="prev-btn" class="nav-btn" disabled>
+                    <span>←</span> Previous
+                </button>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="current-section">1</span> / <span id="total-sections">8</span>
+                    </div>
+                </div>
+                
+                <button id="next-btn" class="nav-btn">
+                    Next <span>→</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const progressFill = document.getElementById('progress-fill');
+            const currentSectionEl = document.getElementById('current-section');
+            const totalSectionsEl = document.getElementById('total-sections');
+            
+            let currentSectionIndex = 0;
+            const totalSections = sections.length;
+            
+            totalSectionsEl.textContent = totalSections;
+            
+            // Initialize the first section as active
+            updateActiveSection();
+            
+            // Navigation via sidebar
+            navLinks.forEach((link, index) => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentSectionIndex = index;
+                    updateActiveSection();
+                });
+            });
+            
+            // Previous button
+            prevBtn.addEventListener('click', function() {
+                if (currentSectionIndex > 0) {
+                    currentSectionIndex--;
+                    updateActiveSection();
+                }
+            });
+            
+            // Next button
+            nextBtn.addEventListener('click', function() {
+                if (currentSectionIndex < totalSections - 1) {
+                    currentSectionIndex++;
+                    updateActiveSection();
+                }
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') {
+                    if (currentSectionIndex > 0) {
+                        currentSectionIndex--;
+                        updateActiveSection();
+                    }
+                } else if (e.key === 'ArrowRight') {
+                    if (currentSectionIndex < totalSections - 1) {
+                        currentSectionIndex++;
+                        updateActiveSection();
+                    }
+                }
+            });
+            
+            function updateActiveSection() {
+                // Update sections
+                sections.forEach((section, index) => {
+                    if (index === currentSectionIndex) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                
+                // Update navigation links
+                navLinks.forEach((link, index) => {
+                    if (index === currentSectionIndex) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+                
+                // Update buttons
+                prevBtn.disabled = currentSectionIndex === 0;
+                nextBtn.disabled = currentSectionIndex === totalSections - 1;
+                
+                // Update progress
+                const progressPercentage = ((currentSectionIndex + 1) / totalSections) * 100;
+                progressFill.style.width = `${progressPercentage}%`;
+                
+                // Update current section number
+                currentSectionEl.textContent = currentSectionIndex + 1;
+            }
+        });
+    </script>
+</body>
+</html>

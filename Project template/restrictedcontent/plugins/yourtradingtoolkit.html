@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFD Trading Guide: Order Types Explained</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a2b3c;
+            --secondary: #2c3e50;
+            --accent: #e74c3c;
+            --accent-light: #c0392b;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f1c40f;
+            --info: #3498db;
+            --transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f1a24 0%, #1a2b3c 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Sidebar Styles - NO SCROLLBAR */
+        .sidebar {
+            width: 320px;
+            background: rgba(15, 26, 36, 0.95);
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo-icon {
+            width: 35px;
+            height: 35px;
+            background: var(--accent);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .guide-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--light);
+            line-height: 1.3;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .section-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: flex-start;
+            gap: 5px;
+        }
+        
+        .section-nav li {
+            flex-shrink: 0;
+        }
+        
+        .section-nav a {
+            display: block;
+            padding: 10px 12px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            font-size: 14px;
+            line-height: 1.3;
+        }
+        
+        .section-nav a:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .section-nav a.active {
+            color: white;
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 3px solid var(--accent);
+            font-weight: 600;
+        }
+        
+        .section-nav a.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent);
+        }
+        
+        /* Content Styles */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            overflow-y: auto;
+            opacity: 0;
+            transform: translateX(50px);
+            transition: var(--transition);
+            pointer-events: none;
+        }
+        
+        .section.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+        
+        .section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: var(--accent);
+            border-bottom: 2px solid rgba(231, 76, 60, 0.3);
+            padding-bottom: 12px;
+        }
+        
+        .section h3 {
+            font-size: 22px;
+            margin: 25px 0 12px;
+            color: var(--accent-light);
+        }
+        
+        .section p {
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .example-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .example-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent-light);
+        }
+        
+        .comparison {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .order-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            transition: var(--transition);
+            border-top: 3px solid var(--accent);
+        }
+        
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .order-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+        
+        .profit {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .warning {
+            color: var(--warning);
+            font-weight: 700;
+        }
+        
+        .info {
+            color: var(--info);
+            font-weight: 700;
+        }
+        
+        .highlight {
+            background: rgba(231, 76, 60, 0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            color: var(--accent-light);
+        }
+        
+        /* Navigation Controls */
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 30px;
+            background: rgba(15, 26, 36, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-btn {
+            padding: 10px 25px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+        
+        .nav-btn:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        .nav-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .progress-bar {
+            width: 180px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 12.5%;
+            transition: var(--transition);
+        }
+        
+        .progress-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Order Flow Visualization */
+        .order-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .flow-step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        
+        .flow-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 18px;
+        }
+        
+        /* Key Takeaways */
+        .key-takeaways {
+            background: rgba(39, 174, 96, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--success);
+        }
+        
+        .key-takeaways h3 {
+            color: var(--success);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        .key-takeaways ul {
+            padding-left: 18px;
+        }
+        
+        .key-takeaways li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        /* Warning Box */
+        .warning-box {
+            background: rgba(241, 196, 15, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--warning);
+        }
+        
+        .warning-box h3 {
+            color: var(--warning);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        /* Info Box */
+        .info-box {
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--info);
+        }
+        
+        .info-box h3 {
+            color: var(--info);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Formula Box */
+        .formula-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        
+        /* Order Type Badges */
+        .order-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 0 2px;
+        }
+        
+        .badge-market {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--accent);
+        }
+        
+        .badge-limit {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--success);
+        }
+        
+        .badge-stop {
+            background: rgba(241, 196, 15, 0.2);
+            color: var(--warning);
+        }
+        
+        /* Scenario Visualization */
+        .scenario-visual {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .price-level {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+        
+        .level-buy {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--success);
+        }
+        
+        .level-sell {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--accent);
+        }
+        
+        .level-neutral {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .app-container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+            }
+            
+            .content-area {
+                height: 60vh;
+            }
+            
+            .comparison {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .order-flow {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .flow-step:not(:last-child)::after {
+                display: none;
+            }
+            
+            .scenario-visual {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+        
+        /* Custom scrollbar for sections */
+        .section::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .section::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .section::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 8px;
+        }
+        
+        .section::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">CFD</div>
+                <div class="logo-text">TRADER PRO</div>
+            </div>
+            
+            <div class="guide-title">
+                Order Types Explained – Market, Limit, Stop, Stop-Limit, OCO, Trailing Stop and the "Guaranteed" Variants
+            </div>
+            
+            <ul class="section-nav">
+                <li><a href="#intro" class="nav-link active">Introduction: Your Trading Toolkit</a></li>
+                <li><a href="#market" class="nav-link">Market Orders</a></li>
+                <li><a href="#limit" class="nav-link">Limit Orders</a></li>
+                <li><a href="#stop" class="nav-link">Stop Orders</a></li>
+                <li><a href="#stop-limit" class="nav-link">Stop-Limit Orders</a></li>
+                <li><a href="#oco" class="nav-link">OCO Orders</a></li>
+                <li><a href="#trailing" class="nav-link">Trailing Stops</a></li>
+                <li><a href="#guaranteed" class="nav-link">Guaranteed Orders</a></li>
+            </ul>
+        </div>
+        
+        <div class="content-area">
+            <div class="content-container">
+                <!-- Section 1 -->
+                <section id="intro" class="section active">
+                    <h2>Introduction: Your Trading Toolkit</h2>
+                    <p>Welcome, strategic trader. In our previous guides, we've covered leverage, costs, and price measurements. Now we'll explore one of the most powerful tools in your trading arsenal: <span class="highlight">order types</span>.</p>
+                    
+                    <p>Knowing which order type to use in different market conditions is what separates amateur traders from professionals. The right order can mean the difference between a perfectly executed trade and a costly mistake.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">The Order Type Dilemma</div>
+                        <p>Imagine you want to buy EUR/USD, which is currently trading at 1.1050. You believe it will rise to 1.1100, but you only want to buy if it drops to 1.1020 first.</p>
+                        <p><strong>Amateur Approach:</strong> Constantly watch the charts, ready to click "Buy" if it hits 1.1020</p>
+                        <p><strong>Professional Approach:</strong> Place a <span class="highlight">buy stop order</span> at 1.1020 and walk away</p>
+                        <p>The professional saves time, eliminates emotion, and ensures perfect execution.</p>
+                    </div>
+                    
+                    <p>In this guide, we'll master the seven essential order types that every serious trader needs to know.</p>
+                    
+                    <div class="key-takeaways">
+                        <h3>Key Insight</h3>
+                        <p>Order types are not just execution tools—they're strategic instruments that allow you to implement complex trading strategies with precision and automation.</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">Market</div>
+                            <div class="stat-label">Instant Execution<br>Current Price</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Limit</div>
+                            <div class="stat-label">Price Control<br>Better Price</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Stop</div>
+                            <div class="stat-label">Trigger Execution<br>Breakout/Entry</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">OCO</div>
+                            <div class="stat-label">Two Orders<br>One Cancels Other</div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section 2 -->
+                <section id="market" class="section">
+                    <h2>Market Orders</h2>
+                    
+                    <p>A <span class="highlight">Market Order</span> is an instruction to buy or sell at the current best available price. It's the simplest and most commonly used order type.</p>
+                    
+                    <div class="order-flow">
+                        <div class="flow-step">
+                            <div class="step-icon">⚡</div>
+                            <div class="step-title">Instant Execution</div>
+                            <div class="step-desc">Fills immediately at current price</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">💰</div>
+                            <div class="step-title">Price Certainty</div>
+                            <div class="step-desc">You know the exact execution price</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">✅</div>
+                            <div class="step-title">Guaranteed Fill</div>
+                            <div class="step-desc">Order will always be executed</div>
+                        </div>
+                    </div>
+                    
+                    <h3>When to Use Market Orders</h3>
+                    
+                    <div class="comparison">
+                        <div class="order-card">
+                            <div class="order-name">Best For</div>
+                            <ul>
+                                <li>Fast-moving markets</li>
+                                <li>High-priority trades</li>
+                                <li>Liquid instruments</li>
+                                <li>News trading</li>
+                                <li>When certainty matters more than price</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="order-card">
+                            <div class="order-name">Avoid When</div>
+                            <ul>
+                                <li>Low liquidity periods</li>
+                                <li>High volatility events</li>
+                                <li>Large position sizes</li>
+                                <li>Trading exotic pairs</li>
+                                <li>Price-sensitive entries</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <h3>Market Order Example</h3>
+                    
+                    <div class="scenario-visual">
+                        <div style="flex: 1;">
+                            <strong>Current Market</strong><br>
+                            EUR/USD Bid: 1.1050<br>
+                            EUR/USD Ask: 1.1052<br>
+                            You want to buy 1 lot immediately
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>Market Order Execution</strong><br>
+                            You click "Buy Market"<br>
+                            Order fills at: <span class="level-buy">1.1052</span><br>
+                            Spread cost: 2 pips ($20)
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Slippage Risk</h3>
+                        <p>During high volatility or low liquidity, market orders can experience <span class="highlight">slippage</span> - execution at a worse price than expected. A buy order might fill higher, or a sell order might fill lower.</p>
+                        <p>Example: You try to buy at 1.1052, but due to fast movement, your order fills at 1.1055 (3 pips of slippage).</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Market Order Strategy</h3>
+                        <p>Use market orders when you need immediate execution and are willing to accept the current spread. They're perfect for entering or exiting positions quickly without price constraints.</p>
+                    </div>
+                </section>
+                
+                <!-- Section 3 -->
+                <section id="limit" class="section">
+                    <h2>Limit Orders</h2>
+                    
+                    <p>A <span class="highlight">Limit Order</span> is an instruction to buy or sell at a specific price or better. It gives you price control but doesn't guarantee execution.</p>
+                    
+                    <div class="order-flow">
+                        <div class="flow-step">
+                            <div class="step-icon">🎯</div>
+                            <div class="step-title">Price Control</div>
+                            <div class="step-desc">Set your exact entry/exit price</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">⏱️</div>
+                            <div class="step-title">Patience Required</div>
+                            <div class="step-desc">May take time to fill</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">❓</div>
+                            <div class="step-title">No Guarantee</div>
+                            <div class="step-desc">Might not execute if price doesn't reach your level</div>
+                        </div>
+                    </div>
+                    
+                    <h3>Limit Order Types</h3>
+                    
+                    <div class="comparison">
+                        <div class="order-card">
+                            <div class="order-name">Buy Limit</div>
+                            <p><strong>Purpose:</strong> Buy below current price</p>
+                            <p><strong>Execution:</strong> When price drops TO or BELOW your limit</p>
+                            <p><strong>Example:</strong> EUR/USD at 1.1050, set buy limit at 1.1020</p>
+                            <p><strong>Use Case:</strong> Buying on dips</p>
+                        </div>
+                        
+                        <div class="order-card">
+                            <div class="order-name">Sell Limit</div>
+                            <p><strong>Purpose:</strong> Sell above current price</p>
+                            <p><strong>Execution:</strong> When price rises TO or ABOVE your limit</p>
+                            <p><strong>Example:</strong> EUR/USD at 1.1050, set sell limit at 1.1080</p>
+                            <p><strong>Use Case:</strong> Selling on rallies</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Limit Order Scenario</h3>
+                    
+                    <div class="scenario-visual">
+                        <div style="flex: 1;">
+                            <strong>Current Market</strong><br>
+                            EUR/USD: 1.1050<br>
+                            You believe it will pull back to 1.1020 before rising
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>Limit Order Setup</strong><br>
+                            Place <span class="badge-limit">Buy Limit</span> at 1.1020<br>
+                            If price reaches 1.1020: Order executes<br>
+                            If price never reaches 1.1020: No execution
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Advanced Limit Order Features</h3>
+                        <p><strong>Good Till Cancelled (GTC):</strong> Order remains active until you cancel it</p>
+                        <p><strong>Good For Day (GFD):</strong> Order cancels automatically at end of trading day</p>
+                        <p><strong>Fill or Kill (FOK):</strong> Order must fill completely immediately or cancel entirely</p>
+                        <p><strong>Immediate or Cancel (IOC):</strong> Order fills whatever it can immediately, cancels the rest</p>
+                    </div>
+                    
+                    <div class="key-takeaways">
+                        <h3>Limit Order Advantages</h3>
+                        <ul>
+                            <li><strong>Price Precision:</strong> You control exactly where you enter/exit</li>
+                            <li><strong>Better Pricing:</strong> Can get better prices than current market</li>
+                            <li><strong>Emotion Elimination:</strong> No need to watch charts constantly</li>
+                            <li><strong>Strategy Automation:</strong> Implements your trading plan automatically</li>
+                        </ul>
+                    </div>
+                </section>
+                
+                <!-- Section 4 -->
+                <section id="stop" class="section">
+                    <h2>Stop Orders</h2>
+                    
+                    <p>A <span class="highlight">Stop Order</span> (or Stop-Loss Order) becomes a market order once a specified price level is reached. It's primarily used for risk management and breakout trading.</p>
+                    
+                    <div class="order-flow">
+                        <div class="flow-step">
+                            <div class="step-icon">🚨</div>
+                            <div class="step-title">Price Trigger</div>
+                            <div class="step-desc">Activates when price hits your level</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">⚡</div>
+                            <div class="step-title">Market Execution</div>
+                            <div class="step-desc">Becomes market order after trigger</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">🛡️</div>
+                            <div class="step-title">Risk Management</div>
+                            <div class="step-desc">Essential for protecting capital</div>
+                        </div>
+                    </div>
+                    
+                    <h3>Stop Order Types</h3>
+                    
+                    <div class="comparison">
+                        <div class="order-card">
+                            <div class="order-name">Buy Stop</div>
+                            <p><strong>Purpose:</strong> Buy above current price</p>
+                            <p><strong>Execution:</strong> When price rises TO or ABOVE your stop</p>
+                            <p><strong>Example:</strong> EUR/USD at 1.1050, set buy stop at 1.1080</p>
+                            <p><strong>Use Case:</strong> Breakout entry above resistance</p>
+                        </div>
+                        
+                        <div class="order-card">
+                            <div class="order-name">Sell Stop</div>
+                            <p><strong>Purpose:</strong> Sell below current price</p>
+                            <p><strong>Execution:</strong> When price drops TO or BELOW your stop</p>
+                            <p><strong>Example:</strong> EUR/USD at 1.1050, set sell stop at 1.1020</p>
+                            <p><strong>Use Case:</strong> Breakout entry below support</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Stop-Loss vs Entry Stop</h3>
+                    
+                    <div class="scenario-visual">
+                        <div style="flex: 1;">
+                            <strong>Stop-Loss (Protective)</strong><br>
+                            You're long EUR/USD at 1.1050<br>
+                            Set sell stop at 1.1020<br>
+                            <span class="level-neutral">If price drops to 1.1020:</span><br>
+                            <span class="level-sell">Position automatically closes</span><br>
+                            Limits your loss to 30 pips
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>Entry Stop (Breakout)</strong><br>
+                            EUR/USD trading at 1.1050<br>
+                            Resistance at 1.1080<br>
+                            Set buy stop at 1.1080<br>
+                            <span class="level-neutral">If price breaks 1.1080:</span><br>
+                            <span class="level-buy">Automatically enter long</span><br>
+                            Captures breakout momentum
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Slippage with Stop Orders</h3>
+                        <p>Since stop orders become market orders when triggered, they're subject to slippage during fast markets. Your stop-loss at 1.1020 might actually fill at 1.1015 if the market is moving quickly.</p>
+                        <p>This is why many traders use stop-limit orders (covered next) for more control.</p>
+                    </div>
+                </section>
+                
+                <!-- Section 5 -->
+                <section id="stop-limit" class="section">
+                    <h2>Stop-Limit Orders</h2>
+                    
+                    <p>A <span class="highlight">Stop-Limit Order</span> combines features of stop and limit orders. It becomes a limit order once the stop price is reached, giving you more control over execution price.</p>
+                    
+                    <div class="order-flow">
+                        <div class="flow-step">
+                            <div class="step-icon">🚨</div>
+                            <div class="step-title">Stop Trigger</div>
+                            <div class="step-desc">Activates when price hits stop level</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">🎯</div>
+                            <div class="step-title">Limit Execution</div>
+                            <div class="step-desc">Becomes limit order after trigger</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">⚖️</div>
+                            <div class="step-title">Price Control</div>
+                            <div class="step-desc">Maximum price control with trigger</div>
+                        </div>
+                    </div>
+                    
+                    <h3>How Stop-Limit Works</h3>
+                    
+                    <div class="formula-box">
+                        Stop-Limit Order Parameters:<br>
+                        - <strong>Stop Price:</strong> Price that activates the order<br>
+                        - <strong>Limit Price:</strong> Maximum (for buy) or minimum (for sell) execution price<br>
+                        <br>
+                        Example: Buy Stop-Limit on EUR/USD<br>
+                        Stop: 1.1080 | Limit: 1.1085<br>
+                        <br>
+                        Behavior:<br>
+                        - If price reaches 1.1080 → Order becomes buy limit at 1.1085<br>
+                        - Will buy at 1.1085 OR BETTER (lower)<br>
+                        - Will NOT buy above 1.1085
+                    </div>
+                    
+                    <h3>Stop vs Stop-Limit Comparison</h3>
+                    
+                    <div class="comparison">
+                        <div class="order-card">
+                            <div class="order-name">Regular Stop Order</div>
+                            <p><strong>Stop: 1.1020</strong></p>
+                            <p>When price hits 1.1020:</p>
+                            <p>→ Becomes market order</p>
+                            <p>→ Executes at best available price</p>
+                            <p>→ Could fill at 1.1015 (slippage)</p>
+                            <p><span class="warning">Guaranteed execution, uncertain price</span></p>
+                        </div>
+                        
+                        <div class="order-card">
+                            <div class="order-name">Stop-Limit Order</div>
+                            <p><strong>Stop: 1.1020 | Limit: 1.1015</strong></p>
+                            <p>When price hits 1.1020:</p>
+                            <p>→ Becomes limit order at 1.1015</p>
+                            <p>→ Executes at 1.1015 OR BETTER</p>
+                            <p>→ Won't execute below 1.1015</p>
+                            <p><span class="info">Price control, but no execution guarantee</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>When to Use Stop-Limit Orders</h3>
+                        <p><strong>Ideal for:</strong></p>
+                        <ul>
+                            <li>Volatile markets where you want price control</li>
+                            <li>Large position sizes where slippage could be significant</li>
+                            <li>Trading during news events with expected volatility</li>
+                            <li>Instruments with wide bid-ask spreads</li>
+                        </ul>
+                        <p><strong>Avoid when:</strong> You absolutely must exit a position (use regular stop instead)</p>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>The Risk of Non-Execution</h3>
+                        <p>The main risk with stop-limit orders is that they might not execute at all if the market gaps through your limit price. If you set a sell stop-limit with stop at 1.1020 and limit at 1.1015, and the market gaps from 1.1025 to 1.1000, your order won't execute.</p>
+                    </div>
+                </section>
+                
+                <!-- Section 6 -->
+                <section id="oco" class="section">
+                    <h2>OCO Orders</h2>
+                    
+                    <p>An <span class="highlight">OCO (One Cancels Other)</span> order places two orders simultaneously, where if one executes, the other is automatically cancelled. It's perfect for bracketing trades with profit targets and stop-losses.</p>
+                    
+                    <div class="order-flow">
+                        <div class="flow-step">
+                            <div class="step-icon">📊</div>
+                            <div class="step-title">Two Orders</div>
+                            <div class="step-desc">Place profit target and stop-loss together</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">🔄</div>
+                            <div class="step-title">Automatic Cancellation</div>
+                            <div class="step-desc">One executes → Other cancels</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">🤖</div>
+                            <div class="step-title">Full Automation</div>
+                            <div class="step-desc">Complete hands-free trade management</div>
+                        </div>
+                    </div>
+                    
+                    <h3>OCO Order Example</h3>
+                    
+                    <div class="scenario-visual">
+                        <div style="flex: 1;">
+                            <strong>Trade Setup</strong><br>
+                            Buy EUR/USD at 1.1050<br>
+                            Take Profit: 1.1100 (+50 pips)<br>
+                            Stop Loss: 1.1020 (-30 pips)<br>
+                            Risk/Reward: 1:1.67
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>OCO Order Placement</strong><br>
+                            Order 1: <span class="badge-limit">Sell Limit</span> at 1.1100<br>
+                            Order 2: <span class="badge-stop">Sell Stop</span> at 1.1020<br>
+                            <span class="level-neutral">Linked as OCO</span><br>
+                            When one executes → Other cancels automatically
+                        </div>
+                    </div>
+                    
+                    <h3>Advanced OCO Strategies</h3>
+                    
+                    <div class="comparison">
+                        <div class="order-card">
+                            <div class="order-name">Breakout with OCO</div>
+                            <p>EUR/USD trading between 1.1000-1.1100</p>
+                            <p><strong>Order 1:</strong> Buy Stop at 1.1110 (breakout entry)</p>
+                            <p><strong>Order 2:</strong> Sell Stop at 1.0990 (breakdown entry)</p>
+                            <p>Whichever direction breaks first gets executed, other cancels</p>
+                        </div>
+                        
+                        <div class="order-card">
+                            <div class="order-name">Multiple Profit Targets</div>
+                            <p>Some platforms allow OCO with multiple orders:</p>
+                            <p><strong>Order 1:</strong> Sell 50% at TP1 (1.1080)</p>
+                            <p><strong>Order 2:</strong> Sell 50% at TP2 (1.1100)</p>
+                            <p><strong>Order 3:</strong> Stop Loss at 1.1020</p>
+                            <p>When SL hits → All TPs cancel</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>OCO Order Benefits</h3>
+                        <p><strong>Time Efficiency:</strong> Set up entire trade management at once</p>
+                        <p><strong>Emotion Elimination:</strong> No need to manually manage exits</p>
+                        <p><strong>Discipline Enforcement:</strong> Ensures you stick to your trading plan</p>
+                        <p><strong>Strategy Automation:</strong> Perfect for systematic trading approaches</p>
+                    </div>
+                    
+                    <div class="key-takeaways">
+                        <h3>OCO Order Tips</h3>
+                        <ul>
+                            <li>Always use OCO for new positions to automate risk management</li>
+                            <li>Double-check your price levels before submitting</li>
+                            <li>Understand that OCO orders are usually "Good Till Cancelled"</li>
+                            <li>Some brokers charge extra for OCO functionality</li>
+                            <li>Test OCO orders on demo account first to understand platform behavior</li>
+                        </ul>
+                    </div>
+                </section>
+                
+                <!-- Section 7 -->
+                <section id="trailing" class="section">
+                    <h2>Trailing Stop Orders</h2>
+                    
+                    <p>A <span class="highlight">Trailing Stop</span> is a dynamic stop-loss that automatically follows the price at a fixed distance (in pips/points or percentage). It locks in profits while giving trades room to breathe.</p>
+                    
+                    <div class="order-flow">
+                        <div class="flow-step">
+                            <div class="step-icon">📈</div>
+                            <div class="step-title">Price Follows</div>
+                            <div class="step-desc">Stop level moves with favorable price</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">🔒</div>
+                            <div class="step-title">Locks Profits</div>
+                            <div class="step-desc">Never gives back more than specified amount</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">⏹️</div>
+                            <div class="step-title">One Direction</div>
+                            <div class="step-desc">Only moves in profitable direction</div>
+                        </div>
+                    </div>
+                    
+                    <h3>How Trailing Stops Work</h3>
+                    
+                    <div class="scenario-visual">
+                        <div style="flex: 1;">
+                            <strong>Long Position Example</strong><br>
+                            Buy EUR/USD at 1.1050<br>
+                            Set 30 pip trailing stop<br>
+                            Initial stop: 1.1020<br>
+                            <br>
+                            Price rises to 1.1080:<br>
+                            Stop moves to 1.1050 (break-even)<br>
+                            <br>
+                            Price rises to 1.1120:<br>
+                            Stop moves to 1.1090<br>
+                            <br>
+                            Price drops to 1.1090:<br>
+                            <span class="level-sell">Position closes at 1.1090</span><br>
+                            Profit: 40 pips locked in
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>Visual Representation</strong><br>
+                            <div class="price-level level-buy">Entry: 1.1050</div>
+                            <div class="price-level level-neutral">Price ↗ 1.1080</div>
+                            <div class="price-level level-neutral">Stop ↗ 1.1050</div>
+                            <div class="price-level level-neutral">Price ↗ 1.1120</div>
+                            <div class="price-level level-neutral">Stop ↗ 1.1090</div>
+                            <div class="price-level level-sell">Price ↘ 1.1090 → Exit</div>
+                            <div class="price-level level-neutral">Profit: 40 pips</div>
+                        </div>
+                    </div>
+                    
+                    <h3>Trailing Stop Types</h3>
+                    
+                    <div class="comparison">
+                        <div class="order-card">
+                            <div class="order-name">Fixed Distance</div>
+                            <p><strong>Measurement:</strong> Pips, points, or ticks</p>
+                            <p><strong>Example:</strong> 30 pip trailing stop</p>
+                            <p><strong>Behavior:</strong> Always maintains fixed distance from price</p>
+                            <p><strong>Best For:</strong> Consistent volatility environments</p>
+                        </div>
+                        
+                        <div class="order-card">
+                            <div class="order-name">Percentage Based</div>
+                            <p><strong>Measurement:</strong> Percentage of price</p>
+                            <p><strong>Example:</strong> 2% trailing stop</p>
+                            <p><strong>Behavior:</strong> Distance changes with price level</p>
+                            <p><strong>Best For:</strong> Stocks with different price levels</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Trailing Stop Strategies</h3>
+                        <p><strong>Trend Following:</strong> Use wide trailing stops to ride major trends</p>
+                        <p><strong>Volatility Adjusted:</strong> Set stop distance based on Average True Range (ATR)</p>
+                        <p><strong>Pyramiding:</strong> Add to positions as trailing stop moves favorably</p>
+                        <p><strong>Multi-timeframe:</strong> Use different trailing stops for different timeframes in same trade</p>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Trailing Stop Limitations</h3>
+                        <p>Trailing stops can be vulnerable to "whipsaws" - being stopped out by minor retracements in strong trends. They also don't protect against gap risk when markets are closed.</p>
+                        <p>Some brokers don't offer trailing stops on all instruments, and they may not work during off-market hours.</p>
+                    </div>
+                </section>
+                
+                <!-- Section 8 -->
+                <section id="guaranteed" class="section">
+                    <h2>Guaranteed Orders</h2>
+                    
+                    <p><span class="highlight">Guaranteed Orders</span> (also called Guaranteed Stop-Loss Orders) are premium order types that ensure your position closes at exactly your specified price, regardless of market gaps or slippage.</p>
+                    
+                    <div class="order-flow">
+                        <div class="flow-step">
+                            <div class="step-icon">🛡️</div>
+                            <div class="step-title">Absolute Protection</div>
+                            <div class="step-desc">No slippage, even in fast markets</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">💸</div>
+                            <div class="step-title">Premium Cost</div>
+                            <div class="step-desc">Extra fee for the guarantee</div>
+                        </div>
+                        <div class="flow-step">
+                            <div class="step-icon">🎯</div>
+                            <div class="step-title">Perfect Execution</div>
+                            <div class="step-desc">Closes at exact specified price</div>
+                        </div>
+                    </div>
+                    
+                    <h3>How Guaranteed Stops Work</h3>
+                    
+                    <div class="scenario-visual">
+                        <div style="flex: 1;">
+                            <strong>Regular Stop Loss</strong><br>
+                            Long EUR/USD at 1.1050<br>
+                            Stop Loss at 1.1020<br>
+                            Weekend gap: Opens at 1.1000<br>
+                            <span class="level-sell">Fills at 1.1000</span><br>
+                            Loss: 50 pips ($500)<br>
+                            <span class="warning">20 pips of slippage</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <strong>Guaranteed Stop Loss</strong><br>
+                            Long EUR/USD at 1.1050<br>
+                            Guaranteed Stop at 1.1020<br>
+                            Weekend gap: Opens at 1.1000<br>
+                            <span class="level-sell">Fills at 1.1020</span><br>
+                            Loss: 30 pips ($300)<br>
+                            <span class="info">No slippage - exact execution</span>
+                        </div>
+                    </div>
+                    
+                    <h3>Guaranteed Stop Costs</h3>
+                    
+                    <div class="formula-box">
+                        Guaranteed Stop Premium Calculation:<br>
+                        Typically a wider spread or additional fee<br>
+                        <br>
+                        Example: EUR/USD Trading<br>
+                        Normal Spread: 1.2 pips<br>
+                        With Guaranteed Stop: 2.0 pips (extra 0.8 pip cost)<br>
+                        <br>
+                        On 1 standard lot:<br>
+                        Normal Cost: 1.2 pips × $10 = $12<br>
+                        Guaranteed Cost: 2.0 pips × $10 = $20<br>
+                        Premium: $8 per trade for the guarantee
+                    </div>
+                    
+                    <div class="comparison">
+                        <div class="order-card">
+                            <div class="order-name">When to Use Guaranteed Stops</div>
+                            <ul>
+                                <li>High volatility events (earnings, news)</li>
+                                <li>Weekend positions (gap risk)</li>
+                                <li>Large position sizes</li>
+                                <li>Low liquidity instruments</li>
+                                <li>When absolute risk control is critical</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="order-card">
+                            <div class="order-name">When to Avoid Guaranteed Stops</div>
+                            <ul>
+                                <li>Day trading liquid instruments</li>
+                                <li>Small position sizes</li>
+                                <li>Cost-sensitive strategies</li>
+                                <li>When you can monitor positions actively</li>
+                                <li>Normal market conditions</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Broker Limitations</h3>
+                        <p>Not all brokers offer guaranteed stops, and those that do may have restrictions:</p>
+                        <ul>
+                            <li>Maximum distance from current price</li>
+                            <li>Only available on certain instruments</li>
+                            <li>Time limitations (e.g., only for positions held overnight)</li>
+                            <li>Minimum and maximum position sizes</li>
+                            <li>Higher margin requirements</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="key-takeaways">
+                        <h3>Order Type Mastery Checklist</h3>
+                        <ul>
+                            <li>✓ Understand when to use each order type</li>
+                            <li>✓ Know the risks and limitations of each</li>
+                            <li>✓ Practice setting up complex orders on demo</li>
+                            <li>✓ Develop order-based trading strategies</li>
+                            <li>✓ Always use appropriate risk management orders</li>
+                            <li>✓ Understand costs associated with premium orders</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Final Warning: Know Your Platform</h3>
+                        <p>Different trading platforms implement order types differently. Some might call the same order by different names, or have slightly different behaviors.</p>
+                        <p>Always test your order strategies on a demo account with your specific broker and platform before trading with real money.</p>
+                    </div>
+                    
+                    <p>Congratulations! You've now mastered the complete order type toolkit. These tools will transform your trading from reactive to proactive, from emotional to systematic, and from amateur to professional.</p>
+                </section>
+            </div>
+            
+            <div class="nav-controls">
+                <button id="prev-btn" class="nav-btn" disabled>
+                    <span>←</span> Previous
+                </button>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="current-section">1</span> / <span id="total-sections">8</span>
+                    </div>
+                </div>
+                
+                <button id="next-btn" class="nav-btn">
+                    Next <span>→</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const progressFill = document.getElementById('progress-fill');
+            const currentSectionEl = document.getElementById('current-section');
+            const totalSectionsEl = document.getElementById('total-sections');
+            
+            let currentSectionIndex = 0;
+            const totalSections = sections.length;
+            
+            totalSectionsEl.textContent = totalSections;
+            
+            // Initialize the first section as active
+            updateActiveSection();
+            
+            // Navigation via sidebar
+            navLinks.forEach((link, index) => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentSectionIndex = index;
+                    updateActiveSection();
+                });
+            });
+            
+            // Previous button
+            prevBtn.addEventListener('click', function() {
+                if (currentSectionIndex > 0) {
+                    currentSectionIndex--;
+                    updateActiveSection();
+                }
+            });
+            
+            // Next button
+            nextBtn.addEventListener('click', function() {
+                if (currentSectionIndex < totalSections - 1) {
+                    currentSectionIndex++;
+                    updateActiveSection();
+                }
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') {
+                    if (currentSectionIndex > 0) {
+                        currentSectionIndex--;
+                        updateActiveSection();
+                    }
+                } else if (e.key === 'ArrowRight') {
+                    if (currentSectionIndex < totalSections - 1) {
+                        currentSectionIndex++;
+                        updateActiveSection();
+                    }
+                }
+            });
+            
+            function updateActiveSection() {
+                // Update sections
+                sections.forEach((section, index) => {
+                    if (index === currentSectionIndex) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                
+                // Update navigation links
+                navLinks.forEach((link, index) => {
+                    if (index === currentSectionIndex) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+                
+                // Update buttons
+                prevBtn.disabled = currentSectionIndex === 0;
+                nextBtn.disabled = currentSectionIndex === totalSections - 1;
+                
+                // Update progress
+                const progressPercentage = ((currentSectionIndex + 1) / totalSections) * 100;
+                progressFill.style.width = `${progressPercentage}%`;
+                
+                // Update current section number
+                currentSectionEl.textContent = currentSectionIndex + 1;
+            }
+        });
+    </script>
+</body>
+</html>

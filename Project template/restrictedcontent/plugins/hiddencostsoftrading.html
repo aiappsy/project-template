@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFD Trading Guide: Spread, Swap & Commission</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a2b3c;
+            --secondary: #2c3e50;
+            --accent: #3498db;
+            --accent-light: #5dade2;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
+            --transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f1a24 0%, #1a2b3c 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Sidebar Styles - FIXED FOR ALL SECTIONS */
+        .sidebar {
+            width: 320px;
+            background: rgba(15, 26, 36, 0.95);
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo-icon {
+            width: 35px;
+            height: 35px;
+            background: var(--accent);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .guide-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--light);
+            line-height: 1.3;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .section-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            justify-content: flex-start;
+            gap: 5px;
+        }
+        
+        .section-nav li {
+            flex-shrink: 0;
+        }
+        
+        .section-nav a {
+            display: block;
+            padding: 10px 12px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            font-size: 14px;
+            line-height: 1.3;
+        }
+        
+        .section-nav a:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .section-nav a.active {
+            color: white;
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid var(--accent);
+            font-weight: 600;
+        }
+        
+        .section-nav a.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent);
+        }
+        
+        /* Content Styles */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            overflow-y: auto;
+            opacity: 0;
+            transform: translateX(50px);
+            transition: var(--transition);
+            pointer-events: none;
+        }
+        
+        .section.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+        
+        .section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: var(--accent);
+            border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+            padding-bottom: 12px;
+        }
+        
+        .section h3 {
+            font-size: 22px;
+            margin: 25px 0 12px;
+            color: var(--accent-light);
+        }
+        
+        .section p {
+            line-height: 1.6;
+            margin-bottom: 16px;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
+        .example-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .example-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent-light);
+        }
+        
+        .comparison {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .trader-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .trader-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .trader-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+        
+        .trader-role {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 12px;
+        }
+        
+        .profit {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .loss {
+            color: var(--danger);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .highlight {
+            background: rgba(52, 152, 219, 0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            color: var(--accent-light);
+        }
+        
+        /* Navigation Controls */
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 30px;
+            background: rgba(15, 26, 36, 0.9);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-btn {
+            padding: 10px 25px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+        
+        .nav-btn:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .nav-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .progress-bar {
+            width: 180px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 12.5%;
+            transition: var(--transition);
+        }
+        
+        .progress-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Financial Chart Elements */
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chart-line {
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .chart-point {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            top: -4px;
+            transform: translateX(-50%);
+        }
+        
+        .chart-label {
+            position: absolute;
+            top: 12px;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Key Takeaways */
+        .key-takeaways {
+            background: rgba(39, 174, 96, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--success);
+        }
+        
+        .key-takeaways h3 {
+            color: var(--success);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        .key-takeaways ul {
+            padding-left: 18px;
+        }
+        
+        .key-takeaways li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        /* Warning Box */
+        .warning-box {
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--danger);
+        }
+        
+        .warning-box h3 {
+            color: var(--danger);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        /* Info Box */
+        .info-box {
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .info-box h3 {
+            color: var(--accent);
+            margin-top: 0;
+            font-size: 18px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Formula Box */
+        .formula-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+        
+        /* Cost Visualization */
+        .cost-visualization {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .cost-bar {
+            height: 25px;
+            border-radius: 4px;
+            margin: 4px 0;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            color: white;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 13px;
+        }
+        
+        .cost-bar:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .app-container {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+            }
+            
+            .content-area {
+                height: 60vh;
+            }
+            
+            .comparison {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cost-visualization {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+        
+        /* Custom scrollbar for sections */
+        .section::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .section::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .section::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 8px;
+        }
+        
+        .section::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">CFD</div>
+                <div class="logo-text">TRADER PRO</div>
+            </div>
+            
+            <div class="guide-title">
+                Spread, Swap & Commission – Where Your Broker Really Makes Money and How to Compare Costs
+            </div>
+            
+            <ul class="section-nav">
+                <li><a href="#intro" class="nav-link active">Introduction: The Hidden Costs</a></li>
+                <li><a href="#spread" class="nav-link">Understanding the Spread</a></li>
+                <li><a href="#commission" class="nav-link">Commission Structures</a></li>
+                <li><a href="#swap" class="nav-link">Swap/Interest Rates</a></li>
+                <li><a href="#broker-models" class="nav-link">Broker Revenue Models</a></li>
+                <li><a href="#compare" class="nav-link">Comparing Broker Costs</a></li>
+                <li><a href="#strategies" class="nav-link">Cost-Reduction Strategies</a></li>
+                <li><a href="#conclusion" class="nav-link">Conclusion: Smart Trading</a></li>
+            </ul>
+        </div>
+        
+        <div class="content-area">
+            <div class="content-container">
+                <!-- Section 1 -->
+                <section id="intro" class="section active">
+                    <h2>Introduction: The Hidden Costs of Trading</h2>
+                    <p>Welcome back, aspiring trader. In our previous guide, we explored the powerful double-edged sword of leverage. Now, we'll uncover another critical aspect of trading that many beginners overlook: <span class="highlight">trading costs</span>.</p>
+                    
+                    <p>Just like any business, trading has operational costs. Understanding these costs is essential to your long-term success. Many traders focus solely on their profitable trades while ignoring how much they're paying their broker.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">The Silent Account Drain</div>
+                        <p>Imagine you're a consistently profitable trader with a 60% win rate. You make 20 trades per month with an average profit of $50 per winning trade and an average loss of $30 per losing trade.</p>
+                        <p>Without considering costs, your monthly profit would be: (12 wins × $50) - (8 losses × $30) = $600 - $240 = <span class="profit">$360 profit</span>.</p>
+                        <p>But if each trade costs you $10 in spreads and commissions, your actual profit becomes: $360 - (20 trades × $10) = <span class="profit">$160 profit</span>.</p>
+                        <p>That's a 56% reduction in your actual profits!</p>
+                    </div>
+                    
+                    <p>In this guide, we'll explore the three main types of trading costs: <span class="highlight">spreads</span>, <span class="highlight">commissions</span>, and <span class="highlight">swap rates</span>. By the end, you'll know exactly how to compare brokers and minimize your trading costs.</p>
+                    
+                    <div class="key-takeaways">
+                        <h3>Key Insight</h3>
+                        <p>Trading costs are like a tax on your trading activity. They're always there, whether you win or lose. The most successful traders aren't just good at picking winning trades—they're also excellent at managing their costs.</p>
+                    </div>
+                </section>
+                
+                <!-- Section 2 -->
+                <section id="spread" class="section">
+                    <h2>Understanding the Spread</h2>
+                    
+                    <p>The <span class="highlight">spread</span> is the difference between the buy price (ask) and sell price (bid) of a financial instrument. It's the most common way brokers make money, especially in forex and CFD trading.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">How Spreads Work</div>
+                        <p>Let's look at EUR/USD as an example:</p>
+                        <p><strong>Bid Price (Sell):</strong> 1.1050</p>
+                        <p><strong>Ask Price (Buy):</strong> 1.1052</p>
+                        <p><strong>Spread:</strong> 1.1052 - 1.1050 = 0.0002 (2 pips)</p>
+                        <p>If you buy EUR/USD, you enter at 1.1052. The price must move up by at least 2 pips before you break even on the trade (excluding other costs).</p>
+                    </div>
+                    
+                    <h3>Types of Spreads</h3>
+                    
+                    <div class="comparison">
+                        <div class="trader-card">
+                            <div class="trader-name">Fixed Spreads</div>
+                            <div class="trader-role">Remain constant</div>
+                            <p>Predictable costs</p>
+                            <p>Common with market maker brokers</p>
+                            <p>Wider during normal conditions</p>
+                            <p>No slippage</p>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-name">Variable Spreads</div>
+                            <div class="trader-role">Change with market conditions</div>
+                            <p>Tighter during high liquidity</p>
+                            <p>Can widen significantly during news events</p>
+                            <p>Common with ECN/STP brokers</p>
+                            <p>Potential for slippage</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Spread Costs in Practice</h3>
+                    
+                    <div class="formula-box">
+                        Instrument: EUR/USD<br>
+                        Spread: 1.2 pips<br>
+                        Position Size: 1 standard lot (100,000 units)<br>
+                        Pip Value: $10<br>
+                        Spread Cost: 1.2 pips × $10 = <span class="loss">$12 per round turn</span><br>
+                        <br>
+                        If you make 20 trades per month:<br>
+                        Monthly Spread Cost: 20 × $12 = <span class="loss">$240</span>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Spread Widening During Volatility</h3>
+                        <p>During major news events or periods of low liquidity (like holidays or market openings/closings), spreads can widen significantly. A normally 1-pip spread might expand to 5-10 pips or more, dramatically increasing your trading costs.</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">0.5-1.5</div>
+                            <div class="stat-label">Typical EUR/USD Spread (pips)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">1.5-3</div>
+                            <div class="stat-label">Typical GBP/USD Spread (pips)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">5-15</div>
+                            <div class="stat-label">Typical Stock CFD Spread (pips)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">10-50+</div>
+                            <div class="stat-label">Typical Crypto Spread (pips)</div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section 3 -->
+                <section id="commission" class="section">
+                    <h2>Commission Structures</h2>
+                    
+                    <p>While spreads are built into the price, <span class="highlight">commissions</span> are separate fees charged per trade. Commission-based pricing is common with ECN/STP brokers who offer raw spreads from liquidity providers.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">Commission vs Spread Pricing</div>
+                        <p><strong>Spread-Only Account:</strong></p>
+                        <p>EUR/USD spread: 1.8 pips</p>
+                        <p>Cost for 1 standard lot: 1.8 pips × $10 = <span class="loss">$18</span></p>
+                        <p><strong>Commission-Based Account:</strong></p>
+                        <p>EUR/USD spread: 0.2 pips</p>
+                        <p>Commission: $6 per side ($12 round turn)</p>
+                        <p>Total Cost: (0.2 pips × $10) + $12 = <span class="loss">$14</span></p>
+                        <p>In this case, the commission-based account is cheaper despite the additional fee!</p>
+                    </div>
+                    
+                    <h3>Common Commission Models</h3>
+                    
+                    <div class="cost-visualization">
+                        <div style="flex: 1;">
+                            <div class="cost-bar" style="background: #3498db; width: 100%;">Per Lot Commission</div>
+                            <p>Fixed fee per standard lot traded</p>
+                            <p>Example: $4 per side per lot</p>
+                            <p>1 lot trade: $8 round turn</p>
+                            <p>0.5 lot trade: $4 round turn</p>
+                        </div>
+                        <div style="flex: 1;">
+                            <div class="cost-bar" style="background: #2ecc71; width: 100%;">Percentage Commission</div>
+                            <p>Fee based on trade value</p>
+                            <p>Example: 0.05% of trade value</p>
+                            <p>$100,000 trade: $50 per side</p>
+                            <p>Common in stock trading</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Calculating Your Commission Costs</h3>
+                    
+                    <div class="formula-box">
+                        Broker: ECN Broker XYZ<br>
+                        Commission: $3.50 per side per lot<br>
+                        Trade: Buy 2 lots of EUR/USD<br>
+                        Commission to Open: 2 lots × $3.50 = <span class="loss">$7</span><br>
+                        Commission to Close: 2 lots × $3.50 = <span class="loss">$7</span><br>
+                        Total Commission: $7 + $7 = <span class="loss">$14</span><br>
+                        <br>
+                        Monthly Activity: 30 round-turn trades averaging 1.5 lots each<br>
+                        Monthly Commission: 30 × (1.5 × $7) = <span class="loss">$315</span>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>When Commission Accounts Make Sense</h3>
+                        <p>Commission-based accounts typically benefit:</p>
+                        <ul>
+                            <li><strong>High-volume traders</strong> who can negotiate better rates</li>
+                            <li><strong>Scalpers</strong> who need the tightest possible spreads</li>
+                            <li><strong>Large account holders</strong> who trade significant position sizes</li>
+                            <li><strong>Professional traders</strong> who value transparency in pricing</li>
+                        </ul>
+                    </div>
+                </section>
+                
+                <!-- Section 4 -->
+                <section id="swap" class="section">
+                    <h2>Swap/Interest Rates</h2>
+                    
+                    <p><span class="highlight">Swap rates</span>, also known as rollover fees or overnight financing, are interest payments or credits applied to positions held overnight. In forex trading, you're essentially borrowing one currency to buy another, and swap represents the interest rate differential between the two currencies.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">How Swap Works</div>
+                        <p>When you buy EUR/USD, you're:</p>
+                        <p><strong>Buying EUR</strong> (which has an interest rate)</p>
+                        <p><strong>Selling USD</strong> (which has an interest rate)</p>
+                        <p>If the EUR interest rate is higher than USD, you <span class="profit">earn</span> positive swap.</p>
+                        <p>If the EUR interest rate is lower than USD, you <span class="loss">pay</span> negative swap.</p>
+                    </div>
+                    
+                    <h3>Swap Calculation Example</h3>
+                    
+                    <div class="formula-box">
+                        Position: Long AUD/JPY (Buy AUD, Sell JPY)<br>
+                        AUD Interest Rate: 1.5%<br>
+                        JPY Interest Rate: -0.1%<br>
+                        Interest Rate Differential: 1.5% - (-0.1%) = 1.6%<br>
+                        Position Size: 1 standard lot (100,000 AUD)<br>
+                        Daily Swap: (100,000 × 1.6%) / 365 = <span class="profit">$4.38 credit</span><br>
+                        <br>
+                        If held for 5 days: 5 × $4.38 = <span class="profit">$21.90 credit</span>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Triple Swap Wednesdays</h3>
+                        <p>In forex markets, swap is typically applied with a 3-day value date for trades opened on Wednesday. This means positions held overnight from Wednesday to Thursday incur triple the normal swap amount to account for the weekend when markets are closed.</p>
+                    </div>
+                    
+                    <h3>Swap in Different Markets</h3>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">Forex</div>
+                            <div class="stat-label">Based on interest rate differentials</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">CFDs</div>
+                            <div class="stat-label">Based on financing costs + admin fee</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Crypto</div>
+                            <div class="stat-label">Funding rate for perpetual contracts</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Indices</div>
+                            <div class="stat-label">Based on interbank lending rates</div>
+                        </div>
+                    </div>
+                    
+                    <div class="key-takeaways">
+                        <h3>Swap Trading Strategies</h3>
+                        <p>Some traders specifically engage in "carry trades" where they buy high-interest-rate currencies and sell low-interest-rate currencies to profit from the positive swap. However, this strategy carries significant exchange rate risk.</p>
+                    </div>
+                </section>
+                
+                <!-- Section 5 -->
+                <section id="broker-models" class="section">
+                    <h2>Broker Revenue Models</h2>
+                    
+                    <p>Understanding how your broker makes money is crucial to evaluating whether their interests align with yours. Different broker models have different incentives.</p>
+                    
+                    <div class="comparison">
+                        <div class="trader-card">
+                            <div class="trader-name">Market Maker</div>
+                            <div class="trader-role">Acts as counterparty</div>
+                            <p>Makes money when clients lose</p>
+                            <p>Wider spreads</p>
+                            <p>No commissions</p>
+                            <p>May hedge client positions</p>
+                            <p>Potential conflict of interest</p>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-name">STP/ECN</div>
+                            <div class="trader-role">Routes orders to market</div>
+                            <p>Makes money from commissions</p>
+                            <p>Tighter spreads</p>
+                            <p>Transparent pricing</p>
+                            <p>No conflict of interest</p>
+                            <p>Better for active traders</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Additional Broker Revenue Sources</h3>
+                    
+                    <div class="example-box">
+                        <div class="example-title">Beyond Spreads and Commissions</div>
+                        <p><strong>Inactivity Fees:</strong> Charged if you don't trade for a certain period</p>
+                        <p><strong>Withdrawal Fees:</strong> Charged for transferring money out of your account</p>
+                        <p><strong>Currency Conversion Fees:</strong> Applied when depositing/withdrawing in different currencies</p>
+                        <p><strong>Data Fees:</strong> Charged for premium market data or news feeds</p>
+                        <p><strong>Platform Fees:</strong> Monthly charges for using advanced trading platforms</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Regulation and Transparency</h3>
+                        <p>Regulated brokers in jurisdictions like the UK, EU, Australia, and the US are required to provide clear information about all costs. Always check your broker's regulatory status and read their terms and conditions carefully.</p>
+                    </div>
+                    
+                    <h3>Broker Markup Visualization</h3>
+                    
+                    <div class="cost-visualization">
+                        <div style="flex: 1; text-align: center;">
+                            <div class="cost-bar" style="background: #e74c3c; width: 70%; margin: 0 auto;">Market Maker Markup</div>
+                            <p>Broker adds 0.5-3 pips to market spread</p>
+                            <p>Primary revenue source</p>
+                        </div>
+                        <div style="flex: 1; text-align: center;">
+                            <div class="cost-bar" style="background: #3498db; width: 30%; margin: 0 auto;">STP Markup</div>
+                            <p>Broker adds small markup to liquidity provider spread</p>
+                            <p>Smaller portion of revenue</p>
+                        </div>
+                        <div style="flex: 1; text-align: center;">
+                            <div class="cost-bar" style="background: #2ecc71; width: 90%; margin: 0 auto;">Commission</div>
+                            <p>Fixed per-trade fee</p>
+                            <p>Primary revenue for ECN brokers</p>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Section 6 -->
+                <section id="compare" class="section">
+                    <h2>Comparing Broker Costs</h2>
+                    
+                    <p>Now that you understand the different types of trading costs, let's explore how to systematically compare brokers to find the most cost-effective option for your trading style.</p>
+                    
+                    <h3>Creating a Cost Comparison Table</h3>
+                    
+                    <div class="example-box">
+                        <div class="example-title">Sample Broker Comparison</div>
+                        <table style="width: 100%; border-collapse: collapse; margin: 12px 0;">
+                            <tr style="background: rgba(255,255,255,0.1);">
+                                <th style="padding: 10px; text-align: left;">Cost Factor</th>
+                                <th style="padding: 10px; text-align: left;">Broker A</th>
+                                <th style="padding: 10px; text-align: left;">Broker B</th>
+                                <th style="padding: 10px; text-align: left;">Broker C</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">EUR/USD Spread</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">1.8 pips</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">0.2 pips + $7 RT</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">1.2 pips</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">Commission (per lot RT)</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">$0</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">$7</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">$0</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">Inactivity Fee</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">$15/month after 3 months</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">$10/month after 6 months</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">None</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">Withdrawal Fee</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">$25</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">$0 (1 free per month)</td>
+                                <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">$15</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <h3>Calculating Your Personal Cost Profile</h3>
+                    
+                    <div class="formula-box">
+                        Your Trading Profile:<br>
+                        - 30 trades per month<br>
+                        - Average position size: 1.5 lots<br>
+                        - 70% day trades, 30% swing trades (held 3 days on average)<br>
+                        - Main instruments: EUR/USD, GBP/USD, Gold<br>
+                        <br>
+                        Broker A Cost Calculation:<br>
+                        Spread: 30 trades × 1.5 lots × 1.8 pips × $10 = <span class="loss">$810</span><br>
+                        Swap: (30% of 30 trades) × 3 days × $5 = <span class="loss">$135</span><br>
+                        Total: <span class="loss">$945 monthly</span>
+                    </div>
+                    
+                    <div class="key-takeaways">
+                        <h3>Look Beyond the advertised Spread</h3>
+                        <p>Many brokers advertise "tight spreads" but don't mention that these are only available during specific hours or with minimum deposit requirements. Always check:</p>
+                        <ul>
+                            <li>Average spreads during your trading hours</li>
+                            <li>Minimum deposit requirements for advertised spreads</li>
+                            <li>Spread behavior during high volatility</li>
+                            <li>All additional fees beyond spreads</li>
+                        </ul>
+                    </div>
+                </section>
+                
+                <!-- Section 7 -->
+                <section id="strategies" class="section">
+                    <h2>Cost-Reduction Strategies</h2>
+                    
+                    <p>Now that you can identify and calculate trading costs, let's explore practical strategies to minimize them without compromising your trading effectiveness.</p>
+                    
+                    <h3>Strategy 1: Instrument Selection</h3>
+                    
+                    <div class="example-box">
+                        <div class="example-title">Trade Liquid Instruments</div>
+                        <p>Major currency pairs like EUR/USD, USD/JPY, and GBP/USD typically have the tightest spreads because they're the most liquid.</p>
+                        <p><strong>High Spread Instruments:</strong> Exotic currency pairs, small-cap stocks, low-volume cryptocurrencies</p>
+                        <p><strong>Low Spread Instruments:</strong> Major forex pairs, large-cap stocks, major indices, popular commodities</p>
+                        <p>By focusing on liquid instruments, you can reduce your spread costs by 50-80%.</p>
+                    </div>
+                    
+                    <h3>Strategy 2: Trading Session Alignment</h3>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">London Session</div>
+                            <div class="stat-label">7:00-16:00 GMT<br>Lowest EUR/USD spreads</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">NY Session</div>
+                            <div class="stat-label">13:00-22:00 GMT<br>Lowest USD pairs spreads</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Asian Session</div>
+                            <div class="stat-label">23:00-08:00 GMT<br>Lowest JPY pairs spreads</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">Session Overlap</div>
+                            <div class="stat-label">London/NY: 13:00-16:00 GMT<br>Absolute lowest spreads</div>
+                        </div>
+                    </div>
+                    
+                    <h3>Strategy 3: Account Type Selection</h3>
+                    
+                    <div class="comparison">
+                        <div class="trader-card">
+                            <div class="trader-name">Standard Account</div>
+                            <div class="trader-role">Best for beginners</div>
+                            <p>Higher spreads</p>
+                            <p>No commissions</p>
+                            <p>Lower minimum deposit</p>
+                            <p>Good for small position sizes</p>
+                        </div>
+                        
+                        <div class="trader-card">
+                            <div class="trader-name">Professional/ECN</div>
+                            <div class="trader-role">Best for active traders</div>
+                            <p>Tighter spreads</p>
+                            <p>Commission-based</p>
+                            <p>Higher minimum deposit</p>
+                            <p>Better for larger position sizes</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Volume-Based Discounts</h3>
+                        <p>Many brokers offer tiered pricing where your spreads tighten and commissions reduce as your trading volume increases. If you're an active trader, don't hesitate to ask your broker about volume-based discounts.</p>
+                    </div>
+                    
+                    <h3>Strategy 4: Trade Timing</h3>
+                    
+                    <div class="warning-box">
+                        <h3>Avoid High-Volatility Periods</h3>
+                        <p>Spreads widen significantly during:</p>
+                        <ul>
+                            <li>Major economic news releases (NFP, CPI, Central Bank decisions)</li>
+                            <li>Market openings and closings</li>
+                            <li>Holiday periods with reduced liquidity</li>
+                            <li>Weekend gaps (for instruments that trade 24/5)</li>
+                        </ul>
+                        <p>If you must trade during these times, use limit orders instead of market orders to control your entry price.</p>
+                    </div>
+                </section>
+                
+                <!-- Section 8 -->
+                <section id="conclusion" class="section">
+                    <h2>Conclusion: Smart Trading</h2>
+                    
+                    <p>Congratulations! You've now mastered one of the most overlooked aspects of successful trading: understanding and managing your costs.</p>
+                    
+                    <div class="example-box">
+                        <div class="example-title">The Cost-Aware Trader's Mindset</div>
+                        <p>Think of trading costs as the "friction" in your trading engine. The less friction, the more efficiently your engine can perform.</p>
+                        <p>Every dollar saved on unnecessary costs is a dollar that can compound in your account over time.</p>
+                    </div>
+                    
+                    <h3>Your Cost Management Action Plan</h3>
+                    
+                    <div class="key-takeaways">
+                        <h3>Step 1: Audit Your Current Costs</h3>
+                        <p>Review your last 3 months of trading statements. Calculate exactly how much you've paid in spreads, commissions, and swaps. Most traders are shocked when they see the actual numbers.</p>
+                    </div>
+                    
+                    <div class="key-takeaways">
+                        <h3>Step 2: Compare Your Broker</h3>
+                        <p>Use the comparison framework from this guide to evaluate if your current broker offers competitive pricing for your trading style. Don't just look at spreads—consider all costs.</p>
+                    </div>
+                    
+                    <div class="key-takeaways">
+                        <h3>Step 3: Implement Cost-Reduction Strategies</h3>
+                        <p>Apply the strategies we discussed: trade liquid instruments, align with optimal trading sessions, select the right account type, and avoid high-cost trading times.</p>
+                    </div>
+                    
+                    <div class="key-takeaways">
+                        <h3>Step 4: Monitor and Adjust</h3>
+                        <p>Regularly review your trading costs. As your trading style evolves, your optimal cost structure may change.</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3>Final Thought: Cost vs. Value</h3>
+                        <p>While minimizing costs is important, don't sacrifice execution quality, platform stability, or customer service just to save a few dollars. The cheapest broker isn't always the best value.</p>
+                        <p>Find the right balance between cost efficiency and overall trading experience.</p>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <h3>Remember Your Edge</h3>
+                        <p>Trading costs are part of every trader's reality. The most successful traders aren't those with zero costs, but those who understand their costs and factor them into their trading strategy.</p>
+                        <p>Your edge comes from your ability to manage both your trades and your costs effectively.</p>
+                    </div>
+                    
+                    <p>Now go forth and trade with the confidence that comes from truly understanding where your money is going. Knowledge is power, and in trading, that power translates directly to profits.</p>
+                </section>
+            </div>
+            
+            <div class="nav-controls">
+                <button id="prev-btn" class="nav-btn" disabled>
+                    <span>←</span> Previous
+                </button>
+                
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="current-section">1</span> / <span id="total-sections">8</span>
+                    </div>
+                </div>
+                
+                <button id="next-btn" class="nav-btn">
+                    Next <span>→</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const progressFill = document.getElementById('progress-fill');
+            const currentSectionEl = document.getElementById('current-section');
+            const totalSectionsEl = document.getElementById('total-sections');
+            
+            let currentSectionIndex = 0;
+            const totalSections = sections.length;
+            
+            totalSectionsEl.textContent = totalSections;
+            
+            // Initialize the first section as active
+            updateActiveSection();
+            
+            // Navigation via sidebar
+            navLinks.forEach((link, index) => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentSectionIndex = index;
+                    updateActiveSection();
+                });
+            });
+            
+            // Previous button
+            prevBtn.addEventListener('click', function() {
+                if (currentSectionIndex > 0) {
+                    currentSectionIndex--;
+                    updateActiveSection();
+                }
+            });
+            
+            // Next button
+            nextBtn.addEventListener('click', function() {
+                if (currentSectionIndex < totalSections - 1) {
+                    currentSectionIndex++;
+                    updateActiveSection();
+                }
+            });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') {
+                    if (currentSectionIndex > 0) {
+                        currentSectionIndex--;
+                        updateActiveSection();
+                    }
+                } else if (e.key === 'ArrowRight') {
+                    if (currentSectionIndex < totalSections - 1) {
+                        currentSectionIndex++;
+                        updateActiveSection();
+                    }
+                }
+            });
+            
+            function updateActiveSection() {
+                // Update sections
+                sections.forEach((section, index) => {
+                    if (index === currentSectionIndex) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                
+                // Update navigation links
+                navLinks.forEach((link, index) => {
+                    if (index === currentSectionIndex) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+                
+                // Update buttons
+                prevBtn.disabled = currentSectionIndex === 0;
+                nextBtn.disabled = currentSectionIndex === totalSections - 1;
+                
+                // Update progress
+                const progressPercentage = ((currentSectionIndex + 1) / totalSections) * 100;
+                progressFill.style.width = `${progressPercentage}%`;
+                
+                // Update current section number
+                currentSectionEl.textContent = currentSectionIndex + 1;
+            }
+        });
+    </script>
+</body>
+</html>
