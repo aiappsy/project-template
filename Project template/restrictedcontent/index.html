@@ -811,6 +811,159 @@
             color: var(--error);
         }
 
+        /* Login Modal */
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Logo Management */
+        .logo-management {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .logo-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: var(--bg-surface);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .logo-preview i {
+            font-size: 3rem;
+            color: var(--accent);
+        }
+
+        .logo-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .logo-option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-surface);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .logo-option:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent);
+        }
+
+        .logo-option.selected {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent);
+        }
+
+        .logo-option-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 6px;
+            color: var(--accent);
+        }
+
+        .logo-option-info {
+            flex: 1;
+        }
+
+        .logo-option-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .logo-option-description {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Custom Logo Upload */
+        .custom-logo-upload {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-surface);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .upload-area.dragging {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .file-input {
+            display: none;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .mobile-toggle {
@@ -883,7 +1036,7 @@
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
-                    <i class="fas fa-rocket logo"></i>
+                    <i class="logo" id="sidebarLogo">fas fa-rocket</i>
                     <span class="logo-text">AI Hub Pro</span>
                 </div>
                 <button class="sidebar-toggle" id="sidebarToggle" title="Collapse Sidebar">
@@ -919,6 +1072,41 @@
         </div>
     </div>
 
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Admin Login</h2>
+                <button class="modal-close" onclick="app.closeLoginModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form class="login-form" onsubmit="app.login(event); return false;">
+                    <div class="login-header">
+                        <div class="login-logo">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="login-title">Administrator Access</h3>
+                        <p class="login-subtitle">Enter your password to access admin features</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="adminPassword" required placeholder="Enter admin password">
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn primary" style="flex: 1;">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Login
+                        </button>
+                        <button type="button" class="btn" onclick="app.closeLoginModal()" style="flex: 1;">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Plugin Management Modal -->
     <div class="modal" id="marketplaceModal">
         <div class="modal-content">
@@ -941,6 +1129,76 @@
             </div>
             <div class="modal-body" id="menuManagerBody">
                 <!-- Menu manager content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Logo Management Modal -->
+    <div class="modal" id="logoManagerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Logo Management</h2>
+                <button class="modal-close" onclick="app.closeLogoManager()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="logo-management">
+                    <div class="logo-preview">
+                        <i id="logoPreview" class="fas fa-rocket"></i>
+                    </div>
+                    <div class="logo-options">
+                        <div class="logo-option" onclick="app.selectLogoOption('default')">
+                            <div class="logo-option-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div class="logo-option-info">
+                                <div class="logo-option-name">Default Logo</div>
+                                <div class="logo-option-description">Use the default rocket icon</div>
+                            </div>
+                        </div>
+                        <div class="logo-option" onclick="app.selectLogoOption('text')">
+                            <div class="logo-option-icon">
+                                <i class="fas fa-font"></i>
+                            </div>
+                            <div class="logo-option-info">
+                                <div class="logo-option-name">Text Logo</div>
+                                <div class="logo-option-description">Use text as logo</div>
+                            </div>
+                        </div>
+                        <div class="logo-option" onclick="app.selectLogoOption('icon')">
+                            <div class="logo-option-icon">
+                                <i class="fas fa-icons"></i>
+                            </div>
+                            <div class="logo-option-info">
+                                <div class="logo-option-name">Icon Logo</div>
+                                <div class="logo-option-description">Choose from icon library</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="custom-logo-upload">
+                        <h3 style="margin-bottom: 1rem;">Custom Logo</h3>
+                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('logoFileInput').click()">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="upload-text">Click to upload or drag and drop</div>
+                            <div class="upload-hint">SVG, PNG, JPG or GIF (max. 2MB)</div>
+                        </div>
+                        <input type="file" id="logoFileInput" class="file-input" accept="image/*" onchange="app.handleLogoUpload(event)">
+                        <div id="customLogoPreview" style="display: none; margin-top: 1rem; text-align: center;">
+                            <img id="customLogoImage" style="max-height: 100px; max-width: 100%;">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button class="btn primary" onclick="app.saveLogoSettings()">
+                            <i class="fas fa-save"></i>
+                            Save Changes
+                        </button>
+                        <button class="btn" onclick="app.closeLogoManager()">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -978,6 +1236,13 @@
                 // User role management - default to 'user' for non-admins
                 this.userRole = this.loadUserRole() || 'user'; // 'user' or 'admin'
                 
+                // Logo settings
+                this.logoSettings = this.loadLogoSettings() || {
+                    type: 'default', // 'default', 'text', 'icon', 'custom'
+                    value: 'fas fa-rocket', // icon class or text or custom image data
+                    text: 'AI Hub Pro' // text for text logo
+                };
+                
                 this.navigation = this.loadNavigation();
                 this.plugins = this.loadPlugins();
                 this.currentSection = 'dashboard';
@@ -987,6 +1252,9 @@
                 this.iconPickerCallback = null;
                 this.selectedIcon = null;
                 this.currentIconCategory = 'general';
+                
+                // Logo management state
+                this.selectedLogoOption = this.logoSettings.type;
                 
                 this.initializeDefaultData();
                 this.initializeIconLibrary();
@@ -1048,13 +1316,245 @@
                 }
             }
 
-            toggleUserRole() {
-                const newRole = this.userRole === 'admin' ? 'user' : 'admin';
-                this.saveUserRole(newRole);
-                this.showNotification(`Switched to ${newRole} mode`, 'success');
+            // Login methods
+            openLoginModal() {
+                const modal = document.getElementById('loginModal');
+                if (modal) {
+                    modal.classList.add('active');
+                    // Clear password field
+                    document.getElementById('adminPassword').value = '';
+                    // Focus on password field
+                    setTimeout(() => {
+                        document.getElementById('adminPassword').focus();
+                    }, 100);
+                }
+            }
+
+            closeLoginModal() {
+                const modal = document.getElementById('loginModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+
+            login(event) {
+                event.preventDefault();
+                const password = document.getElementById('adminPassword').value;
                 
-                // Refresh the UI to show/hide admin features
+                // In a real application, you would verify this against a server
+                // For demo purposes, we'll use a simple password
+                if (password === 'admin123') {
+                    this.saveUserRole('admin');
+                    this.closeLoginModal();
+                    this.showNotification('Successfully logged in as admin', 'success');
+                    this.refreshAdminUI();
+                } else {
+                    this.showNotification('Invalid password', 'error');
+                    // Shake the modal for visual feedback
+                    const modal = document.querySelector('#loginModal .modal-content');
+                    if (modal) {
+                        modal.style.animation = 'shake 0.5s';
+                        setTimeout(() => {
+                            modal.style.animation = '';
+                        }, 500);
+                    }
+                }
+            }
+
+            logout() {
+                this.saveUserRole('user');
+                this.showNotification('Logged out successfully', 'success');
                 this.refreshAdminUI();
+            }
+
+            // Logo management methods
+            loadLogoSettings() {
+                if (!this.storageAvailable) return null;
+                
+                try {
+                    return JSON.parse(localStorage.getItem('aihub_logo_settings'));
+                } catch (error) {
+                    console.error('Failed to load logo settings:', error);
+                    return null;
+                }
+            }
+
+            saveLogoSettings() {
+                if (!this.storageAvailable) {
+                    console.warn('Storage not available, logo settings will not persist');
+                    return;
+                }
+                
+                try {
+                    localStorage.setItem('aihub_logo_settings', JSON.stringify(this.logoSettings));
+                    this.applyLogoSettings();
+                    this.showNotification('Logo settings saved successfully', 'success');
+                } catch (error) {
+                    console.error('Failed to save logo settings:', error);
+                }
+            }
+
+            applyLogoSettings() {
+                const sidebarLogo = document.getElementById('sidebarLogo');
+                const logoPreview = document.getElementById('logoPreview');
+                
+                if (!sidebarLogo || !logoPreview) return;
+                
+                switch (this.logoSettings.type) {
+                    case 'default':
+                        sidebarLogo.className = 'logo fas fa-rocket';
+                        logoPreview.className = 'fas fa-rocket';
+                        break;
+                    case 'text':
+                        sidebarLogo.className = 'logo';
+                        sidebarLogo.textContent = this.logoSettings.text || 'AI';
+                        sidebarLogo.style.fontSize = '1.25rem';
+                        logoPreview.className = '';
+                        logoPreview.textContent = this.logoSettings.text || 'AI';
+                        break;
+                    case 'icon':
+                        sidebarLogo.className = `logo ${this.logoSettings.value}`;
+                        logoPreview.className = this.logoSettings.value;
+                        break;
+                    case 'custom':
+                        sidebarLogo.className = 'logo';
+                        sidebarLogo.innerHTML = `<img src="${this.logoSettings.value}" style="height: 1.25rem; width: auto;">`;
+                        logoPreview.className = '';
+                        logoPreview.innerHTML = `<img src="${this.logoSettings.value}" style="height: 3rem; width: auto;">`;
+                        break;
+                }
+            }
+
+            openLogoManager() {
+                // Check if user has admin privileges
+                if (!this.isAdmin()) {
+                    this.showNotification('Access denied. Admin privileges required.', 'error');
+                    return;
+                }
+                
+                this.debug('Opening logo manager');
+                const modal = document.getElementById('logoManagerModal');
+                
+                if (modal) {
+                    // Update preview with current logo
+                    this.updateLogoPreview();
+                    
+                    // Select current logo option
+                    this.selectLogoOption(this.logoSettings.type);
+                    
+                    modal.classList.add('active');
+                }
+            }
+
+            closeLogoManager() {
+                this.debug('Closing logo manager');
+                const modal = document.getElementById('logoManagerModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+
+            updateLogoPreview() {
+                const logoPreview = document.getElementById('logoPreview');
+                if (!logoPreview) return;
+                
+                switch (this.logoSettings.type) {
+                    case 'default':
+                        logoPreview.className = 'fas fa-rocket';
+                        break;
+                    case 'text':
+                        logoPreview.className = '';
+                        logoPreview.textContent = this.logoSettings.text || 'AI';
+                        break;
+                    case 'icon':
+                        logoPreview.className = this.logoSettings.value;
+                        break;
+                    case 'custom':
+                        logoPreview.className = '';
+                        logoPreview.innerHTML = `<img src="${this.logoSettings.value}" style="height: 3rem; width: auto;">`;
+                        break;
+                }
+            }
+
+            selectLogoOption(option) {
+                this.selectedLogoOption = option;
+                
+                // Update UI to show selected option
+                document.querySelectorAll('.logo-option').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                if (option === 'default') {
+                    document.querySelector('.logo-option:first-child').classList.add('selected');
+                } else if (option === 'text') {
+                    document.querySelector('.logo-option:nth-child(2)').classList.add('selected');
+                } else if (option === 'icon') {
+                    document.querySelector('.logo-option:nth-child(3)').classList.add('selected');
+                    this.openIconPickerForLogo();
+                }
+            }
+
+            openIconPickerForLogo() {
+                this.openIconPicker((selectedIcon) => {
+                    this.logoSettings.value = selectedIcon;
+                    this.updateLogoPreview();
+                }, this.logoSettings.value || 'fas fa-rocket');
+            }
+
+            handleLogoUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                // Check file size (max 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    this.showNotification('File size must be less than 2MB', 'error');
+                    return;
+                }
+                
+                // Check file type
+                if (!file.type.match('image.*')) {
+                    this.showNotification('Please select an image file', 'error');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.logoSettings.value = e.target.result;
+                    this.logoSettings.type = 'custom';
+                    this.selectedLogoOption = 'custom';
+                    
+                    // Show preview
+                    const customLogoPreview = document.getElementById('customLogoPreview');
+                    const customLogoImage = document.getElementById('customLogoImage');
+                    
+                    if (customLogoPreview && customLogoImage) {
+                        customLogoPreview.style.display = 'block';
+                        customLogoImage.src = e.target.result;
+                    }
+                    
+                    this.updateLogoPreview();
+                };
+                
+                reader.readAsDataURL(file);
+            }
+
+            saveLogoSettings() {
+                // Save text logo if that's the selected option
+                if (this.selectedLogoOption === 'text') {
+                    const textInput = document.getElementById('logoTextInput');
+                    if (textInput) {
+                        this.logoSettings.text = textInput.value || 'AI';
+                    }
+                }
+                
+                // Update logo type
+                this.logoSettings.type = this.selectedLogoOption;
+                
+                // Save to storage
+                this.saveLogoSettings();
+                
+                // Close modal
+                this.closeLogoManager();
             }
 
             refreshAdminUI() {
@@ -1095,8 +1595,28 @@
                     menuBtn.innerHTML = '<i class="fas fa-edit"></i><span>Menu Management</span>';
                     menuBtn.onclick = () => this.openMenuManager();
                     
+                    const logoBtn = document.createElement('button');
+                    logoBtn.className = 'btn admin-btn';
+                    logoBtn.innerHTML = '<i class="fas fa-image"></i><span>Logo Management</span>';
+                    logoBtn.onclick = () => this.openLogoManager();
+                    
+                    const logoutBtn = document.createElement('button');
+                    logoutBtn.className = 'btn admin-btn';
+                    logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i><span>Logout</span>';
+                    logoutBtn.onclick = () => this.logout();
+                    
                     headerActions.insertBefore(pluginBtn, roleIndicator);
                     headerActions.insertBefore(menuBtn, roleIndicator);
+                    headerActions.insertBefore(logoBtn, roleIndicator);
+                    headerActions.insertBefore(logoutBtn, roleIndicator);
+                } else {
+                    // Add login button for non-admin users
+                    const loginBtn = document.createElement('button');
+                    loginBtn.className = 'btn admin-btn';
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>Admin Login</span>';
+                    loginBtn.onclick = () => this.openLoginModal();
+                    
+                    headerActions.insertBefore(loginBtn, roleIndicator);
                 }
             }
 
@@ -1403,6 +1923,7 @@
                 this.setupIconPicker();
                 this.updateUserRoleIndicator();
                 this.updateHeaderActions();
+                this.applyLogoSettings();
                 this.debug('AI Hub Pro initialized successfully!');
                 console.log('🚀 AI Hub Pro initialized successfully!');
             }
@@ -1450,11 +1971,27 @@
                     }
                 });
 
-                // Double-click on user role indicator to toggle role (for demo purposes)
-                const roleIndicator = document.getElementById('userRoleIndicator');
-                if (roleIndicator) {
-                    roleIndicator.addEventListener('dblclick', () => {
-                        this.toggleUserRole();
+                // Setup drag and drop for logo upload
+                const uploadArea = document.getElementById('uploadArea');
+                if (uploadArea) {
+                    uploadArea.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        uploadArea.classList.add('dragging');
+                    });
+                    
+                    uploadArea.addEventListener('dragleave', () => {
+                        uploadArea.classList.remove('dragging');
+                    });
+                    
+                    uploadArea.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        uploadArea.classList.remove('dragging');
+                        
+                        const files = e.dataTransfer.files;
+                        if (files.length > 0) {
+                            document.getElementById('logoFileInput').files = files;
+                            this.handleLogoUpload({ target: { files } });
+                        }
                     });
                 }
             }
@@ -1849,6 +2386,10 @@
                                     <i class="fas fa-edit"></i>
                                     Menu Management
                                 </button>
+                                <button class="btn" onclick="app.openLogoManager()">
+                                    <i class="fas fa-image"></i>
+                                    Logo Management
+                                </button>
                             ` : ''}
                         </div>
                         <div class="stats-grid">
@@ -1888,7 +2429,7 @@
                         <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
                             <h3 style="margin-bottom: 1rem;">User Information</h3>
                             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                                <div class="user-role ${this.isAdmin() ? 'admin' : ''}" style="cursor: pointer;" onclick="app.toggleUserRole()" title="Double-click to toggle role (demo only)">
+                                <div class="user-role ${this.isAdmin() ? 'admin' : ''}" style="cursor: pointer;" onclick="app.openLoginModal()" title="Click to login as admin">
                                     <i class="fas fa-${this.isAdmin() ? 'user-shield' : 'user'}"></i>
                                     <span>${this.isAdmin() ? 'Admin' : 'User'}</span>
                                 </div>
@@ -1898,7 +2439,7 @@
                             </div>
                             ${this.isAdmin() ? `
                                 <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
-                                    <h3 style="margin-bottom: 1rem;">Plugin Management</h3>
+                                    <h3 style="margin-bottom: 1rem;">Admin Settings</h3>
                                     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                                         <button class="btn primary" onclick="app.openMarketplace()">
                                             <i class="fas fa-store"></i>
@@ -1907,6 +2448,14 @@
                                         <button class="btn" onclick="app.openMenuManager()">
                                             <i class="fas fa-edit"></i>
                                             Manage Menus
+                                        </button>
+                                        <button class="btn" onclick="app.openLogoManager()">
+                                            <i class="fas fa-image"></i>
+                                            Manage Logo
+                                        </button>
+                                        <button class="btn" onclick="app.logout()">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                            Logout
                                         </button>
                                     </div>
                                     <div style="margin-top: 1rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 6px; border-left: 3px solid var(--accent);">
@@ -1922,7 +2471,7 @@
                                     <h4 style="margin: 0 0 0.5rem 0; color: var(--error);">🔒 Limited Access</h4>
                                     <p style="margin: 0; font-size: 0.875rem; line-height: 1.5;">
                                         Plugin and menu management features are only available to administrators.
-                                        Contact your system administrator for access to these features.
+                                        Click on the user role indicator above to login as admin.
                                     </p>
                                 </div>
                             `}
@@ -3040,6 +3589,17 @@
                 }
             }
         }
+
+        // Add shake animation for login error
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
 
         // Initialize the application
         let app;
