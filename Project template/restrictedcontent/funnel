@@ -1,1 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to AI Hub Pro - Onboarding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .step-indicator {
+            transition: all 0.3s ease;
+        }
+        .step-indicator.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .step-indicator.completed {
+            background-color: #10b981;
+            color: white;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .question-card {
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.success {
+            background-color: #10b981;
+        }
+        .notification.error {
+            background-color: #ef4444;
+        }
+        .notification.info {
+            background-color: #3b82f6;
+        }
+        .editable-field {
+            position: relative;
+        }
+        .editable-field:hover .edit-icon {
+            opacity: 1;
+        }
+        .edit-icon {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6b7280;
+        }
+        .edit-icon:hover {
+            color: #3b82f6;
+        }
+        .admin-mode {
+            border: 2px dashed #3b82f6;
+            padding: 2px;
+        }
+        .admin-mode:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <i class="fas fa-rocket text-blue-500 text-2xl mr-3"></i>
+                    <h1 class="text-xl font-bold text-gray-900">AI Hub Pro</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="adminToggle" class="text-sm text-gray-500 cursor-pointer hover:text-gray-700">
+                        <i class="fas fa-cog mr-1"></i> Admin
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
 
+    <!-- Progress Bar -->
+    <div class="bg-white shadow-sm">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-lg font-medium text-gray-900">Onboarding Progress</h2>
+                <span class="text-sm text-gray-500"><span id="currentStep">1</span> of <span id="totalSteps">5</span></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div id="progressBar" class="progress-bar bg-blue-500 h-2.5 rounded-full" style="width: 20%"></div>
+            </div>
+            <div class="flex justify-between mt-4">
+                <div class="step-indicator active flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-700 font-medium">
+                    1
+                </div>
+                <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-700 font-medium">
+                    2
+                </div>
+                <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-700 font-medium">
+                    3
+                </div>
+                <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-700 font-medium">
+                    4
+                </div>
+                <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-700 font-medium">
+                    5
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step 1: Personal Information -->
+        <div id="step1" class="step-content fade-in">
+            <div class="bg-white shadow rounded-lg p-6 question-card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 editable-field">
+                    Personal Information
+                    <i class="fas fa-edit edit-icon ml-2"></i>
+                </h3>
+                <p class="text-gray-600 mb-6 editable-field">
+                    Please provide your basic information to get started with AI Hub Pro.
+                    <i class="fas fa-edit edit-icon ml-2"></i>
+                </p>
+                <form id="personalInfoForm" class="space-y-4">
+                    <div>
+                        <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                        <input type="text" id="firstName" name="firstName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <input type="email" id="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="nextStep()" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Next <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Step 2: Professional Information -->
+        <div id="step2" class="step-content hidden">
+            <div class="bg-white shadow rounded-lg p-6 question-card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 editable-field">
+                    Professional Information
+                    <i class="fas fa-edit edit-icon ml-2"></i>
+                </h3>
+                <p class="text-gray-600 mb-6 editable-field">
+                    Tell us about your professional background to help us customize your experience.
+                    <i class="fas fa-edit edit-icon ml-2"></i>
+                </p>
+                <form id="professionalInfoForm" class="space-y-4">
+                    <div>
+                        <label for="company" class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                        <input type="text" id="company" name="company" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="jobTitle" class="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+                        <input type="text" id="jobTitle" name="jobTitle" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="industry" class="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+                        <select id="industry" name="industry" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select an industry</option>
+                            <option value="technology">Technology</option>
+                            <option value="finance">Finance</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="education">Education</option>
+                            <option value="retail">Retail</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="consulting">Consulting</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="experience" class="block text-sm font-medium text-gray-700 mb-1">Years of Experience</label>
+                        <select id="experience" name="experience" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select experience level</option>
+                            <option value="0-2">0-2 years</option>
+                            <option value="3-5">3-5 years</option>
+                            <option value="6-10">6-10 years</option>
+                            <option value="11-15">11-15 years</option>
+                            <option value="15+">15+ years</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-between">
+                        <button type="button" onclick="prevStep()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            <i class="fas fa-arrow-left mr-2"></i> Previous
+                        </button>
+                        <button type="button" onclick="nextStep()" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Next <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Step 3: Use Case -->
+        <div id="step3" class="step-content hidden">
+            <div class="bg-white shadow rounded-lg p-6 question-card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 editable-field">
+                    How will you use AI Hub Pro?
+                    <i class="fas fa-edit edit-icon ml-2"></i>
+                </h3>
+                <p class="text-gray-600 mb-6 editable-field">
+                    Help us understand your primary use case so we can recommend the best features for you.
+                    <i class="fas fa-edit edit-icon ml-2"></i>
+                </p>
+                <form id="useCaseForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Primary Use Case (Select all that apply)</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="useCase" value="data-analysis" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">Data Analysis</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="useCase" value="automation" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">Automation</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="useCase" value="content-creation" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">Content Creation</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="useCase" value="customer-support" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">Customer Support</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="useCase" value="research" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">Research</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="useCase" value="other" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">Other</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="otherUseCase" class="block text-sm font-medium text-gray-700 mb-1">If other, please specify</label>
+                        <input type="text" id="otherUseCase" name="otherUseCase" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="goals" class="block text-sm font-medium text-gray-700 mb-1">What are your primary goals with AI Hub Pro?</label>
+                        <textarea id="goals" name="goals" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                    <div class="flex justify-between">
+                        <button type="button" onclick="prevStep()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            <i class="fas fa-arrow-left mr-2"></i> Previous
+                        </button>
+                        <button type="button" onclick="nextStep()" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Next <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Step 4: Technical Skills -->
+        <div id="step4" class="step-content hidden">
+            <div class="bg-white shadow rounded-lg p-6 question-card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 editable-field">
+                    Technical Skills
+                    <i class="fas fa-edit edit-icon ml-2"></i>
+                </h3>
+                <p class="text-gray-600 mb-6 editable-field">
+                    Tell us about your technical background to help us tailor your experience.
+                    <i class="fas fa-edit edit-icon ml-2"></i>
+                </p>
+                <form id="technicalSkillsForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Technical Skills (Select all that apply)</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="skills" value="programming" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">Programming</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="skills" value="data-science" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">Data Science</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="skills" value="machine-learning" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">Machine Learning</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="skills" value="ai-expertise" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">AI Expertise</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="skills" value="cloud-computing" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">Cloud Computing</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="skills" value="none" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">None of the above</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="skillLevel" class="block text-sm font-medium text-gray-700 mb-1">Overall Technical Skill Level</label>
+                        <select id="skillLevel" name="skillLevel" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select skill level</option>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                            <option value="expert">Expert</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="tools" class="block text-sm font-medium text-gray-700 mb-1">Tools/Platforms you're familiar with</label>
+                        <textarea id="tools" name="tools" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                    <div class="flex justify-between">
+                        <button type="button" onclick="prevStep()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            <i class="fas fa-arrow-left mr-2"></i> Previous
+                        </button>
+                        <button type="button" onclick="nextStep()" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Next <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Step 5: Preferences -->
+        <div id="step5" class="step-content hidden">
+            <div class="bg-white shadow rounded-lg p-6 question-card">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 editable-field">
+                    Preferences
+                    <i class="fas fa-edit edit-icon ml-2"></i>
+                </h3>
+                <p class="text-gray-600 mb-6 editable-field">
+                    Let us know your preferences to customize your experience.
+                    <i class="fas fa-edit edit-icon ml-2"></i>
+                </p>
+                <form id="preferencesForm" class="space-y-4">
+                    <div>
+                        <label for="notifications" class="block text-sm font-medium text-gray-700 mb-1">Email Notifications</label>
+                        <select id="notifications" name="notifications" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="all">All notifications</option>
+                            <option value="important">Important notifications only</option>
+                            <option value="none">No notifications</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="updates" class="block text-sm font-medium text-gray-700 mb-1">Product Updates</label>
+                        <select id="updates" name="updates" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="weekly">Weekly digest</option>
+                            <option value="monthly">Monthly digest</option>
+                            <option value="major">Major updates only</option>
+                            <option value="none">No updates</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="newsletter" class="block text-sm font-medium text-gray-700 mb-1">Newsletter</label>
+                        <select id="newsletter" name="newsletter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="yes">Yes, I'd like to receive the newsletter</option>
+                            <option value="no">No, thank you</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="referral" class="block text-sm font-medium text-gray-700 mb-1">How did you hear about us?</label>
+                        <select id="referral" name="referral" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select an option</option>
+                            <option value="search">Search Engine</option>
+                            <option value="social">Social Media</option>
+                            <option value="friend">Friend or Colleague</option>
+                            <option value="advertisement">Advertisement</option>
+                            <option value="blog">Blog or Publication</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="comments" class="block text-sm font-medium text-gray-700 mb-1">Additional Comments</label>
+                        <textarea id="comments" name="comments" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                    <div class="flex justify-between">
+                        <button type="button" onclick="prevStep()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            <i class="fas fa-arrow-left mr-2"></i> Previous
+                        </button>
+                        <button type="button" onclick="submitOnboarding()" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                            Complete Onboarding <i class="fas fa-check ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Completion Screen -->
+        <div id="completionScreen" class="hidden">
+            <div class="bg-white shadow rounded-lg p-6 text-center">
+                <div class="mb-6">
+                    <i class="fas fa-check-circle text-green-500 text-6xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Onboarding Complete!</h3>
+                <p class="text-gray-600 mb-6">Thank you for completing the onboarding process. You're now ready to explore AI Hub Pro.</p>
+                <div class="mb-6">
+                    <button onclick="goToMainApp()" class="px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Go to AI Hub Pro <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                <div class="text-sm text-gray-500">
+                    <p>Your information has been saved and will be used to customize your experience.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Content</h3>
+            <div class="mb-4">
+                <label for="editTitle" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input type="text" id="editTitle" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div class="mb-4">
+                <label for="editDescription" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea id="editDescription" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                    Cancel
+                </button>
+                <button type="button" onclick="saveEditModal()" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentStep = 1;
+        const totalSteps = 5;
+        let onboardingData = {};
+        let isAdminMode = false;
+        let currentEditElement = null;
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user has already completed onboarding
+            if (hasCompletedOnboarding()) {
+                // Redirect to main app
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Load any saved onboarding data
+            loadOnboardingData();
+
+            // Set up event listeners
+            setupEventListeners();
+
+            // Initialize step indicators
+            updateStepIndicators();
+        });
+
+        // Check if user has completed onboarding
+        function hasCompletedOnboarding() {
+            return localStorage.getItem('aihub_onboarding_completed') === 'true';
+        }
+
+        // Load saved onboarding data
+        function loadOnboardingData() {
+            const savedData = localStorage.getItem('aihub_onboarding_data');
+            if (savedData) {
+                try {
+                    onboardingData = JSON.parse(savedData);
+                    // Populate form fields with saved data
+                    populateFormFields();
+                } catch (e) {
+                    console.error('Error loading onboarding data:', e);
+                }
+            }
+        }
+
+        // Save onboarding data
+        function saveOnboardingData() {
+            localStorage.setItem('aihub_onboarding_data', JSON.stringify(onboardingData));
+        }
+
+        // Populate form fields with saved data
+        function populateFormFields() {
+            // Personal Information
+            if (onboardingData.personalInfo) {
+                document.getElementById('firstName').value = onboardingData.personalInfo.firstName || '';
+                document.getElementById('lastName').value = onboardingData.personalInfo.lastName || '';
+                document.getElementById('email').value = onboardingData.personalInfo.email || '';
+                document.getElementById('phone').value = onboardingData.personalInfo.phone || '';
+            }
+
+            // Professional Information
+            if (onboardingData.professionalInfo) {
+                document.getElementById('company').value = onboardingData.professionalInfo.company || '';
+                document.getElementById('jobTitle').value = onboardingData.professionalInfo.jobTitle || '';
+                document.getElementById('industry').value = onboardingData.professionalInfo.industry || '';
+                document.getElementById('experience').value = onboardingData.professionalInfo.experience || '';
+            }
+
+            // Use Case
+            if (onboardingData.useCase) {
+                if (onboardingData.useCase.useCases) {
+                    const checkboxes = document.querySelectorAll('input[name="useCase"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = onboardingData.useCase.useCases.includes(checkbox.value);
+                    });
+                }
+                document.getElementById('otherUseCase').value = onboardingData.useCase.otherUseCase || '';
+                document.getElementById('goals').value = onboardingData.useCase.goals || '';
+            }
+
+            // Technical Skills
+            if (onboardingData.technicalSkills) {
+                if (onboardingData.technicalSkills.skills) {
+                    const checkboxes = document.querySelectorAll('input[name="skills"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = onboardingData.technicalSkills.skills.includes(checkbox.value);
+                    });
+                }
+                document.getElementById('skillLevel').value = onboardingData.technicalSkills.skillLevel || '';
+                document.getElementById('tools').value = onboardingData.technicalSkills.tools || '';
+            }
+
+            // Preferences
+            if (onboardingData.preferences) {
+                document.getElementById('notifications').value = onboardingData.preferences.notifications || '';
+                document.getElementById('updates').value = onboardingData.preferences.updates || '';
+                document.getElementById('newsletter').value = onboardingData.preferences.newsletter || '';
+                document.getElementById('referral').value = onboardingData.preferences.referral || '';
+                document.getElementById('comments').value = onboardingData.preferences.comments || '';
+            }
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Admin toggle
+            document.getElementById('adminToggle').addEventListener('click', function() {
+                isAdminMode = !isAdminMode;
+                toggleAdminMode();
+            });
+
+            // Edit icons
+            document.querySelectorAll('.edit-icon').forEach(icon => {
+                icon.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const parent = this.parentElement;
+                    openEditModal(parent);
+                });
+            });
+        }
+
+        // Toggle admin mode
+        function toggleAdminMode() {
+            const editableFields = document.querySelectorAll('.editable-field');
+            editableFields.forEach(field => {
+                if (isAdminMode) {
+                    field.classList.add('admin-mode');
+                } else {
+                    field.classList.remove('admin-mode');
+                }
+            });
+
+            if (isAdminMode) {
+                showNotification('Admin mode enabled. You can now edit the form fields.', 'info');
+            } else {
+                showNotification('Admin mode disabled.', 'info');
+            }
+        }
+
+        // Open edit modal
+        function openEditModal(element) {
+            if (!isAdminMode) return;
+
+            currentEditElement = element;
+            const title = element.querySelector('h3')?.textContent || '';
+            const description = element.querySelector('p')?.textContent || '';
+
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editDescription').value = description;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            currentEditElement = null;
+        }
+
+        // Save edit modal
+        function saveEditModal() {
+            if (!currentEditElement) return;
+
+            const title = document.getElementById('editTitle').value;
+            const description = document.getElementById('editDescription').value;
+
+            const titleElement = currentEditElement.querySelector('h3');
+            const descriptionElement = currentEditElement.querySelector('p');
+
+            if (titleElement) {
+                titleElement.innerHTML = title + ' <i class="fas fa-edit edit-icon ml-2"></i>';
+            }
+
+            if (descriptionElement) {
+                descriptionElement.innerHTML = description + ' <i class="fas fa-edit edit-icon ml-2"></i>';
+            }
+
+            // Re-attach event listeners to new edit icons
+            currentEditElement.querySelectorAll('.edit-icon').forEach(icon => {
+                icon.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const parent = this.parentElement;
+                    openEditModal(parent);
+                });
+            });
+
+            closeEditModal();
+            showNotification('Content updated successfully!', 'success');
+        }
+
+        // Navigate to next step
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                // Save current step data
+                saveCurrentStepData();
+
+                // Validate current step
+                if (!validateCurrentStep()) {
+                    return;
+                }
+
+                // Hide current step
+                document.getElementById(`step${currentStep}`).classList.add('hidden');
+
+                // Increment step
+                currentStep++;
+
+                // Show next step
+                document.getElementById(`step${currentStep}`).classList.remove('hidden');
+                document.getElementById(`step${currentStep}`).classList.add('fade-in');
+
+                // Update progress
+                updateProgress();
+                updateStepIndicators();
+            }
+        }
+
+        // Navigate to previous step
+        function prevStep() {
+            if (currentStep > 1) {
+                // Save current step data
+                saveCurrentStepData();
+
+                // Hide current step
+                document.getElementById(`step${currentStep}`).classList.add('hidden');
+
+                // Decrement step
+                currentStep--;
+
+                // Show previous step
+                document.getElementById(`step${currentStep}`).classList.remove('hidden');
+                document.getElementById(`step${currentStep}`).classList.add('fade-in');
+
+                // Update progress
+                updateProgress();
+                updateStepIndicators();
+            }
+        }
+
+        // Save current step data
+        function saveCurrentStepData() {
+            switch (currentStep) {
+                case 1:
+                    onboardingData.personalInfo = {
+                        firstName: document.getElementById('firstName').value,
+                        lastName: document.getElementById('lastName').value,
+                        email: document.getElementById('email').value,
+                        phone: document.getElementById('phone').value
+                    };
+                    break;
+                case 2:
+                    onboardingData.professionalInfo = {
+                        company: document.getElementById('company').value,
+                        jobTitle: document.getElementById('jobTitle').value,
+                        industry: document.getElementById('industry').value,
+                        experience: document.getElementById('experience').value
+                    };
+                    break;
+                case 3:
+                    const useCases = [];
+                    document.querySelectorAll('input[name="useCase"]:checked').forEach(checkbox => {
+                        useCases.push(checkbox.value);
+                    });
+                    onboardingData.useCase = {
+                        useCases: useCases,
+                        otherUseCase: document.getElementById('otherUseCase').value,
+                        goals: document.getElementById('goals').value
+                    };
+                    break;
+                case 4:
+                    const skills = [];
+                    document.querySelectorAll('input[name="skills"]:checked').forEach(checkbox => {
+                        skills.push(checkbox.value);
+                    });
+                    onboardingData.technicalSkills = {
+                        skills: skills,
+                        skillLevel: document.getElementById('skillLevel').value,
+                        tools: document.getElementById('tools').value
+                    };
+                    break;
+                case 5:
+                    onboardingData.preferences = {
+                        notifications: document.getElementById('notifications').value,
+                        updates: document.getElementById('updates').value,
+                        newsletter: document.getElementById('newsletter').value,
+                        referral: document.getElementById('referral').value,
+                        comments: document.getElementById('comments').value
+                    };
+                    break;
+            }
+
+            // Save to localStorage
+            saveOnboardingData();
+        }
+
+        // Validate current step
+        function validateCurrentStep() {
+            switch (currentStep) {
+                case 1:
+                    const firstName = document.getElementById('firstName').value.trim();
+                    const lastName = document.getElementById('lastName').value.trim();
+                    const email = document.getElementById('email').value.trim();
+
+                    if (!firstName) {
+                        showNotification('Please enter your first name', 'error');
+                        return false;
+                    }
+
+                    if (!lastName) {
+                        showNotification('Please enter your last name', 'error');
+                        return false;
+                    }
+
+                    if (!email) {
+                        showNotification('Please enter your email address', 'error');
+                        return false;
+                    }
+
+                    if (!isValidEmail(email)) {
+                        showNotification('Please enter a valid email address', 'error');
+                        return false;
+                    }
+
+                    break;
+                case 2:
+                    // No required fields in step 2
+                    break;
+                case 3:
+                    const useCases = document.querySelectorAll('input[name="useCase"]:checked');
+                    if (useCases.length === 0) {
+                        showNotification('Please select at least one use case', 'error');
+                        return false;
+                    }
+                    break;
+                case 4:
+                    // No required fields in step 4
+                    break;
+                case 5:
+                    // No required fields in step 5
+                    break;
+            }
+
+            return true;
+        }
+
+        // Validate email format
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('currentStep').textContent = currentStep;
+        }
+
+        // Update step indicators
+        function updateStepIndicators() {
+            const indicators = document.querySelectorAll('.step-indicator');
+            indicators.forEach((indicator, index) => {
+                indicator.classList.remove('active', 'completed');
+                if (index < currentStep - 1) {
+                    indicator.classList.add('completed');
+                } else if (index === currentStep - 1) {
+                    indicator.classList.add('active');
+                }
+            });
+        }
+
+        // Submit onboarding
+        function submitOnboarding() {
+            // Save current step data
+            saveCurrentStepData();
+
+            // Validate current step
+            if (!validateCurrentStep()) {
+                return;
+            }
+
+            // Add timestamp
+            onboardingData.completedAt = new Date().toISOString();
+
+            // Save to localStorage
+            saveOnboardingData();
+
+            // Mark onboarding as completed
+            localStorage.setItem('aihub_onboarding_completed', 'true');
+
+            // Save user data for main app
+            localStorage.setItem('aihub_user_data', JSON.stringify({
+                firstName: onboardingData.personalInfo.firstName,
+                lastName: onboardingData.personalInfo.lastName,
+                email: onboardingData.personalInfo.email,
+                phone: onboardingData.personalInfo.phone,
+                company: onboardingData.professionalInfo.company,
+                jobTitle: onboardingData.professionalInfo.jobTitle,
+                industry: onboardingData.professionalInfo.industry,
+                experience: onboardingData.professionalInfo.experience,
+                useCases: onboardingData.useCase.useCases,
+                goals: onboardingData.useCase.goals,
+                skills: onboardingData.technicalSkills.skills,
+                skillLevel: onboardingData.technicalSkills.skillLevel,
+                tools: onboardingData.technicalSkills.tools,
+                notifications: onboardingData.preferences.notifications,
+                updates: onboardingData.preferences.updates,
+                newsletter: onboardingData.preferences.newsletter,
+                referral: onboardingData.preferences.referral,
+                comments: onboardingData.preferences.comments,
+                completedAt: onboardingData.completedAt
+            }));
+
+            // Hide current step
+            document.getElementById(`step${currentStep}`).classList.add('hidden');
+
+            // Show completion screen
+            document.getElementById('completionScreen').classList.remove('hidden');
+            document.getElementById('completionScreen').classList.add('fade-in');
+
+            // Update progress to 100%
+            document.getElementById('progressBar').style.width = '100%';
+
+            showNotification('Onboarding completed successfully!', 'success');
+        }
+
+        // Go to main app
+        function goToMainApp() {
+            window.location.href = 'index.html';
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+
+            document.getElementById('notificationContainer').appendChild(notification);
+
+            // Show notification
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            // Hide notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
