@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Margin Calculator | TradeKit.Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        secondary: '#3b82f6',
+                        accent: '#f59e0b',
+                        warning: '#ef4444',
+                        dark: '#0f172a',
+                        darker: '#0a0f1c'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+        .card-glow {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
+        }
+        .gauge {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            margin: 0 auto;
+        }
+        .gauge-circle {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        .gauge-background {
+            fill: none;
+            stroke: #374151;
+            stroke-width: 10;
+        }
+        .gauge-fill {
+            fill: none;
+            stroke: #10b981;
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 565.48;
+            stroke-dashoffset: 565.48;
+            transition: stroke-dashoffset 1.5s ease-in-out;
+        }
+        .gauge-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .warning-pulse {
+            animation: warning-pulse 2s infinite;
+        }
+        @keyframes warning-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Margin Calculator</h1>
+            <p class="text-lg text-gray-300">Calculate margin requirements and manage your trading leverage</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calculator Card -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-3">
+                            <i class="fas fa-balance-scale text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">Calculate Margin Requirements</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Account Details -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Account Balance ($)</label>
+                                <div class="relative">
+                                    <input type="number" id="accountBalance" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="10000" min="0" step="0.01">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-wallet"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Account Currency</label>
+                                <div class="relative">
+                                    <select id="accountCurrency" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none appearance-none">
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="GBP">GBP</option>
+                                        <option value="JPY">JPY</option>
+                                    </select>
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trade Details -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Instrument</label>
+                                <div class="relative">
+                                    <select id="instrument" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none appearance-none">
+                                        <optgroup label="Forex">
+                                            <option value="EUR/USD">EUR/USD</option>
+                                            <option value="GBP/USD">GBP/USD</option>
+                                            <option value="USD/JPY">USD/JPY</option>
+                                        </optgroup>
+                                        <optgroup label="Crypto">
+                                            <option value="BTC/USD">BTC/USD</option>
+                                            <option value="ETH/USD">ETH/USD</option>
+                                        </optgroup>
+                                        <optgroup label="Indices">
+                                            <option value="SPX">S&P 500</option>
+                                            <option value="NDX">Nasdaq 100</option>
+                                        </optgroup>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Position Size</label>
+                                <div class="relative">
+                                    <input type="number" id="positionSize" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="1.0" min="0" step="0.01">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-cube"></i>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between mt-1 text-xs text-gray-400">
+                                    <span>Micro: 0.01</span>
+                                    <span>Mini: 0.1</span>
+                                    <span>Standard: 1.0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Leverage and Price -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Leverage</label>
+                                <div class="relative">
+                                    <input type="number" id="leverage" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="30" min="1" max="1000" step="1">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-rocket"></i>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-xs text-gray-400">1:1</span>
+                                    <span class="text-xs text-gray-400">1:100</span>
+                                    <span class="text-xs text-gray-400">1:1000</span>
+                                </div>
+                                <input type="range" id="leverageSlider" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" min="1" max="1000" step="1" value="30">
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Current Price</label>
+                                <div class="relative">
+                                    <input type="number" id="currentPrice" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="1.1200" min="0" step="0.0001">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button id="calculate" class="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02]">
+                            Calculate Margin
+                        </button>
+
+                        <!-- Results -->
+                        <div id="results" class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700 hidden">
+                            <h3 class="text-xl font-bold mb-4 text-center">Margin Analysis</h3>
+                            
+                            <!-- Margin Gauge -->
+                            <div class="mb-6">
+                                <div class="gauge">
+                                    <svg class="gauge-circle" viewBox="0 0 200 200">
+                                        <circle class="gauge-background" cx="100" cy="100" r="90"></circle>
+                                        <circle class="gauge-fill" cx="100" cy="100" r="90" id="gaugeCircle"></circle>
+                                    </svg>
+                                    <div class="gauge-text">
+                                        <p id="marginPercent" class="text-3xl font-bold">0%</p>
+                                        <p class="text-gray-400 text-sm">Margin Used</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Required Margin</p>
+                                    <p id="requiredMargin" class="text-2xl font-bold text-accent">$0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Free Margin</p>
+                                    <p id="freeMargin" class="text-2xl font-bold text-primary">$0.00</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-gray-800 p-4 rounded-lg">
+                                    <p class="text-gray-400">Position Value</p>
+                                    <p id="positionValue" class="text-xl font-bold">$0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg">
+                                    <p class="text-gray-400">Margin Level</p>
+                                    <p id="marginLevel" class="text-xl font-bold">0%</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Warning Message -->
+                            <div id="warningMessage" class="mt-4 p-4 bg-red-900/30 border border-red-700 rounded-lg text-center hidden warning-pulse">
+                                <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                                <span id="warningText" class="font-bold text-red-400">High margin usage detected!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700 h-full">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center mr-3">
+                            <i class="fas fa-info-circle text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">How to Use</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 1: Enter Account Details</h3>
+                            <p class="text-gray-300 text-sm">Input your account balance and select your account currency.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 2: Set Trade Parameters</h3>
+                            <p class="text-gray-300 text-sm">Select the instrument, position size, and current market price.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 3: Adjust Leverage</h3>
+                            <p class="text-gray-300 text-sm">Set your desired leverage ratio using the slider or input field.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 4: Calculate</h3>
+                            <p class="text-gray-300 text-sm">Click calculate to see margin requirements and risk levels.</p>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="font-bold text-lg mb-3 text-accent">Understanding Margin Trading</h3>
+                            <ul class="space-y-2 text-gray-300">
+                                <li class="flex items-start">
+                                    <i class="fas fa-exclamation-triangle text-warning mr-2 mt-1"></i>
+                                    <span>Margin allows you to control larger positions with less capital</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-balance-scale text-primary mr-2 mt-1"></i>
+                                    <span>Higher leverage increases both potential profits and losses</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-shield-alt text-secondary mr-2 mt-1"></i>
+                                    <span>Monitor margin levels to avoid margin calls</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-chart-line text-accent mr-2 mt-1"></i>
+                                    <span>Proper margin management is crucial for long-term success</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg border-l-4 border-primary">
+                            <h4 class="font-bold text-white mb-2">Pro Tip</h4>
+                            <p class="text-sm text-gray-300">Keep your margin usage below 50% to maintain a healthy buffer and avoid margin calls during market volatility.</p>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                            <h4 class="font-bold text-primary mb-2">Margin Safety Levels</h4>
+                            <div class="text-sm text-gray-300 space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-green-400">Safe:</span>
+                                    <span>0-30%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-yellow-400">Caution:</span>
+                                    <span>30-70%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-red-400">Danger:</span>
+                                    <span>70-100%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-red-600">Margin Call:</span>
+                                    <span>100%+</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-400 border-t border-gray-800 pt-6">
+            <p>&copy; 2023 TradeKit.Tools. All rights reserved.</p>
+            <p class="text-sm mt-2">Designed for traders by traders</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountBalanceInput = document.getElementById('accountBalance');
+            const accountCurrencySelect = document.getElementById('accountCurrency');
+            const instrumentSelect = document.getElementById('instrument');
+            const positionSizeInput = document.getElementById('positionSize');
+            const leverageInput = document.getElementById('leverage');
+            const leverageSlider = document.getElementById('leverageSlider');
+            const currentPriceInput = document.getElementById('currentPrice');
+            const calculateBtn = document.getElementById('calculate');
+            const resultsDiv = document.getElementById('results');
+            const requiredMarginEl = document.getElementById('requiredMargin');
+            const freeMarginEl = document.getElementById('freeMargin');
+            const positionValueEl = document.getElementById('positionValue');
+            const marginLevelEl = document.getElementById('marginLevel');
+            const marginPercentEl = document.getElementById('marginPercent');
+            const gaugeCircle = document.getElementById('gaugeCircle');
+            const warningMessage = document.getElementById('warningMessage');
+            const warningText = document.getElementById('warningText');
+
+            // Sync leverage slider with input
+            leverageSlider.addEventListener('input', function() {
+                leverageInput.value = leverageSlider.value;
+            });
+
+            leverageInput.addEventListener('input', function() {
+                leverageSlider.value = leverageInput.value;
+            });
+
+            // Calculate margin
+            calculateBtn.addEventListener('click', function() {
+                const accountBalance = parseFloat(accountBalanceInput.value);
+                const positionSize = parseFloat(positionSizeInput.value);
+                const leverage = parseFloat(leverageInput.value);
+                const currentPrice = parseFloat(currentPriceInput.value);
+
+                if (!accountBalance || !positionSize || !leverage || !currentPrice) {
+                    alert('Please fill in all fields with valid numbers');
+                    return;
+                }
+
+                // Calculate position value (simplified calculation)
+                // For forex: 1 standard lot = 100,000 units
+                let contractSize = 100000;
+                let positionValue = positionSize * contractSize * currentPrice;
+
+                // Calculate required margin
+                const requiredMargin = positionValue / leverage;
+
+                // Calculate free margin and margin level
+                const freeMargin = accountBalance - requiredMargin;
+                const marginLevel = (accountBalance / requiredMargin) * 100;
+                const marginPercent = (requiredMargin / accountBalance) * 100;
+
+                // Update UI
+                requiredMarginEl.textContent = '$' + requiredMargin.toFixed(2);
+                freeMarginEl.textContent = '$' + freeMargin.toFixed(2);
+                positionValueEl.textContent = '$' + positionValue.toFixed(2);
+                marginLevelEl.textContent = marginLevel.toFixed(2) + '%';
+                marginPercentEl.textContent = marginPercent.toFixed(1) + '%';
+
+                // Update gauge
+                const circumference = 565.48; // 2 * π * 90
+                const offset = circumference - (marginPercent / 100) * circumference;
+                gaugeCircle.style.strokeDashoffset = offset;
+
+                // Change gauge color based on margin usage
+                if (marginPercent > 70) {
+                    gaugeCircle.style.stroke = '#ef4444'; // Red
+                } else if (marginPercent > 30) {
+                    gaugeCircle.style.stroke = '#f59e0b'; // Yellow
+                } else {
+                    gaugeCircle.style.stroke = '#10b981'; // Green
+                }
+
+                // Show warning if needed
+                if (marginPercent > 100) {
+                    warningText.textContent = "Margin call risk! Your account doesn't have enough funds for this trade.";
+                    warningMessage.classList.remove('hidden');
+                } else if (marginPercent > 70) {
+                    warningText.textContent = "High margin usage! Consider reducing position size or adding funds.";
+                    warningMessage.classList.remove('hidden');
+                } else if (marginPercent > 50) {
+                    warningText.textContent = "Moderate margin usage. Monitor your positions closely.";
+                    warningMessage.classList.remove('hidden');
+                } else {
+                    warningMessage.classList.add('hidden');
+                }
+
+                resultsDiv.classList.remove('hidden');
+                
+                // Add animation to results
+                resultsDiv.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    resultsDiv.style.transform = 'scale(1)';
+                    resultsDiv.style.transition = 'transform 0.3s ease';
+                }, 10);
+            });
+
+            // Add some sample values for demo
+            accountBalanceInput.value = '10000';
+            positionSizeInput.value = '1.0';
+            leverageInput.value = '30';
+            leverageSlider.value = '30';
+            currentPriceInput.value = '1.1200';
+        });
+    </script>
+</body>
+</html>

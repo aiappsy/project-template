@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volatility Calculator | TradeKit.Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#f59e0b',
+                        secondary: '#ef4444',
+                        accent: '#10b981',
+                        dark: '#0f172a',
+                        darker: '#0a0f1c'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'wave': 'wave 2s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        wave: {
+                            '0%, 100%': { transform: 'scaleY(0.8)' },
+                            '50%': { transform: 'scaleY(1.2)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+        .card-glow {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.1);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.5);
+        }
+        .volatility-meter {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            margin: 0 auto;
+        }
+        .volatility-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(#10b981 0%, #f59e0b 50%, #ef4444 100%);
+            mask: radial-gradient(circle at center, transparent 50%, black 51%);
+            -webkit-mask: radial-gradient(circle at center, transparent 50%, black 51%);
+        }
+        .volatility-needle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 90px;
+            background: white;
+            transform-origin: bottom center;
+            transform: translateX(-50%) rotate(0deg);
+            transition: transform 1.5s ease-in-out;
+        }
+        .volatility-needle::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 10px solid white;
+        }
+        .volatility-labels {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .volatility-label {
+            position: absolute;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        .wave-chart {
+            height: 100px;
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+            animation: wave 3s ease-in-out infinite;
+        }
+        .wave-1 { animation-delay: 0s; }
+        .wave-2 { animation-delay: 1s; }
+        .wave-3 { animation-delay: 2s; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Volatility Calculator</h1>
+            <p class="text-lg text-gray-300">Measure market volatility and adjust your trading strategy accordingly</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calculator Card -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-3">
+                            <i class="fas fa-chart-area text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">Calculate Market Volatility</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Price Input Method -->
+                        <div>
+                            <label class="block text-gray-300 mb-2">Input Method</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button class="input-method-btn bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white transition-all duration-300 hover:bg-primary/20 active" data-method="manual">Manual Entry</button>
+                                <button class="input-method-btn bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white transition-all duration-300 hover:bg-primary/20" data-method="sample">Sample Data</button>
+                            </div>
+                        </div>
+
+                        <!-- Manual Price Entry -->
+                        <div id="manualEntry">
+                            <label class="block text-gray-300 mb-2">Price Data (comma separated)</label>
+                            <div class="relative">
+                                <textarea id="priceData" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none h-24" placeholder="100, 102, 98, 105, 103, 101, 99, 104, 107, 105"></textarea>
+                                <div class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-list-ol"></i>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-400 mt-1">Enter at least 5 price points for accurate calculation</div>
+                        </div>
+
+                        <!-- Sample Data Selection -->
+                        <div id="sampleData" class="hidden">
+                            <label class="block text-gray-300 mb-2">Sample Market Data</label>
+                            <div class="relative">
+                                <select id="sampleSelector" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none appearance-none">
+                                    <option value="stable">Stable Market (Low Volatility)</option>
+                                    <option value="normal">Normal Market (Medium Volatility)</option>
+                                    <option value="volatile">Volatile Market (High Volatility)</option>
+                                    <option value="crypto">Cryptocurrency (Extreme Volatility)</option>
+                                </select>
+                                <div class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Time Period -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Time Period</label>
+                                <div class="relative">
+                                    <select id="timePeriod" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none appearance-none">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="customPeriod" class="hidden">
+                                <label class="block text-gray-300 mb-2">Custom Period (Days)</label>
+                                <div class="relative">
+                                    <input type="number" id="customDays" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="30" min="1" step="1">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-calendar-day"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button id="calculate" class="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02]">
+                            Calculate Volatility
+                        </button>
+
+                        <!-- Results -->
+                        <div id="results" class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700 hidden">
+                            <h3 class="text-xl font-bold mb-4 text-center">Volatility Analysis</h3>
+                            
+                            <!-- Volatility Meter -->
+                            <div class="mb-6">
+                                <div class="volatility-meter">
+                                    <div class="volatility-circle"></div>
+                                    <div class="volatility-needle" id="volatilityNeedle"></div>
+                                    <div class="volatility-labels">
+                                        <div class="volatility-label" style="top: 10%; left: 50%; transform: translateX(-50%);">Low</div>
+                                        <div class="volatility-label" style="top: 50%; left: 10%;">Medium</div>
+                                        <div class="volatility-label" style="top: 50%; left: 85%;">High</div>
+                                        <div class="volatility-label" style="top: 85%; left: 50%; transform: translateX(-50%);">Extreme</div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <span id="volatilityLevel" class="text-lg font-bold text-primary">Low Volatility</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Wave Visualization -->
+                            <div class="wave-chart bg-gray-800 rounded-lg p-4 mb-4">
+                                <div class="wave wave-1"></div>
+                                <div class="wave wave-2"></div>
+                                <div class="wave wave-3"></div>
+                                <div class="text-center text-gray-400 text-sm">Market Fluctuation Visualization</div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Standard Deviation</p>
+                                    <p id="stdDeviation" class="text-2xl font-bold text-accent">0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Annualized Volatility</p>
+                                    <p id="annualVolatility" class="text-2xl font-bold text-primary">0.00%</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-gray-800 p-4 rounded-lg">
+                                    <p class="text-gray-400">Average Price</p>
+                                    <p id="averagePrice" class="text-xl font-bold">$0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg">
+                                    <p class="text-gray-400">Price Range</p>
+                                    <p id="priceRange" class="text-xl font-bold">$0.00 - $0.00</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Trading Recommendations -->
+                            <div id="tradingRecommendations" class="mt-4 p-4 bg-gray-800 rounded-lg">
+                                <h4 class="font-bold text-primary mb-2">Trading Recommendations</h4>
+                                <ul id="recommendationsList" class="text-gray-300 space-y-2">
+                                    <li>Enter price data to get recommendations</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700 h-full">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center mr-3">
+                            <i class="fas fa-info-circle text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">How to Use</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 1: Choose Input Method</h3>
+                            <p class="text-gray-300 text-sm">Select between manual price entry or sample market data.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 2: Enter Price Data</h3>
+                            <p class="text-gray-300 text-sm">For manual entry, provide historical price points separated by commas.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 3: Set Time Period</h3>
+                            <p class="text-gray-300 text-sm">Choose the time frame for volatility calculation.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 4: Calculate</h3>
+                            <p class="text-gray-300 text-sm">Click calculate to analyze volatility and get trading recommendations.</p>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="font-bold text-lg mb-3 text-accent">Understanding Volatility</h3>
+                            <ul class="space-y-2 text-gray-300">
+                                <li class="flex items-start">
+                                    <i class="fas fa-chart-line text-primary mr-2 mt-1"></i>
+                                    <span>Volatility measures price fluctuations over time</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-balance-scale text-secondary mr-2 mt-1"></i>
+                                    <span>Higher volatility means higher risk and potential reward</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-ruler text-accent mr-2 mt-1"></i>
+                                    <span>Standard deviation quantifies price dispersion</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-cogs text-primary mr-2 mt-1"></i>
+                                    <span>Adjust position sizing based on volatility levels</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg border-l-4 border-primary">
+                            <h4 class="font-bold text-white mb-2">Pro Tip</h4>
+                            <p class="text-sm text-gray-300">In high volatility markets, reduce your position size to maintain the same risk level. Consider using wider stop losses to avoid being stopped out by normal market noise.</p>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                            <h4 class="font-bold text-primary mb-2">Volatility Levels</h4>
+                            <div class="text-sm text-gray-300 space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-accent">Low: &lt; 15%</span>
+                                    <span>Stable markets</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-yellow-400">Medium: 15-30%</span>
+                                    <span>Normal markets</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-orange-500">High: 30-50%</span>
+                                    <span>Volatile markets</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-red-500">Extreme: &gt; 50%</span>
+                                    <span>High-risk markets</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-400 border-t border-gray-800 pt-6">
+            <p>&copy; 2023 TradeKit.Tools. All rights reserved.</p>
+            <p class="text-sm mt-2">Designed for traders by traders</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputMethodBtns = document.querySelectorAll('.input-method-btn');
+            const manualEntryDiv = document.getElementById('manualEntry');
+            const sampleDataDiv = document.getElementById('sampleData');
+            const priceDataInput = document.getElementById('priceData');
+            const sampleSelector = document.getElementById('sampleSelector');
+            const timePeriodSelect = document.getElementById('timePeriod');
+            const customPeriodDiv = document.getElementById('customPeriod');
+            const customDaysInput = document.getElementById('customDays');
+            const calculateBtn = document.getElementById('calculate');
+            const resultsDiv = document.getElementById('results');
+            const volatilityNeedle = document.getElementById('volatilityNeedle');
+            const volatilityLevelEl = document.getElementById('volatilityLevel');
+            const stdDeviationEl = document.getElementById('stdDeviation');
+            const annualVolatilityEl = document.getElementById('annualVolatility');
+            const averagePriceEl = document.getElementById('averagePrice');
+            const priceRangeEl = document.getElementById('priceRange');
+            const recommendationsList = document.getElementById('recommendationsList');
+
+            let currentInputMethod = 'manual';
+
+            // Input method selection
+            inputMethodBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    inputMethodBtns.forEach(b => b.classList.remove('active', 'border-primary'));
+                    this.classList.add('active', 'border-primary');
+                    currentInputMethod = this.getAttribute('data-method');
+                    
+                    if (currentInputMethod === 'manual') {
+                        manualEntryDiv.classList.remove('hidden');
+                        sampleDataDiv.classList.add('hidden');
+                    } else {
+                        manualEntryDiv.classList.add('hidden');
+                        sampleDataDiv.classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Show/hide custom period input
+            timePeriodSelect.addEventListener('change', function() {
+                if (timePeriodSelect.value === 'custom') {
+                    customPeriodDiv.classList.remove('hidden');
+                } else {
+                    customPeriodDiv.classList.add('hidden');
+                }
+            });
+
+            // Calculate volatility
+            calculateBtn.addEventListener('click', function() {
+                let prices = [];
+                
+                if (currentInputMethod === 'manual') {
+                    const priceData = priceDataInput.value;
+                    if (!priceData) {
+                        alert('Please enter price data');
+                        return;
+                    }
+                    
+                    // Parse comma-separated prices
+                    prices = priceData.split(',').map(p => parseFloat(p.trim())).filter(p => !isNaN(p));
+                    
+                    if (prices.length < 5) {
+                        alert('Please enter at least 5 price points');
+                        return;
+                    }
+                } else {
+                    // Use sample data based on selection
+                    const sampleType = sampleSelector.value;
+                    switch(sampleType) {
+                        case 'stable':
+                            prices = [100, 101, 102, 101, 100, 99, 100, 101, 102, 101, 100, 99, 100, 101];
+                            break;
+                        case 'normal':
+                            prices = [100, 102, 98, 105, 103, 101, 99, 104, 107, 105, 103, 108, 106, 104];
+                            break;
+                        case 'volatile':
+                            prices = [100, 95, 110, 92, 108, 85, 115, 90, 105, 120, 80, 125, 75, 130];
+                            break;
+                        case 'crypto':
+                            prices = [100, 120, 80, 140, 70, 150, 60, 160, 50, 170, 40, 180, 30, 200];
+                            break;
+                    }
+                    
+                    // Update the manual input with sample data for display
+                    priceDataInput.value = prices.join(', ');
+                }
+                
+                // Calculate statistics
+                const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+                const minPrice = Math.min(...prices);
+                const maxPrice = Math.max(...prices);
+                
+                // Calculate standard deviation
+                const squaredDiffs = prices.map(price => Math.pow(price - avgPrice, 2));
+                const variance = squaredDiffs.reduce((sum, diff) => sum + diff, 0) / prices.length;
+                const stdDeviation = Math.sqrt(variance);
+                
+                // Calculate annualized volatility (assuming daily data)
+                const annualVolatility = (stdDeviation / avgPrice) * Math.sqrt(252) * 100;
+                
+                // Update UI
+                stdDeviationEl.textContent = stdDeviation.toFixed(2);
+                annualVolatilityEl.textContent = annualVolatility.toFixed(2) + '%';
+                averagePriceEl.textContent = '$' + avgPrice.toFixed(2);
+                priceRangeEl.textContent = '$' + minPrice.toFixed(2) + ' - $' + maxPrice.toFixed(2);
+                
+                // Update volatility meter
+                let volatilityPercent = Math.min(annualVolatility, 100);
+                let needleRotation = (volatilityPercent / 100) * 180 - 90; // -90 to 90 degrees
+                volatilityNeedle.style.transform = `translateX(-50%) rotate(${needleRotation}deg)`;
+                
+                // Update volatility level
+                let levelText, levelColor;
+                if (annualVolatility < 15) {
+                    levelText = "Low Volatility";
+                    levelColor = "text-accent";
+                } else if (annualVolatility < 30) {
+                    levelText = "Medium Volatility";
+                    levelColor = "text-yellow-400";
+                } else if (annualVolatility < 50) {
+                    levelText = "High Volatility";
+                    levelColor = "text-orange-500";
+                } else {
+                    levelText = "Extreme Volatility";
+                    levelColor = "text-red-500";
+                }
+                
+                volatilityLevelEl.textContent = levelText;
+                volatilityLevelEl.className = `text-lg font-bold ${levelColor}`;
+                
+                // Update trading recommendations
+                recommendationsList.innerHTML = '';
+                let recommendations = [];
+                
+                if (annualVolatility < 15) {
+                    recommendations = [
+                        "Consider smaller position sizes due to limited movement",
+                        "Focus on range-bound strategies",
+                        "Use tighter stop losses",
+                        "Look for breakout opportunities"
+                    ];
+                } else if (annualVolatility < 30) {
+                    recommendations = [
+                        "Standard position sizing is appropriate",
+                        "Both trend-following and range-trading strategies can work",
+                        "Use moderate stop losses",
+                        "Watch for volatility expansion"
+                    ];
+                } else if (annualVolatility < 50) {
+                    recommendations = [
+                        "Reduce position sizes to manage risk",
+                        "Focus on trend-following strategies",
+                        "Use wider stop losses to avoid noise",
+                        "Consider volatility-based position sizing"
+                    ];
+                } else {
+                    recommendations = [
+                        "Significantly reduce position sizes",
+                        "Extreme caution advised - high risk of large moves",
+                        "Use very wide stop losses or consider not trading",
+                        "Focus on risk management over profit potential"
+                    ];
+                }
+                
+                recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-start';
+                    li.innerHTML = `<i class="fas fa-check-circle text-primary mr-2 mt-1"></i><span>${rec}</span>`;
+                    recommendationsList.appendChild(li);
+                });
+
+                resultsDiv.classList.remove('hidden');
+                
+                // Add animation to results
+                resultsDiv.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    resultsDiv.style.transform = 'scale(1)';
+                    resultsDiv.style.transition = 'transform 0.3s ease';
+                }, 10);
+            });
+
+            // Initialize with sample data
+            priceDataInput.value = "100, 102, 98, 105, 103, 101, 99, 104, 107, 105";
+        });
+    </script>
+</body>
+</html>

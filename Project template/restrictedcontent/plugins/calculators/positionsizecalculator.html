@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Position Size Calculator | TradeKit.Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        accent: '#06b6d4',
+                        dark: '#0f172a',
+                        darker: '#0a0f1c'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+        .card-glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Position Size Calculator</h1>
+            <p class="text-lg text-gray-300">Optimize your trading position size based on risk management principles</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calculator Card -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-3">
+                            <i class="fas fa-calculator text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">Calculate Position Size</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Account Balance -->
+                        <div>
+                            <label class="block text-gray-300 mb-2">Account Balance ($)</label>
+                            <div class="relative">
+                                <input type="number" id="balance" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="10000" min="0" step="0.01">
+                                <div class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Percentage -->
+                        <div>
+                            <label class="block text-gray-300 mb-2">Risk Percentage (%)</label>
+                            <div class="relative">
+                                <input type="number" id="risk" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="2" min="0" max="100" step="0.01">
+                                <div class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                            </div>
+                            <div class="flex justify-between mt-1">
+                                <span class="text-xs text-gray-400">Low Risk</span>
+                                <span class="text-xs text-gray-400">High Risk</span>
+                            </div>
+                            <input type="range" id="riskSlider" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" min="0" max="10" step="0.1" value="2">
+                        </div>
+
+                        <!-- Entry and Stop Loss -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Entry Price ($)</label>
+                                <div class="relative">
+                                    <input type="number" id="entry" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="25000" min="0" step="0.01">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Stop Loss ($)</label>
+                                <div class="relative">
+                                    <input type="number" id="stopLoss" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="24500" min="0" step="0.01">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button id="calculate" class="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02]">
+                            Calculate Position Size
+                        </button>
+
+                        <!-- Results -->
+                        <div id="results" class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700 hidden">
+                            <h3 class="text-xl font-bold mb-4 text-center">Position Size Results</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-gray-800 p-4 rounded-lg">
+                                    <p class="text-gray-400">Position Size</p>
+                                    <p id="positionSize" class="text-2xl font-bold text-accent">0 units</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg">
+                                    <p class="text-gray-400">Risk Amount</p>
+                                    <p id="riskAmount" class="text-2xl font-bold text-secondary">$0</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 bg-gray-800 p-4 rounded-lg">
+                                <p class="text-gray-400">Risk per Unit</p>
+                                <p id="riskPerUnit" class="text-xl font-bold text-primary">$0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700 h-full">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center mr-3">
+                            <i class="fas fa-info-circle text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">How to Use</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 1: Enter Account Details</h3>
+                            <p class="text-gray-300 text-sm">Input your total trading account balance and the percentage of your account you're willing to risk on this trade.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 2: Set Trade Parameters</h3>
+                            <p class="text-gray-300 text-sm">Enter your planned entry price and stop-loss price for the trade.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 3: Calculate</h3>
+                            <p class="text-gray-300 text-sm">Click the calculate button to determine your optimal position size based on your risk parameters.</p>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="font-bold text-lg mb-3 text-accent">Why Position Sizing Matters</h3>
+                            <ul class="space-y-2 text-gray-300">
+                                <li class="flex items-start">
+                                    <i class="fas fa-shield-alt text-primary mr-2 mt-1"></i>
+                                    <span>Protects your capital from significant losses</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-chart-line text-secondary mr-2 mt-1"></i>
+                                    <span>Helps maintain consistent risk across trades</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-brain text-accent mr-2 mt-1"></i>
+                                    <span>Reduces emotional decision-making</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-rocket text-primary mr-2 mt-1"></i>
+                                    <span>Improves long-term profitability</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-400 border-t border-gray-800 pt-6">
+            <p>&copy; 2023 TradeKit.Tools. All rights reserved.</p>
+            <p class="text-sm mt-2">Designed for traders by traders</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const balanceInput = document.getElementById('balance');
+            const riskInput = document.getElementById('risk');
+            const riskSlider = document.getElementById('riskSlider');
+            const entryInput = document.getElementById('entry');
+            const stopLossInput = document.getElementById('stopLoss');
+            const calculateBtn = document.getElementById('calculate');
+            const resultsDiv = document.getElementById('results');
+            const positionSizeEl = document.getElementById('positionSize');
+            const riskAmountEl = document.getElementById('riskAmount');
+            const riskPerUnitEl = document.getElementById('riskPerUnit');
+
+            // Sync slider with input
+            riskSlider.addEventListener('input', function() {
+                riskInput.value = riskSlider.value;
+            });
+
+            riskInput.addEventListener('input', function() {
+                riskSlider.value = riskInput.value;
+            });
+
+            // Calculate position size
+            calculateBtn.addEventListener('click', function() {
+                const balance = parseFloat(balanceInput.value);
+                const riskPercent = parseFloat(riskInput.value) / 100;
+                const entry = parseFloat(entryInput.value);
+                const stopLoss = parseFloat(stopLossInput.value);
+
+                if (!balance || !riskPercent || !entry || !stopLoss) {
+                    alert('Please fill in all fields with valid numbers');
+                    return;
+                }
+
+                if (entry <= stopLoss) {
+                    alert('Entry price must be higher than stop loss for long positions');
+                    return;
+                }
+
+                const riskAmount = balance * riskPercent;
+                const riskPerUnit = entry - stopLoss;
+                const positionSize = riskAmount / riskPerUnit;
+
+                positionSizeEl.textContent = positionSize.toFixed(2) + ' units';
+                riskAmountEl.textContent = '$' + riskAmount.toFixed(2);
+                riskPerUnitEl.textContent = '$' + riskPerUnit.toFixed(2);
+
+                resultsDiv.classList.remove('hidden');
+                
+                // Add animation to results
+                resultsDiv.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    resultsDiv.style.transform = 'scale(1)';
+                    resultsDiv.style.transition = 'transform 0.3s ease';
+                }, 10);
+            });
+
+            // Add some sample values for demo
+            balanceInput.value = '10000';
+            riskInput.value = '2';
+            riskSlider.value = '2';
+            entryInput.value = '25000';
+            stopLossInput.value = '24500';
+        });
+    </script>
+</body>
+</html>

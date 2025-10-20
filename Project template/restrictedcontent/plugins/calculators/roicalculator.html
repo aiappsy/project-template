@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Journal ROI Calculator | TradeKit.Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        secondary: '#3b82f6',
+                        accent: '#8b5cf6',
+                        negative: '#ef4444',
+                        dark: '#0f172a',
+                        darker: '#0a0f1c'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'progress': 'progress 1.5s ease-in-out',
+                    },
+                    keyframes: {
+                        progress: {
+                            '0%': { width: '0%' },
+                            '100%': { width: 'var(--progress-width)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+        .card-glow {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
+        }
+        .roi-dial {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(#10b981 0% var(--progress-percent), #374151 var(--progress-percent) 100%);
+            margin: 0 auto;
+            position: relative;
+        }
+        .roi-dial-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 160px;
+            height: 160px;
+            background: #0f172a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .performance-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #374151;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .performance-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease-in-out;
+        }
+        .trade-card {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 4px solid #10b981;
+        }
+        .trade-card.loss {
+            border-left-color: #ef4444;
+        }
+        .journal-entry {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Trading Journal ROI Calculator</h1>
+            <p class="text-lg text-gray-300">Track, analyze, and optimize your trading performance</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calculator Card -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-3">
+                            <i class="fas fa-book text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">Trading Journal Analysis</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Trading Period -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Starting Capital ($)</label>
+                                <div class="relative">
+                                    <input type="number" id="startingCapital" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="10000" min="0" step="0.01">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-wallet"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Trading Period (Days)</label>
+                                <div class="relative">
+                                    <input type="number" id="tradingDays" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="30" min="1" step="1">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trade Entry -->
+                        <div>
+                            <label class="block text-gray-300 mb-2">Add Trade</label>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                                <div>
+                                    <input type="text" id="tradeSymbol" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white input-glow focus:outline-none" placeholder="Symbol">
+                                </div>
+                                <div>
+                                    <input type="number" id="tradePnl" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white input-glow focus:outline-none" placeholder="P&L ($)" step="0.01">
+                                </div>
+                                <div>
+                                    <select id="tradeResult" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white input-glow focus:outline-none">
+                                        <option value="win">Win</option>
+                                        <option value="loss">Loss</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button id="addTrade" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300">
+                                        Add Trade
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sample Data -->
+                        <div>
+                            <label class="block text-gray-300 mb-2">Quick Setup</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <button class="sample-data-btn bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white transition-all duration-300 hover:bg-primary/20" data-sample="beginner">Beginner Trader</button>
+                                <button class="sample-data-btn bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white transition-all duration-300 hover:bg-primary/20" data-sample="intermediate">Intermediate Trader</button>
+                                <button class="sample-data-btn bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white transition-all duration-300 hover:bg-primary/20" data-sample="professional">Professional Trader</button>
+                                <button class="sample-data-btn bg-gray-700 border border-gray-600 rounded-lg py-2 px-4 text-white transition-all duration-300 hover:bg-primary/20" data-sample="clear">Clear All</button>
+                            </div>
+                        </div>
+
+                        <!-- Trading Journal -->
+                        <div>
+                            <label class="block text-gray-300 mb-2">Trading Journal</label>
+                            <div class="bg-gray-900 rounded-lg border border-gray-700 p-4 max-h-60 overflow-y-auto">
+                                <div id="journalEntries" class="space-y-2">
+                                    <div class="text-gray-500 text-center py-4">No trades recorded yet. Add your first trade above.</div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center mt-2 text-sm text-gray-400">
+                                <span id="tradeCount">Total Trades: 0</span>
+                                <span id="totalPnl">Total P&L: $0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button id="calculate" class="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02]">
+                            Calculate ROI & Performance
+                        </button>
+
+                        <!-- Results -->
+                        <div id="results" class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700 hidden">
+                            <h3 class="text-xl font-bold mb-4 text-center">Trading Performance Analysis</h3>
+                            
+                            <!-- ROI Dial -->
+                            <div class="mb-6">
+                                <div class="roi-dial" id="roiDial">
+                                    <div class="roi-dial-inner">
+                                        <span id="roiPercent" class="text-2xl font-bold text-white">0%</span>
+                                        <span class="text-gray-400 text-sm">ROI</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Performance Metrics -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Final Balance</p>
+                                    <p id="finalBalance" class="text-xl font-bold text-accent">$0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Net Profit</p>
+                                    <p id="netProfit" class="text-xl font-bold text-primary">$0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Win Rate</p>
+                                    <p id="winRate" class="text-xl font-bold text-secondary">0%</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Avg Win/Loss</p>
+                                    <p id="avgWinLoss" class="text-xl font-bold">0.00</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Performance Bars -->
+                            <div class="space-y-4 mb-4">
+                                <div>
+                                    <div class="flex justify-between text-sm text-gray-400 mb-1">
+                                        <span>Win Rate</span>
+                                        <span id="winRateText">0%</span>
+                                    </div>
+                                    <div class="performance-bar">
+                                        <div id="winRateBar" class="performance-fill bg-accent" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm text-gray-400 mb-1">
+                                        <span>Profit Factor</span>
+                                        <span id="profitFactorText">0.00</span>
+                                    </div>
+                                    <div class="performance-bar">
+                                        <div id="profitFactorBar" class="performance-fill bg-primary" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-sm text-gray-400 mb-1">
+                                        <span>Expectancy</span>
+                                        <span id="expectancyText">$0.00</span>
+                                    </div>
+                                    <div class="performance-bar">
+                                        <div id="expectancyBar" class="performance-fill bg-secondary" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Performance Assessment -->
+                            <div id="performanceAssessment" class="mt-4 p-4 bg-gray-800 rounded-lg">
+                                <h4 class="font-bold text-primary mb-2">Performance Assessment</h4>
+                                <p id="assessmentText" class="text-gray-300">Add trades to see your performance assessment.</p>
+                                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4" id="improvementTips">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700 h-full">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center mr-3">
+                            <i class="fas fa-info-circle text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">How to Use</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 1: Set Initial Capital</h3>
+                            <p class="text-gray-300 text-sm">Enter your starting trading capital and the period you're analyzing.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 2: Record Trades</h3>
+                            <p class="text-gray-300 text-sm">Add each trade with its symbol, P&L, and result (win/loss).</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 3: Use Sample Data (Optional)</h3>
+                            <p class="text-gray-300 text-sm">Quickly load sample trading data for different trader profiles.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 4: Analyze Performance</h3>
+                            <p class="text-gray-300 text-sm">Calculate to see your ROI, win rate, and performance metrics.</p>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="font-bold text-lg mb-3 text-accent">Benefits of Trading Journals</h3>
+                            <ul class="space-y-2 text-gray-300">
+                                <li class="flex items-start">
+                                    <i class="fas fa-chart-line text-primary mr-2 mt-1"></i>
+                                    <span>Identify profitable and losing patterns</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-cogs text-secondary mr-2 mt-1"></i>
+                                    <span>Optimize your trading strategy over time</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-brain text-accent mr-2 mt-1"></i>
+                                    <span>Improve discipline and emotional control</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-target text-primary mr-2 mt-1"></i>
+                                    <span>Set realistic performance goals</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg border-l-4 border-primary">
+                            <h4 class="font-bold text-white mb-2">Pro Tip</h4>
+                            <p class="text-sm text-gray-300">Review your trading journal weekly. Look for patterns in your winning and losing trades. What setups work best? What mistakes do you repeat? This regular review is key to continuous improvement.</p>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                            <h4 class="font-bold text-primary mb-2">Key Metrics to Track</h4>
+                            <div class="text-sm text-gray-300 space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Win Rate:</span>
+                                    <span>% of profitable trades</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Profit Factor:</span>
+                                    <span>Gross profit / Gross loss</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Expectancy:</span>
+                                    <span>Avg profit per trade</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>ROI:</span>
+                                    <span>Return on investment</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-400 border-t border-gray-800 pt-6">
+            <p>&copy; 2023 TradeKit.Tools. All rights reserved.</p>
+            <p class="text-sm mt-2">Designed for traders by traders</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startingCapitalInput = document.getElementById('startingCapital');
+            const tradingDaysInput = document.getElementById('tradingDays');
+            const tradeSymbolInput = document.getElementById('tradeSymbol');
+            const tradePnlInput = document.getElementById('tradePnl');
+            const tradeResultSelect = document.getElementById('tradeResult');
+            const addTradeBtn = document.getElementById('addTrade');
+            const sampleDataBtns = document.querySelectorAll('.sample-data-btn');
+            const calculateBtn = document.getElementById('calculate');
+            const journalEntriesDiv = document.getElementById('journalEntries');
+            const tradeCountEl = document.getElementById('tradeCount');
+            const totalPnlEl = document.getElementById('totalPnl');
+            const resultsDiv = document.getElementById('results');
+            const roiDial = document.getElementById('roiDial');
+            const roiPercentEl = document.getElementById('roiPercent');
+            const finalBalanceEl = document.getElementById('finalBalance');
+            const netProfitEl = document.getElementById('netProfit');
+            const winRateEl = document.getElementById('winRate');
+            const avgWinLossEl = document.getElementById('avgWinLoss');
+            const winRateTextEl = document.getElementById('winRateText');
+            const profitFactorTextEl = document.getElementById('profitFactorText');
+            const expectancyTextEl = document.getElementById('expectancyText');
+            const winRateBar = document.getElementById('winRateBar');
+            const profitFactorBar = document.getElementById('profitFactorBar');
+            const expectancyBar = document.getElementById('expectancyBar');
+            const performanceAssessment = document.getElementById('performanceAssessment');
+            const assessmentText = document.getElementById('assessmentText');
+            const improvementTips = document.getElementById('improvementTips');
+
+            let trades = [];
+            let tradeId = 1;
+
+            // Add trade to journal
+            addTradeBtn.addEventListener('click', function() {
+                const symbol = tradeSymbolInput.value.trim();
+                const pnl = parseFloat(tradePnlInput.value);
+                const result = tradeResultSelect.value;
+
+                if (!symbol || isNaN(pnl)) {
+                    alert('Please enter both symbol and P&L amount');
+                    return;
+                }
+
+                const trade = {
+                    id: tradeId++,
+                    symbol: symbol.toUpperCase(),
+                    pnl: pnl,
+                    result: result
+                };
+
+                trades.push(trade);
+                updateJournalDisplay();
+                clearTradeInputs();
+            });
+
+            // Sample data buttons
+            sampleDataBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const sampleType = this.getAttribute('data-sample');
+                    
+                    if (sampleType === 'clear') {
+                        trades = [];
+                        updateJournalDisplay();
+                        return;
+                    }
+
+                    // Clear existing trades
+                    trades = [];
+                    
+                    // Define sample data based on type
+                    let sampleTrades = [];
+                    
+                    switch(sampleType) {
+                        case 'beginner':
+                            sampleTrades = [
+                                { symbol: 'AAPL', pnl: 150, result: 'win' },
+                                { symbol: 'TSLA', pnl: -80, result: 'loss' },
+                                { symbol: 'MSFT', pnl: 120, result: 'win' },
+                                { symbol: 'AMZN', pnl: -60, result: 'loss' },
+                                { symbol: 'GOOGL', pnl: 200, result: 'win' },
+                                { symbol: 'NFLX', pnl: -100, result: 'loss' },
+                                { symbol: 'BTC', pnl: 300, result: 'win' },
+                                { symbol: 'ETH', pnl: -150, result: 'loss' },
+                                { symbol: 'SPY', pnl: 180, result: 'win' },
+                                { symbol: 'QQQ', pnl: -90, result: 'loss' }
+                            ];
+                            break;
+                        case 'intermediate':
+                            sampleTrades = [
+                                { symbol: 'EUR/USD', pnl: 220, result: 'win' },
+                                { symbol: 'GBP/JPY', pnl: -120, result: 'loss' },
+                                { symbol: 'BTC/USD', pnl: 450, result: 'win' },
+                                { symbol: 'ETH/USD', pnl: 320, result: 'win' },
+                                { symbol: 'AAPL', pnl: -80, result: 'loss' },
+                                { symbol: 'TSLA', pnl: 280, result: 'win' },
+                                { symbol: 'MSFT', pnl: 190, result: 'win' },
+                                { symbol: 'AMZN', pnl: -110, result: 'loss' },
+                                { symbol: 'NFLX', pnl: 240, result: 'win' },
+                                { symbol: 'GOOGL', pnl: 310, result: 'win' },
+                                { symbol: 'SPY', pnl: -95, result: 'loss' },
+                                { symbol: 'QQQ', pnl: 260, result: 'win' }
+                            ];
+                            break;
+                        case 'professional':
+                            sampleTrades = [
+                                { symbol: 'EUR/USD', pnl: 320, result: 'win' },
+                                { symbol: 'GBP/JPY', pnl: 280, result: 'win' },
+                                { symbol: 'AUD/USD', pnl: -150, result: 'loss' },
+                                { symbol: 'BTC/USD', pnl: 520, result: 'win' },
+                                { symbol: 'ETH/USD', pnl: 410, result: 'win' },
+                                { symbol: 'XRP/USD', pnl: -120, result: 'loss' },
+                                { symbol: 'AAPL', pnl: 380, result: 'win' },
+                                { symbol: 'TSLA', pnl: 290, result: 'win' },
+                                { symbol: 'MSFT', pnl: 340, result: 'win' },
+                                { symbol: 'AMZN', pnl: -180, result: 'loss' },
+                                { symbol: 'NFLX', pnl: 270, result: 'win' },
+                                { symbol: 'GOOGL', pnl: 390, result: 'win' },
+                                { symbol: 'SPY', pnl: 310, result: 'win' },
+                                { symbol: 'QQQ', pnl: -130, result: 'loss' },
+                                { symbol: 'IWM', pnl: 240, result: 'win' }
+                            ];
+                            break;
+                    }
+                    
+                    // Add sample trades with unique IDs
+                    sampleTrades.forEach((trade, index) => {
+                        trades.push({
+                            id: tradeId++,
+                            symbol: trade.symbol,
+                            pnl: trade.pnl,
+                            result: trade.result
+                        });
+                    });
+                    
+                    updateJournalDisplay();
+                });
+            });
+
+            // Calculate performance
+            calculateBtn.addEventListener('click', function() {
+                const startingCapital = parseFloat(startingCapitalInput.value) || 0;
+                
+                if (trades.length === 0) {
+                    alert('Please add at least one trade to calculate performance');
+                    return;
+                }
+                
+                if (!startingCapital || startingCapital <= 0) {
+                    alert('Please enter a valid starting capital amount');
+                    return;
+                }
+
+                // Calculate performance metrics
+                const totalPnl = trades.reduce((sum, trade) => sum + trade.pnl, 0);
+                const finalBalance = startingCapital + totalPnl;
+                const netProfit = totalPnl;
+                const roi = (netProfit / startingCapital) * 100;
+                
+                // Win rate calculation
+                const winningTrades = trades.filter(trade => trade.result === 'win');
+                const winRate = (winningTrades.length / trades.length) * 100;
+                
+                // Average win/loss ratio
+                const totalWins = winningTrades.reduce((sum, trade) => sum + trade.pnl, 0);
+                const totalLosses = Math.abs(trades.filter(trade => trade.result === 'loss').reduce((sum, trade) => sum + trade.pnl, 0));
+                const avgWin = winningTrades.length > 0 ? totalWins / winningTrades.length : 0;
+                const avgLoss = trades.length - winningTrades.length > 0 ? totalLosses / (trades.length - winningTrades.length) : 0;
+                const winLossRatio = avgLoss > 0 ? avgWin / avgLoss : avgWin > 0 ? Infinity : 0;
+                
+                // Profit factor
+                const profitFactor = totalLosses > 0 ? totalWins / totalLosses : totalWins > 0 ? Infinity : 0;
+                
+                // Expectancy
+                const expectancy = netProfit / trades.length;
+
+                // Update UI with results
+                roiPercentEl.textContent = roi.toFixed(2) + '%';
+                finalBalanceEl.textContent = '$' + finalBalance.toFixed(2);
+                netProfitEl.textContent = '$' + netProfit.toFixed(2);
+                winRateEl.textContent = winRate.toFixed(1) + '%';
+                avgWinLossEl.textContent = winLossRatio.toFixed(2);
+                
+                // Update performance bars
+                winRateTextEl.textContent = winRate.toFixed(1) + '%';
+                winRateBar.style.width = winRate + '%';
+                
+                profitFactorTextEl.textContent = profitFactor.toFixed(2);
+                profitFactorBar.style.width = Math.min(profitFactor * 20, 100) + '%';
+                
+                expectancyTextEl.textContent = '$' + expectancy.toFixed(2);
+                const expectancyWidth = Math.min((expectancy / avgWin) * 100, 100);
+                expectancyBar.style.width = Math.max(expectancyWidth, 0) + '%';
+                
+                // Update ROI dial
+                const roiPercent = Math.min(Math.max(roi, -100), 100);
+                const dialPercent = roiPercent >= 0 ? roiPercent : 100 + roiPercent;
+                roiDial.style.setProperty('--progress-percent', `${dialPercent}%`);
+                
+                // Performance assessment
+                let assessment = '';
+                let tips = [];
+                
+                if (roi > 20) {
+                    assessment = 'Outstanding performance! Your trading strategy is highly effective.';
+                    tips = [
+                        'Continue with your current strategy',
+                        'Consider scaling up position sizes gradually',
+                        'Maintain risk management discipline'
+                    ];
+                } else if (roi > 10) {
+                    assessment = 'Good performance. Your strategy is working well.';
+                    tips = [
+                        'Review your best-performing setups',
+                        'Consider adding to your winning strategies',
+                        'Monitor for consistency over time'
+                    ];
+                } else if (roi > 0) {
+                    assessment = 'Positive performance. You are profitable but could improve.';
+                    tips = [
+                        'Focus on improving your win rate',
+                        'Work on risk/reward ratio optimization',
+                        'Reduce emotional trading decisions'
+                    ];
+                } else if (roi === 0) {
+                    assessment = 'Break-even performance. Your trading needs refinement.';
+                    tips = [
+                        'Analyze your losing trades for patterns',
+                        'Improve entry and exit timing',
+                        'Consider paper trading to test new strategies'
+                    ];
+                } else {
+                    assessment = 'Negative performance. Significant improvements needed.';
+                    tips = [
+                        'Reduce position sizes immediately',
+                        'Focus on risk management above all else',
+                        'Consider taking a break to review your strategy'
+                    ];
+                }
+                
+                assessmentText.textContent = assessment;
+                
+                // Update improvement tips
+                improvementTips.innerHTML = '';
+                tips.forEach(tip => {
+                    const tipEl = document.createElement('div');
+                    tipEl.className = 'flex items-start';
+                    tipEl.innerHTML = `<i class="fas fa-lightbulb text-accent mr-2 mt-1"></i><span class="text-sm">${tip}</span>`;
+                    improvementTips.appendChild(tipEl);
+                });
+
+                resultsDiv.classList.remove('hidden');
+                
+                // Add animation to results
+                resultsDiv.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    resultsDiv.style.transform = 'scale(1)';
+                    resultsDiv.style.transition = 'transform 0.3s ease';
+                }, 10);
+            });
+
+            // Helper functions
+            function updateJournalDisplay() {
+                journalEntriesDiv.innerHTML = '';
+                
+                if (trades.length === 0) {
+                    journalEntriesDiv.innerHTML = '<div class="text-gray-500 text-center py-4">No trades recorded yet. Add your first trade above.</div>';
+                    tradeCountEl.textContent = 'Total Trades: 0';
+                    totalPnlEl.textContent = 'Total P&L: $0.00';
+                    return;
+                }
+                
+                let totalPnl = 0;
+                
+                trades.forEach(trade => {
+                    totalPnl += trade.pnl;
+                    
+                    const tradeCard = document.createElement('div');
+                    tradeCard.className = `trade-card journal-entry ${trade.result === 'loss' ? 'loss' : ''}`;
+                    tradeCard.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div class="font-medium">${trade.symbol}</div>
+                            <div class="flex items-center space-x-2">
+                                <span class="${trade.result === 'win' ? 'text-accent' : 'text-negative'} font-bold">
+                                    ${trade.pnl > 0 ? '+' : ''}$${trade.pnl.toFixed(2)}
+                                </span>
+                                <button class="text-gray-400 hover:text-white delete-trade" data-id="${trade.id}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    journalEntriesDiv.appendChild(tradeCard);
+                });
+                
+                // Add delete event listeners
+                document.querySelectorAll('.delete-trade').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const tradeId = parseInt(this.getAttribute('data-id'));
+                        trades = trades.filter(trade => trade.id !== tradeId);
+                        updateJournalDisplay();
+                    });
+                });
+                
+                tradeCountEl.textContent = `Total Trades: ${trades.length}`;
+                totalPnlEl.textContent = `Total P&L: $${totalPnl.toFixed(2)}`;
+            }
+
+            function clearTradeInputs() {
+                tradeSymbolInput.value = '';
+                tradePnlInput.value = '';
+                tradeResultSelect.value = 'win';
+                tradeSymbolInput.focus();
+            }
+
+            // Initialize with sample values
+            startingCapitalInput.value = '10000';
+            tradingDaysInput.value = '30';
+        });
+    </script>
+</body>
+</html>

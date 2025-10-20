@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forex Pip Value Calculator | TradeKit.Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#06b6d4',
+                        accent: '#8b5cf6',
+                        dark: '#0f172a',
+                        darker: '#0a0f1c'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+        .card-glow {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+        .currency-flag {
+            width: 24px;
+            height: 16px;
+            display: inline-block;
+            margin-right: 8px;
+            border-radius: 2px;
+            background-size: cover;
+        }
+        .pip-value-display {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #475569;
+            transition: all 0.3s ease;
+        }
+        .pip-value-display:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Forex Pip Value Calculator</h1>
+            <p class="text-lg text-gray-300">Calculate pip values for any currency pair and lot size</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calculator Card -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-3">
+                            <i class="fas fa-globe-americas text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">Calculate Pip Value</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Currency Pair -->
+                        <div>
+                            <label class="block text-gray-300 mb-2">Currency Pair</label>
+                            <div class="relative">
+                                <select id="currencyPair" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none appearance-none">
+                                    <option value="EUR/USD">EUR/USD</option>
+                                    <option value="GBP/USD">GBP/USD</option>
+                                    <option value="USD/JPY">USD/JPY</option>
+                                    <option value="USD/CHF">USD/CHF</option>
+                                    <option value="AUD/USD">AUD/USD</option>
+                                    <option value="USD/CAD">USD/CAD</option>
+                                    <option value="NZD/USD">NZD/USD</option>
+                                    <option value="EUR/GBP">EUR/GBP</option>
+                                    <option value="EUR/JPY">EUR/JPY</option>
+                                    <option value="GBP/JPY">GBP/JPY</option>
+                                    <option value="custom">Custom Pair</option>
+                                </select>
+                                <div class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Pair Input -->
+                        <div id="customPair" class="hidden">
+                            <label class="block text-gray-300 mb-2">Custom Currency Pair</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="baseCurrency" class="w-1/2 bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none text-center" placeholder="EUR" maxlength="3">
+                                <span class="self-center text-gray-400">/</span>
+                                <input type="text" id="quoteCurrency" class="w-1/2 bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none text-center" placeholder="USD" maxlength="3">
+                            </div>
+                        </div>
+
+                        <!-- Account Currency and Lot Size -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Account Currency</label>
+                                <div class="relative">
+                                    <select id="accountCurrency" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none appearance-none">
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="GBP">GBP</option>
+                                        <option value="JPY">JPY</option>
+                                        <option value="CAD">CAD</option>
+                                        <option value="AUD">AUD</option>
+                                        <option value="CHF">CHF</option>
+                                        <option value="NZD">NZD</option>
+                                    </select>
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-coins"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Lot Size</label>
+                                <div class="relative">
+                                    <select id="lotSize" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none appearance-none">
+                                        <option value="0.01">0.01 (Micro Lot)</option>
+                                        <option value="0.1">0.1 (Mini Lot)</option>
+                                        <option value="1" selected>1.0 (Standard Lot)</option>
+                                        <option value="10">10.0 (10 Lots)</option>
+                                        <option value="custom">Custom</option>
+                                    </select>
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-layer-group"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Lot Size Input -->
+                        <div id="customLotSize" class="hidden">
+                            <label class="block text-gray-300 mb-2">Custom Lot Size</label>
+                            <div class="relative">
+                                <input type="number" id="customLot" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="2.5" min="0" step="0.01">
+                                <div class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-cube"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Exchange Rate -->
+                        <div>
+                            <label class="block text-gray-300 mb-2">Current Exchange Rate</label>
+                            <div class="relative">
+                                <input type="number" id="exchangeRate" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="1.1200" min="0" step="0.0001">
+                                <div class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button id="calculate" class="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02]">
+                            Calculate Pip Value
+                        </button>
+
+                        <!-- Results -->
+                        <div id="results" class="mt-6 hidden">
+                            <div class="pip-value-display">
+                                <h3 class="text-xl font-bold mb-2">Pip Value</h3>
+                                <p id="pipValue" class="text-4xl font-bold text-accent mb-2">$0.00</p>
+                                <p class="text-gray-400 text-sm" id="pipDetails">Per pip movement</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">10 Pip Move</p>
+                                    <p id="tenPips" class="text-xl font-bold text-primary">$0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">50 Pip Move</p>
+                                    <p id="fiftyPips" class="text-xl font-bold text-secondary">$0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">100 Pip Move</p>
+                                    <p id="hundredPips" class="text-xl font-bold text-accent">$0.00</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 bg-gray-800 p-4 rounded-lg">
+                                <h4 class="font-bold text-primary mb-2">Trade Details</h4>
+                                <div class="grid grid-cols-2 gap-2 text-sm">
+                                    <div class="text-gray-400">Currency Pair:</div>
+                                    <div id="resultPair" class="font-medium">-</div>
+                                    
+                                    <div class="text-gray-400">Lot Size:</div>
+                                    <div id="resultLotSize" class="font-medium">-</div>
+                                    
+                                    <div class="text-gray-400">Account Currency:</div>
+                                    <div id="resultAccountCurrency" class="font-medium">-</div>
+                                    
+                                    <div class="text-gray-400">Exchange Rate:</div>
+                                    <div id="resultExchangeRate" class="font-medium">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700 h-full">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center mr-3">
+                            <i class="fas fa-info-circle text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">How to Use</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 1: Select Currency Pair</h3>
+                            <p class="text-gray-300 text-sm">Choose the forex pair you're trading or create a custom one.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 2: Set Account Details</h3>
+                            <p class="text-gray-300 text-sm">Select your account currency and the lot size for your trade.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 3: Enter Exchange Rate</h3>
+                            <p class="text-gray-300 text-sm">Input the current exchange rate for your selected currency pair.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 4: Calculate</h3>
+                            <p class="text-gray-300 text-sm">Click calculate to see the pip value and potential trade values.</p>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="font-bold text-lg mb-3 text-accent">Understanding Pip Values</h3>
+                            <ul class="space-y-2 text-gray-300">
+                                <li class="flex items-start">
+                                    <i class="fas fa-ruler text-primary mr-2 mt-1"></i>
+                                    <span>A pip is the smallest price move in forex trading</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-calculator text-secondary mr-2 mt-1"></i>
+                                    <span>Pip value helps determine position risk</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-balance-scale text-accent mr-2 mt-1"></i>
+                                    <span>Essential for proper risk management</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-chart-line text-primary mr-2 mt-1"></i>
+                                    <span>Varies by currency pair and lot size</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg border-l-4 border-primary">
+                            <h4 class="font-bold text-white mb-2">Pro Tip</h4>
+                            <p class="text-sm text-gray-300">Always calculate pip values before entering a trade to ensure proper position sizing and risk management.</p>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                            <h4 class="font-bold text-primary mb-2">Quick Reference</h4>
+                            <div class="text-sm text-gray-300 space-y-1">
+                                <div class="flex justify-between">
+                                    <span>Standard Lot (1.0):</span>
+                                    <span>100,000 units</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Mini Lot (0.1):</span>
+                                    <span>10,000 units</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Micro Lot (0.01):</span>
+                                    <span>1,000 units</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-400 border-t border-gray-800 pt-6">
+            <p>&copy; 2023 TradeKit.Tools. All rights reserved.</p>
+            <p class="text-sm mt-2">Designed for traders by traders</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currencyPairSelect = document.getElementById('currencyPair');
+            const customPairDiv = document.getElementById('customPair');
+            const baseCurrencyInput = document.getElementById('baseCurrency');
+            const quoteCurrencyInput = document.getElementById('quoteCurrency');
+            const accountCurrencySelect = document.getElementById('accountCurrency');
+            const lotSizeSelect = document.getElementById('lotSize');
+            const customLotSizeDiv = document.getElementById('customLotSize');
+            const customLotInput = document.getElementById('customLot');
+            const exchangeRateInput = document.getElementById('exchangeRate');
+            const calculateBtn = document.getElementById('calculate');
+            const resultsDiv = document.getElementById('results');
+            const pipValueEl = document.getElementById('pipValue');
+            const pipDetailsEl = document.getElementById('pipDetails');
+            const tenPipsEl = document.getElementById('tenPips');
+            const fiftyPipsEl = document.getElementById('fiftyPips');
+            const hundredPipsEl = document.getElementById('hundredPips');
+            const resultPairEl = document.getElementById('resultPair');
+            const resultLotSizeEl = document.getElementById('resultLotSize');
+            const resultAccountCurrencyEl = document.getElementById('resultAccountCurrency');
+            const resultExchangeRateEl = document.getElementById('resultExchangeRate');
+
+            // Show/hide custom pair input
+            currencyPairSelect.addEventListener('change', function() {
+                if (currencyPairSelect.value === 'custom') {
+                    customPairDiv.classList.remove('hidden');
+                } else {
+                    customPairDiv.classList.add('hidden');
+                }
+            });
+
+            // Show/hide custom lot size input
+            lotSizeSelect.addEventListener('change', function() {
+                if (lotSizeSelect.value === 'custom') {
+                    customLotSizeDiv.classList.remove('hidden');
+                } else {
+                    customLotSizeDiv.classList.add('hidden');
+                }
+            });
+
+            // Calculate pip value
+            calculateBtn.addEventListener('click', function() {
+                let pair, baseCurrency, quoteCurrency;
+                
+                if (currencyPairSelect.value === 'custom') {
+                    baseCurrency = baseCurrencyInput.value.toUpperCase();
+                    quoteCurrency = quoteCurrencyInput.value.toUpperCase();
+                    pair = `${baseCurrency}/${quoteCurrency}`;
+                    
+                    if (!baseCurrency || !quoteCurrency || baseCurrency.length !== 3 || quoteCurrency.length !== 3) {
+                        alert('Please enter valid 3-letter currency codes for custom pair');
+                        return;
+                    }
+                } else {
+                    pair = currencyPairSelect.value;
+                    [baseCurrency, quoteCurrency] = pair.split('/');
+                }
+                
+                const accountCurrency = accountCurrencySelect.value;
+                let lotSize;
+                
+                if (lotSizeSelect.value === 'custom') {
+                    lotSize = parseFloat(customLotInput.value);
+                    if (!lotSize || lotSize <= 0) {
+                        alert('Please enter a valid lot size');
+                        return;
+                    }
+                } else {
+                    lotSize = parseFloat(lotSizeSelect.value);
+                }
+                
+                const exchangeRate = parseFloat(exchangeRateInput.value);
+                
+                if (!exchangeRate || exchangeRate <= 0) {
+                    alert('Please enter a valid exchange rate');
+                    return;
+                }
+                
+                // Calculate pip value based on currency pair and account currency
+                let pipValue;
+                const contractSize = 100000; // Standard lot size in units
+                const positionSize = contractSize * lotSize;
+                
+                // For pairs where USD is the quote currency
+                if (quoteCurrency === 'USD') {
+                    pipValue = positionSize * 0.0001; // 1 pip = 0.0001 for most pairs
+                } 
+                // For pairs where USD is the base currency
+                else if (baseCurrency === 'USD') {
+                    pipValue = (positionSize * 0.0001) / exchangeRate;
+                }
+                // For cross pairs (neither currency is USD)
+                else {
+                    // This is a simplified calculation - in practice, we'd need the USD exchange rate for both currencies
+                    pipValue = positionSize * 0.0001;
+                    if (accountCurrency !== 'USD') {
+                        // Convert to account currency (simplified)
+                        pipValue = pipValue / exchangeRate;
+                    }
+                }
+                
+                // Format results
+                const formattedPipValue = pipValue.toFixed(2);
+                const currencySymbol = accountCurrency === 'USD' ? '$' : 
+                                      accountCurrency === 'EUR' ? '€' :
+                                      accountCurrency === 'GBP' ? '£' :
+                                      accountCurrency === 'JPY' ? '¥' : '';
+                
+                pipValueEl.textContent = `${currencySymbol}${formattedPipValue}`;
+                pipDetailsEl.textContent = `Per pip movement for ${pair}`;
+                
+                tenPipsEl.textContent = `${currencySymbol}${(pipValue * 10).toFixed(2)}`;
+                fiftyPipsEl.textContent = `${currencySymbol}${(pipValue * 50).toFixed(2)}`;
+                hundredPipsEl.textContent = `${currencySymbol}${(pipValue * 100).toFixed(2)}`;
+                
+                resultPairEl.textContent = pair;
+                resultLotSizeEl.textContent = lotSize + (lotSize === 1 ? " Standard Lot" : lotSize < 1 ? " Mini/Micro Lot" : " Lots");
+                resultAccountCurrencyEl.textContent = accountCurrency;
+                resultExchangeRateEl.textContent = exchangeRate.toFixed(4);
+                
+                resultsDiv.classList.remove('hidden');
+                
+                // Add animation to results
+                resultsDiv.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    resultsDiv.style.transform = 'scale(1)';
+                    resultsDiv.style.transition = 'transform 0.3s ease';
+                }, 10);
+            });
+
+            // Add some sample values for demo
+            exchangeRateInput.value = '1.1200';
+        });
+    </script>
+</body>
+</html>

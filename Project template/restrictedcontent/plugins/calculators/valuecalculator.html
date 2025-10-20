@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expected Value Calculator | TradeKit.Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8b5cf6',
+                        secondary: '#06b6d4',
+                        accent: '#10b981',
+                        negative: '#ef4444',
+                        dark: '#0f172a',
+                        darker: '#0a0f1c'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-in': 'bounceIn 0.6s',
+                    },
+                    keyframes: {
+                        bounceIn: {
+                            '0%': { transform: 'scale(0.3)', opacity: '0' },
+                            '50%': { transform: 'scale(1.05)', opacity: '0.8' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+        .card-glow {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.5);
+        }
+        .probability-wheel {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(#10b981 0% 50%, #ef4444 50% 100%);
+            margin: 0 auto;
+            position: relative;
+            transition: all 1s ease-in-out;
+        }
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: #0f172a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        .value-bar {
+            height: 20px;
+            border-radius: 10px;
+            background: #374151;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .value-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1.5s ease-in-out;
+        }
+        .positive-fill { background: linear-gradient(90deg, #10b981, #06b6d4); }
+        .negative-fill { background: linear-gradient(90deg, #ef4444, #f59e0b); }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Expected Value Calculator</h1>
+            <p class="text-lg text-gray-300">Calculate the mathematical expectation of your trading strategies</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calculator Card -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-3">
+                            <i class="fas fa-chart-bar text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">Calculate Expected Value</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Trade Setup -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Win Probability (%)</label>
+                                <div class="relative">
+                                    <input type="number" id="winProbability" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="60" min="0" max="100" step="0.1">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-percentage"></i>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-xs text-gray-400">0%</span>
+                                    <span class="text-xs text-gray-400">50%</span>
+                                    <span class="text-xs text-gray-400">100%</span>
+                                </div>
+                                <input type="range" id="winProbabilitySlider" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" min="0" max="100" step="0.1" value="60">
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Loss Probability (%)</label>
+                                <div class="relative">
+                                    <input type="number" id="lossProbability" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="40" min="0" max="100" step="0.1" readonly>
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-percentage"></i>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-1">Automatically calculated</div>
+                            </div>
+                        </div>
+
+                        <!-- Profit and Loss -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Average Win Amount ($)</label>
+                                <div class="relative">
+                                    <input type="number" id="winAmount" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="500" min="0" step="0.01">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-arrow-up text-accent"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Average Loss Amount ($)</label>
+                                <div class="relative">
+                                    <input type="number" id="lossAmount" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="200" min="0" step="0.01">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-arrow-down text-negative"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trading Frequency -->
+                        <div>
+                            <label class="block text-gray-300 mb-2">Trades Per Period</label>
+                            <div class="relative">
+                                <input type="number" id="tradesCount" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="20" min="1" step="1">
+                                <div class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-400 mt-1">Number of trades in your evaluation period</div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button id="calculate" class="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02]">
+                            Calculate Expected Value
+                        </button>
+
+                        <!-- Results -->
+                        <div id="results" class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700 hidden">
+                            <h3 class="text-xl font-bold mb-4 text-center">Expected Value Analysis</h3>
+                            
+                            <!-- Probability Wheel -->
+                            <div class="mb-6">
+                                <div class="probability-wheel" id="probabilityWheel">
+                                    <div class="wheel-center">
+                                        <span id="winProbDisplay">60%</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between mt-2 text-sm">
+                                    <span class="text-accent">Win: <span id="winProbText">60%</span></span>
+                                    <span class="text-negative">Loss: <span id="lossProbText">40%</span></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Expected Value Bar -->
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm text-gray-400 mb-2">
+                                    <span>Negative EV</span>
+                                    <span>Break Even</span>
+                                    <span>Positive EV</span>
+                                </div>
+                                <div class="value-bar">
+                                    <div id="expectedValueBar" class="value-fill positive-fill" style="width: 0%"></div>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <span id="evLabel" class="text-lg font-bold text-accent">Expected Value: $0.00</span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Expected Value Per Trade</p>
+                                    <p id="evPerTrade" class="text-2xl font-bold text-accent">$0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Expected Value Per Period</p>
+                                    <p id="evPerPeriod" class="text-2xl font-bold text-primary">$0.00</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-gray-800 p-4 rounded-lg">
+                                    <p class="text-gray-400">Risk/Reward Ratio</p>
+                                    <p id="riskRewardRatio" class="text-xl font-bold text-secondary">0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg">
+                                    <p class="text-gray-400">Profit Factor</p>
+                                    <p id="profitFactor" class="text-xl font-bold text-accent">0.00</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Strategy Assessment -->
+                            <div id="strategyAssessment" class="mt-4 p-4 bg-gray-800 rounded-lg text-center">
+                                <h4 class="font-bold text-primary mb-2">Strategy Assessment</h4>
+                                <p id="assessmentText" class="text-lg">Enter values to calculate expected value</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700 h-full">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center mr-3">
+                            <i class="fas fa-info-circle text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">How to Use</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 1: Set Probabilities</h3>
+                            <p class="text-gray-300 text-sm">Enter your historical win rate percentage. Loss probability is calculated automatically.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 2: Enter Profit/Loss Amounts</h3>
+                            <p class="text-gray-300 text-sm">Input your average profit per winning trade and average loss per losing trade.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 3: Set Trading Frequency</h3>
+                            <p class="text-gray-300 text-sm">Enter how many trades you typically take in your evaluation period.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 4: Calculate</h3>
+                            <p class="text-gray-300 text-sm">Click calculate to see the expected value and strategy assessment.</p>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="font-bold text-lg mb-3 text-accent">Understanding Expected Value</h3>
+                            <ul class="space-y-2 text-gray-300">
+                                <li class="flex items-start">
+                                    <i class="fas fa-calculator text-primary mr-2 mt-1"></i>
+                                    <span>EV = (Win% × Avg Win) - (Loss% × Avg Loss)</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-chart-line text-secondary mr-2 mt-1"></i>
+                                    <span>Positive EV strategies are profitable long-term</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-balance-scale text-accent mr-2 mt-1"></i>
+                                    <span>Helps evaluate trading systems objectively</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-brain text-primary mr-2 mt-1"></i>
+                                    <span>Removes emotional bias from strategy evaluation</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg border-l-4 border-primary">
+                            <h4 class="font-bold text-white mb-2">Pro Tip</h4>
+                            <p class="text-sm text-gray-300">A strategy with a 40% win rate can still be profitable if the average win is significantly larger than the average loss. Focus on the expected value, not just the win rate.</p>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                            <h4 class="font-bold text-primary mb-2">EV Interpretation</h4>
+                            <div class="text-sm text-gray-300 space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-accent">Positive EV:</span>
+                                    <span>Profitable strategy</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-yellow-400">Zero EV:</span>
+                                    <span>Break-even strategy</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-negative">Negative EV:</span>
+                                    <span>Losing strategy</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-400 border-t border-gray-800 pt-6">
+            <p>&copy; 2023 TradeKit.Tools. All rights reserved.</p>
+            <p class="text-sm mt-2">Designed for traders by traders</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const winProbabilityInput = document.getElementById('winProbability');
+            const winProbabilitySlider = document.getElementById('winProbabilitySlider');
+            const lossProbabilityInput = document.getElementById('lossProbability');
+            const winAmountInput = document.getElementById('winAmount');
+            const lossAmountInput = document.getElementById('lossAmount');
+            const tradesCountInput = document.getElementById('tradesCount');
+            const calculateBtn = document.getElementById('calculate');
+            const resultsDiv = document.getElementById('results');
+            const evPerTradeEl = document.getElementById('evPerTrade');
+            const evPerPeriodEl = document.getElementById('evPerPeriod');
+            const riskRewardRatioEl = document.getElementById('riskRewardRatio');
+            const profitFactorEl = document.getElementById('profitFactor');
+            const probabilityWheel = document.getElementById('probabilityWheel');
+            const winProbDisplay = document.getElementById('winProbDisplay');
+            const winProbText = document.getElementById('winProbText');
+            const lossProbText = document.getElementById('lossProbText');
+            const expectedValueBar = document.getElementById('expectedValueBar');
+            const evLabel = document.getElementById('evLabel');
+            const strategyAssessment = document.getElementById('strategyAssessment');
+            const assessmentText = document.getElementById('assessmentText');
+
+            // Sync win probability slider with input
+            winProbabilitySlider.addEventListener('input', function() {
+                winProbabilityInput.value = winProbabilitySlider.value;
+                updateLossProbability();
+            });
+
+            winProbabilityInput.addEventListener('input', function() {
+                winProbabilitySlider.value = winProbabilityInput.value;
+                updateLossProbability();
+            });
+
+            // Update loss probability based on win probability
+            function updateLossProbability() {
+                const winProb = parseFloat(winProbabilityInput.value) || 0;
+                const lossProb = 100 - winProb;
+                lossProbabilityInput.value = lossProb.toFixed(1);
+                
+                // Update probability wheel
+                const winPercentage = Math.max(0, Math.min(winProb, 100));
+                probabilityWheel.style.background = `conic-gradient(#10b981 0% ${winPercentage}%, #ef4444 ${winPercentage}% 100%)`;
+                winProbDisplay.textContent = winPercentage.toFixed(1) + '%';
+                winProbText.textContent = winPercentage.toFixed(1) + '%';
+                lossProbText.textContent = (100 - winPercentage).toFixed(1) + '%';
+            }
+
+            // Calculate expected value
+            calculateBtn.addEventListener('click', function() {
+                const winProbability = parseFloat(winProbabilityInput.value) / 100;
+                const lossProbability = parseFloat(lossProbabilityInput.value) / 100;
+                const winAmount = parseFloat(winAmountInput.value);
+                const lossAmount = parseFloat(lossAmountInput.value);
+                const tradesCount = parseInt(tradesCountInput.value);
+
+                if (!winProbability || !lossProbability || !winAmount || !lossAmount || !tradesCount) {
+                    alert('Please fill in all fields with valid numbers');
+                    return;
+                }
+
+                // Calculate expected value
+                const evPerTrade = (winProbability * winAmount) - (lossProbability * lossAmount);
+                const evPerPeriod = evPerTrade * tradesCount;
+                
+                // Calculate risk/reward ratio
+                const riskRewardRatio = winAmount / lossAmount;
+                
+                // Calculate profit factor
+                const profitFactor = (winProbability * winAmount) / (lossProbability * lossAmount);
+
+                // Update UI
+                evPerTradeEl.textContent = '$' + evPerTrade.toFixed(2);
+                evPerPeriodEl.textContent = '$' + evPerPeriod.toFixed(2);
+                riskRewardRatioEl.textContent = riskRewardRatio.toFixed(2);
+                profitFactorEl.textContent = profitFactor.toFixed(2);
+
+                // Update expected value bar
+                let barWidth, barClass, evColor;
+                if (evPerTrade >= 0) {
+                    barWidth = Math.min(50 + (evPerTrade / winAmount) * 50, 100);
+                    barClass = 'positive-fill';
+                    evColor = 'text-accent';
+                } else {
+                    barWidth = Math.min(50 + (evPerTrade / lossAmount) * 50, 100);
+                    barClass = 'negative-fill';
+                    evColor = 'text-negative';
+                }
+                
+                expectedValueBar.className = `value-fill ${barClass}`;
+                expectedValueBar.style.width = barWidth + '%';
+                evLabel.textContent = `Expected Value: $${evPerTrade.toFixed(2)}`;
+                evLabel.className = `text-lg font-bold ${evColor}`;
+
+                // Strategy assessment
+                if (evPerTrade > winAmount * 0.1) {
+                    assessmentText.textContent = "Excellent Strategy! High positive expected value.";
+                    assessmentText.className = "text-lg text-accent font-bold";
+                } else if (evPerTrade > 0) {
+                    assessmentText.textContent = "Good Strategy. Positive expected value.";
+                    assessmentText.className = "text-lg text-green-400 font-bold";
+                } else if (evPerTrade === 0) {
+                    assessmentText.textContent = "Break-even Strategy. No expected profit or loss.";
+                    assessmentText.className = "text-lg text-yellow-400 font-bold";
+                } else {
+                    assessmentText.textContent = "Poor Strategy. Negative expected value. Consider adjustments.";
+                    assessmentText.className = "text-lg text-negative font-bold";
+                }
+
+                resultsDiv.classList.remove('hidden');
+                
+                // Add animation to results
+                resultsDiv.style.animation = 'bounceIn 0.6s';
+                setTimeout(() => {
+                    resultsDiv.style.animation = '';
+                }, 600);
+            });
+
+            // Initialize with sample values
+            winProbabilityInput.value = '60';
+            winProbabilitySlider.value = '60';
+            winAmountInput.value = '500';
+            lossAmountInput.value = '200';
+            tradesCountInput.value = '20';
+            updateLossProbability();
+        });
+    </script>
+</body>
+</html>

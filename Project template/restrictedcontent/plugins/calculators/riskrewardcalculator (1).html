@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk/Reward Ratio Calculator | TradeKit.Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10b981',
+                        secondary: '#f59e0b',
+                        accent: '#ef4444',
+                        dark: '#0f172a',
+                        darker: '#0a0f1c'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+        .card-glow {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
+        }
+        .gauge {
+            width: 200px;
+            height: 100px;
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .gauge-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(to top, #ef4444, #f59e0b, #10b981);
+            transition: height 1.5s ease-in-out;
+            border-radius: 100px 100px 0 0;
+        }
+        .gauge-cover {
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            width: 160px;
+            height: 80px;
+            background: #0f172a;
+            border-radius: 100px 100px 0 0;
+        }
+        .gauge-marks {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .gauge-mark {
+            position: absolute;
+            bottom: 0;
+            width: 2px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        .gauge-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 12px;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Risk/Reward Ratio Calculator</h1>
+            <p class="text-lg text-gray-300">Calculate and visualize your trade's potential profitability</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Calculator Card -->
+            <div class="lg:col-span-2">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-3">
+                            <i class="fas fa-balance-scale text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">Calculate Risk/Reward</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Entry, Stop Loss, Take Profit -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-gray-300 mb-2">Entry Price ($)</label>
+                                <div class="relative">
+                                    <input type="number" id="entry" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="100" min="0" step="0.01">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Stop Loss ($)</label>
+                                <div class="relative">
+                                    <input type="number" id="stopLoss" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="95" min="0" step="0.01">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-arrow-down text-accent"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 mb-2">Take Profit ($)</label>
+                                <div class="relative">
+                                    <input type="number" id="takeProfit" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="110" min="0" step="0.01">
+                                    <div class="absolute right-3 top-3 text-gray-400">
+                                        <i class="fas fa-arrow-up text-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Position Size -->
+                        <div>
+                            <label class="block text-gray-300 mb-2">Position Size (units)</label>
+                            <div class="relative">
+                                <input type="number" id="positionSize" class="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 px-4 text-white input-glow focus:outline-none" placeholder="100" min="0" step="0.01">
+                                <div class="absolute right-3 top-3 text-gray-400">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculate Button -->
+                        <button id="calculate" class="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02]">
+                            Calculate Risk/Reward
+                        </button>
+
+                        <!-- Results -->
+                        <div id="results" class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700 hidden">
+                            <h3 class="text-xl font-bold mb-4 text-center">Risk/Reward Analysis</h3>
+                            
+                            <!-- Gauge -->
+                            <div class="mb-6">
+                                <div class="gauge">
+                                    <div class="gauge-fill" id="gaugeFill"></div>
+                                    <div class="gauge-cover"></div>
+                                    <div class="gauge-marks">
+                                        <div class="gauge-mark" style="left: 0%;"></div>
+                                        <div class="gauge-mark" style="left: 25%;"></div>
+                                        <div class="gauge-mark" style="left: 50%;"></div>
+                                        <div class="gauge-mark" style="left: 75%;"></div>
+                                        <div class="gauge-mark" style="left: 100%;"></div>
+                                        <div class="gauge-label" style="left: 0%;">0.5</div>
+                                        <div class="gauge-label" style="left: 25%;">1.0</div>
+                                        <div class="gauge-label" style="left: 50%;">1.5</div>
+                                        <div class="gauge-label" style="left: 75%;">2.0</div>
+                                        <div class="gauge-label" style="left: 100%;">2.5+</div>
+                                    </div>
+                                </div>
+                                <p class="text-center mt-2 text-gray-300">Risk/Reward Ratio</p>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Risk/Reward Ratio</p>
+                                    <p id="ratioValue" class="text-2xl font-bold text-accent">0.00</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Potential Loss</p>
+                                    <p id="potentialLoss" class="text-xl font-bold text-accent">$0</p>
+                                </div>
+                                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                    <p class="text-gray-400">Potential Profit</p>
+                                    <p id="potentialProfit" class="text-xl font-bold text-primary">$0</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 bg-gray-800 p-4 rounded-lg text-center">
+                                <p id="ratioAssessment" class="text-lg font-bold">Enter values to calculate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-800 rounded-2xl p-6 card-glow border border-gray-700 h-full">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center mr-3">
+                            <i class="fas fa-info-circle text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold">How to Use</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 1: Enter Trade Details</h3>
+                            <p class="text-gray-300 text-sm">Input your entry price, stop loss, and take profit levels for the trade.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 2: Set Position Size</h3>
+                            <p class="text-gray-300 text-sm">Enter the number of units or shares you plan to trade.</p>
+                        </div>
+
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h3 class="font-bold text-primary mb-2">Step 3: Calculate Ratio</h3>
+                            <p class="text-gray-300 text-sm">Click calculate to see your risk/reward ratio and potential outcomes.</p>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="font-bold text-lg mb-3 text-accent">Understanding Risk/Reward</h3>
+                            <ul class="space-y-2 text-gray-300">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mr-2 mt-1"></i>
+                                    <span><span class="font-bold text-primary">1:2 or higher</span> is generally recommended</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-exclamation-triangle text-secondary mr-2 mt-1"></i>
+                                    <span><span class="font-bold text-secondary">1:1 or lower</span> requires high win rate</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-chart-pie text-accent mr-2 mt-1"></i>
+                                    <span>Helps filter out low-probability trades</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-trophy text-primary mr-2 mt-1"></i>
+                                    <span>Improves profitability over the long term</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-4 p-4 bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg border-l-4 border-primary">
+                            <h4 class="font-bold text-white mb-2">Pro Tip</h4>
+                            <p class="text-sm text-gray-300">Aim for trades with at least 1:2 risk/reward ratio. This means your potential profit should be at least twice your potential loss.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-400 border-t border-gray-800 pt-6">
+            <p>&copy; 2023 TradeKit.Tools. All rights reserved.</p>
+            <p class="text-sm mt-2">Designed for traders by traders</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const entryInput = document.getElementById('entry');
+            const stopLossInput = document.getElementById('stopLoss');
+            const takeProfitInput = document.getElementById('takeProfit');
+            const positionSizeInput = document.getElementById('positionSize');
+            const calculateBtn = document.getElementById('calculate');
+            const resultsDiv = document.getElementById('results');
+            const ratioValueEl = document.getElementById('ratioValue');
+            const potentialLossEl = document.getElementById('potentialLoss');
+            const potentialProfitEl = document.getElementById('potentialProfit');
+            const ratioAssessmentEl = document.getElementById('ratioAssessment');
+            const gaugeFill = document.getElementById('gaugeFill');
+
+            // Calculate risk/reward ratio
+            calculateBtn.addEventListener('click', function() {
+                const entry = parseFloat(entryInput.value);
+                const stopLoss = parseFloat(stopLossInput.value);
+                const takeProfit = parseFloat(takeProfitInput.value);
+                const positionSize = parseFloat(positionSizeInput.value);
+
+                if (!entry || !stopLoss || !takeProfit || !positionSize) {
+                    alert('Please fill in all fields with valid numbers');
+                    return;
+                }
+
+                const risk = Math.abs(entry - stopLoss);
+                const reward = Math.abs(takeProfit - entry);
+                const ratio = reward / risk;
+
+                const potentialLoss = risk * positionSize;
+                const potentialProfit = reward * positionSize;
+
+                ratioValueEl.textContent = ratio.toFixed(2);
+                potentialLossEl.textContent = '$' + potentialLoss.toFixed(2);
+                potentialProfitEl.textContent = '$' + potentialProfit.toFixed(2);
+
+                // Update gauge
+                let gaugeHeight = Math.min(ratio * 40, 100); // Max 100% height
+                gaugeFill.style.height = gaugeHeight + '%';
+
+                // Assessment
+                if (ratio >= 2) {
+                    ratioAssessmentEl.textContent = "Excellent Risk/Reward Ratio!";
+                    ratioAssessmentEl.className = "text-lg font-bold text-primary";
+                } else if (ratio >= 1.5) {
+                    ratioAssessmentEl.textContent = "Good Risk/Reward Ratio";
+                    ratioAssessmentEl.className = "text-lg font-bold text-secondary";
+                } else if (ratio >= 1) {
+                    ratioAssessmentEl.textContent = "Acceptable Risk/Reward Ratio";
+                    ratioAssessmentEl.className = "text-lg font-bold text-yellow-500";
+                } else {
+                    ratioAssessmentEl.textContent = "Poor Risk/Reward Ratio - Consider Adjusting";
+                    ratioAssessmentEl.className = "text-lg font-bold text-accent";
+                }
+
+                resultsDiv.classList.remove('hidden');
+                
+                // Add animation to results
+                resultsDiv.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    resultsDiv.style.transform = 'scale(1)';
+                    resultsDiv.style.transition = 'transform 0.3s ease';
+                }, 10);
+            });
+
+            // Add some sample values for demo
+            entryInput.value = '100';
+            stopLossInput.value = '95';
+            takeProfitInput.value = '110';
+            positionSizeInput.value = '100';
+        });
+    </script>
+</body>
+</html>

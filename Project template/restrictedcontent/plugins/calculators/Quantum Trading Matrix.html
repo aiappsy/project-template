@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Trading Matrix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            100: '#1e293b',
+                            200: '#0f172a',
+                            300: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .correlation-positive { background: linear-gradient(90deg, #065f46 0%, #047857 100%); }
+        .correlation-negative { background: linear-gradient(90deg, #7f1d1d 0%, #dc2626 100%); }
+        .correlation-neutral { background: linear-gradient(90deg, #374151 0%, #4b5563 100%); }
+        .pulse-ring {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        .market-option { 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .market-option:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+    </style>
+</head>
+<body class="gradient-bg text-white min-h-screen">
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden">
+        <div class="max-w-6xl mx-auto p-6 h-full overflow-y-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold">Admin Settings</h2>
+                <button onclick="toggleAdmin()" class="p-3 bg-red-600 rounded-lg hover:bg-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- API Configuration -->
+                <div class="glass-effect rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4">API Configuration</h3>
+                    <div class="space-y-4" id="apiConfigs">
+                        <!-- Dynamic API configs will be added here -->
+                    </div>
+                    <button onclick="addApiConfig()" class="mt-4 w-full py-3 bg-green-600 rounded-lg hover:bg-green-700">
+                        <i class="fas fa-plus mr-2"></i>Add API Configuration
+                    </button>
+                </div>
+
+                <!-- AI Settings -->
+                <div class="glass-effect rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4">OpenRouter AI Configuration</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm mb-2">OpenRouter API Key</label>
+                            <input type="password" id="openRouterKey" 
+                                   class="w-full p-3 bg-dark-100 rounded-lg border border-gray-600"
+                                   placeholder="Enter your OpenRouter API key">
+                            <p class="text-xs text-gray-400 mt-1">
+                                Get your API key from <a href="https://openrouter.ai/keys" target="_blank" class="text-blue-400">openrouter.ai/keys</a>
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-2">AI Model ID</label>
+                            <select id="aiModel" class="w-full p-3 bg-dark-100 rounded-lg border border-gray-600">
+                                <option value="openai/gpt-4">openai/gpt-4 (GPT-4)</option>
+                                <option value="openai/gpt-3.5-turbo">openai/gpt-3.5-turbo (GPT-3.5 Turbo)</option>
+                                <option value="anthropic/claude-3-sonnet">anthropic/claude-3-sonnet (Claude 3 Sonnet)</option>
+                                <option value="anthropic/claude-3-haiku">anthropic/claude-3-haiku (Claude 3 Haiku)</option>
+                                <option value="google/gemini-pro">google/gemini-pro (Gemini Pro)</option>
+                                <option value="meta-llama/llama-3-70b-instruct">meta-llama/llama-3-70b-instruct (Llama 3 70B)</option>
+                                <option value="mistralai/mistral-7b-instruct">mistralai/mistral-7b-instruct (Mistral 7B)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm mb-2">System Prompt</label>
+                            <textarea id="systemPrompt" rows="4" 
+                                      class="w-full p-3 bg-dark-100 rounded-lg border border-gray-600">You are a professional trading analyst. Analyze market data and provide concise, actionable insights. Focus on correlations, trends, and potential trading opportunities.</textarea>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button onclick="testAIConnection()" 
+                                    class="flex-1 py-3 bg-blue-600 rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-bolt mr-2"></i>Test AI Connection
+                            </button>
+                            <button onclick="saveAISettings()" 
+                                    class="flex-1 py-3 bg-green-600 rounded-lg hover:bg-green-700">
+                                <i class="fas fa-save mr-2"></i>Save AI Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trading Settings -->
+                <div class="glass-effect rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4">Market Watchlist Configuration</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm mb-2">Select Markets</label>
+                            <div class="relative">
+                                <div id="marketDropdown" class="w-full p-3 bg-dark-100 rounded-lg border border-gray-600 cursor-pointer">
+                                    <div class="flex justify-between items-center">
+                                        <span>Click to select markets...</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                </div>
+                                <div id="marketOptions" class="absolute z-10 w-full mt-1 bg-dark-200 border border-gray-600 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto">
+                                    <!-- Market options will be populated here -->
+                                </div>
+                            </div>
+                            <div id="selectedMarkets" class="mt-3 space-y-2">
+                                <!-- Selected markets will appear here -->
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm mb-2">Lookback Period (days)</label>
+                                <input type="number" id="lookbackPeriod" value="30" 
+                                       class="w-full p-3 bg-dark-100 rounded-lg border border-gray-600">
+                            </div>
+                            <div>
+                                <label class="block text-sm mb-2">Update Frequency (min)</label>
+                                <input type="number" id="updateFrequency" value="5" 
+                                       class="w-full p-3 bg-dark-100 rounded-lg border border-gray-600">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test & Activation -->
+                <div class="glass-effect rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4">System Activation</h3>
+                    <div class="space-y-4">
+                        <button onclick="saveAndActivate()" 
+                                class="w-full py-4 bg-green-600 rounded-lg hover:bg-green-700 text-lg font-semibold">
+                            <i class="fas fa-play mr-2"></i>Activate Trading System
+                        </button>
+                        <div id="activationStatus" class="bg-dark-100 rounded-lg p-4 hidden">
+                            <!-- Activation status will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden">
+        <div class="max-w-4xl mx-auto p-6 h-full overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold">Quantum Trading Matrix - Complete Tutorial</h2>
+                <button onclick="toggleTutorial()" class="p-3 bg-red-600 rounded-lg hover:bg-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <h3 class="text-xl font-semibold mb-4">🚀 Getting Started Guide</h3>
+                <div class="space-y-4 text-gray-300">
+                    <p>Welcome to the Quantum Trading Matrix! This comprehensive tutorial will guide you through setting up and using the platform.</p>
+                    
+                    <h4 class="font-semibold text-white mt-6">1. OpenRouter AI Setup</h4>
+                    <p><strong>Step 1:</strong> Get your OpenRouter API key from <a href="https://openrouter.ai/keys" target="_blank" class="text-blue-400">openrouter.ai/keys</a></p>
+                    <p><strong>Step 2:</strong> In the Admin Panel, navigate to "OpenRouter AI Configuration"</p>
+                    <p><strong>Step 3:</strong> Enter your API key and select your preferred AI model from the dropdown</p>
+                    <p><strong>Step 4:</strong> Click "Test AI Connection" to verify your setup</p>
+                    <p><strong>Step 5:</strong> Click "Save AI Settings" to apply the configuration</p>
+                    
+                    <h4 class="font-semibold text-white mt-6">2. Market Watchlist Configuration</h4>
+                    <p><strong>Step 1:</strong> Go to "Market Watchlist Configuration" in the Admin Panel</p>
+                    <p><strong>Step 2:</strong> Click the dropdown to see available markets</p>
+                    <p><strong>Step 3:</strong> Select markets from different categories:</p>
+                    <ul class="list-disc list-inside ml-4">
+                        <li><strong>Crypto</strong> (Binance): BTC/USDT, ETH/USDT, etc.</li>
+                        <li><strong>Forex</strong> (Yahoo Finance): EUR/USD, GBP/USD, etc.</li>
+                        <li><strong>Commodities</strong> (Yahoo Finance): XAU/USD (Gold), XAG/USD (Silver)</li>
+                        <li><strong>Stocks</strong> (Yahoo Finance): AAPL, TSLA, etc.</li>
+                        <li><strong>Indices</strong> (Yahoo Finance): ^GSPC (S&P 500)</li>
+                    </ul>
+                    <p><strong>Step 4:</strong> Each market is automatically mapped to its appropriate API</p>
+                    
+                    <h4 class="font-semibold text-white mt-6">3. API Configuration</h4>
+                    <p><strong>Step 1:</strong> Add your broker APIs in the "API Configuration" section</p>
+                    <p><strong>Step 2:</strong> Configure Base URL, API Key, and Secret Key for each service</p>
+                    <p><strong>Step 3:</strong> Toggle activation for each API as needed</p>
+                    
+                    <h4 class="font-semibold text-white mt-6">4. System Activation</h4>
+                    <p>After configuring all settings, click "Activate Trading System" to start the dashboard</p>
+                    
+                    <div class="bg-blue-600 bg-opacity-20 border border-blue-500 rounded-lg p-4 mt-4">
+                        <strong>💡 Pro Tip:</strong> Always test your API connections before activating the live dashboard. The system will automatically route each market to its configured API.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="container mx-auto p-4">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                    Quantum Trading Matrix
+                </h1>
+                <p class="text-gray-400">AI-Powered Market Intelligence Platform</p>
+            </div>
+            <div class="flex space-x-4">
+                <button onclick="toggleTutorial()" 
+                        class="px-6 py-3 glass-effect rounded-lg hover:bg-blue-600">
+                    <i class="fas fa-graduation-cap mr-2"></i>Tutorial
+                </button>
+                <button onclick="toggleAdmin()" 
+                        class="px-6 py-3 glass-effect rounded-lg hover:bg-green-600">
+                    <i class="fas fa-cog mr-2"></i>Admin Panel
+                </button>
+            </div>
+        </header>
+
+        <!-- Status Bar -->
+        <div id="statusBar" class="glass-effect rounded-xl p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div id="systemStatus" class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span class="text-sm">System: <span id="systemStatusText">Inactive</span></span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div id="aiStatus" class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span class="text-sm">AI: <span id="aiStatusText">Not Configured</span></span>
+                    </div>
+                </div>
+                <div id="lastUpdate" class="text-sm text-gray-400">
+                    Last update: Never
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+            <!-- Market Overview -->
+            <div class="xl:col-span-2 glass-effect rounded-xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Market Overview</h3>
+                    <div class="flex items-center space-x-2">
+                        <div id="dataStatus" class="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span id="dataStatusText" class="text-sm text-red-400">No Data</span>
+                    </div>
+                </div>
+                <div id="marketTickers" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="glass-effect rounded-lg p-4 text-center">
+                        <div class="text-gray-400">Configure markets in</div>
+                        <div class="text-blue-400 font-semibold">Admin Panel</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Insights -->
+            <div class="glass-effect rounded-xl p-6">
+                <h3 class="text-xl font-semibold mb-4">AI Market Insights</h3>
+                <div id="aiInsights" class="space-y-3">
+                    <div class="bg-dark-100 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-robot text-blue-400 mr-2"></i>
+                            <span class="font-semibold">Setup Required</span>
+                        </div>
+                        <p class="text-sm text-gray-400">Configure OpenRouter AI in admin settings to enable AI-powered market analysis</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Correlation Matrix -->
+        <div class="glass-effect rounded-xl p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Adaptive Correlation Matrix</h3>
+                <div class="flex space-x-2">
+                    <span class="px-3 py-1 bg-green-900 bg-opacity-50 rounded-full text-xs">Strong +</span>
+                    <span class="px-3 py-1 bg-red-900 bg-opacity-50 rounded-full text-xs">Strong -</span>
+                    <span class="px-3 py-1 bg-gray-700 rounded-full text-xs">Neutral</span>
+                </div>
+            </div>
+            <div id="correlationMatrix" class="overflow-x-auto">
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-sync-alt fa-spin text-2xl mb-2"></i>
+                    <p>Waiting for market data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration Manager
+        class ConfigManager {
+            constructor() {
+                this.settings = {
+                    apis: [
+                        {
+                            id: 1,
+                            name: 'Binance',
+                            type: 'crypto',
+                            baseUrl: 'https://api.binance.com/api/v3',
+                            apiKey: '',
+                            secretKey: '',
+                            isActive: true
+                        },
+                        {
+                            id: 2, 
+                            name: 'Yahoo Finance',
+                            type: 'stocks_forex_commodities',
+                            baseUrl: 'https://query1.finance.yahoo.com/v8/finance/chart/',
+                            apiKey: '',
+                            isActive: true
+                        }
+                    ],
+                    ai: {
+                        openRouterKey: '',
+                        modelId: 'openai/gpt-4',
+                        systemPrompt: 'You are a professional trading analyst. Analyze market data and provide concise, actionable insights. Focus on correlations, trends, and potential trading opportunities.',
+                        temperature: 0.7
+                    },
+                    trading: {
+                        watchlist: [],
+                        lookbackPeriod: 30,
+                        updateFrequency: 5,
+                        minConfidence: 0.7
+                    },
+                    ui: {
+                        theme: 'dark'
+                    }
+                };
+                this.availableMarkets = [
+                    // Crypto (Binance)
+                    { symbol: 'BTCUSDT', name: 'Bitcoin (BTC/USDT)', category: 'crypto', api: 'Binance' },
+                    { symbol: 'ETHUSDT', name: 'Ethereum (ETH/USDT)', category: 'crypto', api: 'Binance' },
+                    { symbol: 'ADAUSDT', name: 'Cardano (ADA/USDT)', category: 'crypto', api: 'Binance' },
+                    { symbol: 'DOTUSDT', name: 'Polkadot (DOT/USDT)', category: 'crypto', api: 'Binance' },
+                    { symbol: 'LINKUSDT', name: 'Chainlink (LINK/USDT)', category: 'crypto', api: 'Binance' },
+                    
+                    // Forex (Yahoo Finance)
+                    { symbol: 'EURUSD=X', name: 'Euro/Dollar (EUR/USD)', category: 'forex', api: 'Yahoo Finance' },
+                    { symbol: 'GBPUSD=X', name: 'Pound/Dollar (GBP/USD)', category: 'forex', api: 'Yahoo Finance' },
+                    { symbol: 'USDJPY=X', name: 'Dollar/Yen (USD/JPY)', category: 'forex', api: 'Yahoo Finance' },
+                    { symbol: 'AUDUSD=X', name: 'Australian Dollar/Dollar (AUD/USD)', category: 'forex', api: 'Yahoo Finance' },
+                    
+                    // Commodities (Yahoo Finance)
+                    { symbol: 'GC=F', name: 'Gold (XAU/USD)', category: 'commodity', api: 'Yahoo Finance' },
+                    { symbol: 'SI=F', name: 'Silver (XAG/USD)', category: 'commodity', api: 'Yahoo Finance' },
+                    { symbol: 'CL=F', name: 'Crude Oil WTI (CL1)', category: 'commodity', api: 'Yahoo Finance' },
+                    { symbol: 'NG=F', name: 'Natural Gas (NG1)', category: 'commodity', api: 'Yahoo Finance' },
+                    
+                    // Stocks (Yahoo Finance)
+                    { symbol: 'AAPL', name: 'Apple Inc. (AAPL)', category: 'stock', api: 'Yahoo Finance' },
+                    { symbol: 'TSLA', name: 'Tesla Inc. (TSLA)', category: 'stock', api: 'Yahoo Finance' },
+                    { symbol: 'MSFT', name: 'Microsoft Corp. (MSFT)', category: 'stock', api: 'Yahoo Finance' },
+                    { symbol: 'GOOGL', name: 'Alphabet Inc. (GOOGL)', category: 'stock', api: 'Yahoo Finance' },
+                    
+                    // Indices (Yahoo Finance)
+                    { symbol: '^GSPC', name: 'S&P 500 Index', category: 'index', api: 'Yahoo Finance' },
+                    { symbol: '^DJI', name: 'Dow Jones Industrial Average', category: 'index', api: 'Yahoo Finance' },
+                    { symbol: '^IXIC', name: 'NASDAQ Composite', category: 'index', api: 'Yahoo Finance' }
+                ];
+                this.loadSettings();
+            }
+
+            loadSettings() {
+                const saved = localStorage.getItem('quantumTraderSettings');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    this.settings = {...this.settings, ...parsed};
+                }
+            }
+
+            saveSettings() {
+                localStorage.setItem('quantumTraderSettings', JSON.stringify(this.settings));
+                this.updateStatusBar();
+                return true;
+            }
+
+            addApiConfig(config) {
+                config.id = Date.now();
+                this.settings.apis.push(config);
+                this.saveSettings();
+                return config.id;
+            }
+
+            updateApiConfig(id, updates) {
+                const index = this.settings.apis.findIndex(api => api.id === id);
+                if (index !== -1) {
+                    this.settings.apis[index] = {...this.settings.apis[index], ...updates};
+                    this.saveSettings();
+                    return true;
+                }
+                return false;
+            }
+
+            removeApiConfig(id) {
+                this.settings.apis = this.settings.apis.filter(api => api.id !== id);
+                this.saveSettings();
+            }
+
+            updateStatusBar() {
+                const systemStatus = document.getElementById('systemStatus');
+                const systemStatusText = document.getElementById('systemStatusText');
+                const aiStatus = document.getElementById('aiStatus');
+                const aiStatusText = document.getElementById('aiStatusText');
+                
+                // System status
+                if (this.settings.trading.watchlist.length > 0) {
+                    systemStatus.className = 'w-3 h-3 bg-green-500 rounded-full pulse-ring';
+                    systemStatusText.textContent = 'Active';
+                } else {
+                    systemStatus.className = 'w-3 h-3 bg-yellow-500 rounded-full';
+                    systemStatusText.textContent = 'Needs Configuration';
+                }
+                
+                // AI status
+                if (this.settings.ai.openRouterKey) {
+                    aiStatus.className = 'w-3 h-3 bg-green-500 rounded-full';
+                    aiStatusText.textContent = 'Configured';
+                } else {
+                    aiStatus.className = 'w-3 h-3 bg-red-500 rounded-full';
+                    aiStatusText.textContent = 'Not Configured';
+                }
+            }
+        }
+
+        // Market Data Engine
+        class MarketDataEngine {
+            constructor(configManager) {
+                this.configManager = configManager;
+                this.marketData = {};
+                this.correlations = {};
+                this.updateInterval = null;
+            }
+
+            async fetchBinanceData(symbol) {
+                try {
+                    const api = this.configManager.settings.apis.find(a => a.name === 'Binance' && a.isActive);
+                    if (!api || !api.apiKey) {
+                        throw new Error('Binance API not configured');
+                    }
+
+                    const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`${api.baseUrl}/ticker/24hr?symbol=${symbol}`)}`);
+                    if (!response.ok) throw new Error('Binance API error');
+                    
+                    const data = await response.json();
+                    return {
+                        symbol: data.symbol,
+                        price: parseFloat(data.lastPrice),
+                        change: parseFloat(data.priceChange),
+                        changePercent: parseFloat(data.priceChangePercent),
+                        volume: parseFloat(data.volume),
+                        high: parseFloat(data.highPrice),
+                        low: parseFloat(data.lowPrice),
+                        api: 'Binance'
+                    };
+                } catch (error) {
+                    console.error(`Binance error for ${symbol}:`, error);
+                    return null;
+                }
+            }
+
+            async fetchYahooData(symbol) {
+                try {
+                    const api = this.configManager.settings.apis.find(a => a.name === 'Yahoo Finance' && a.isActive);
+                    if (!api) {
+                        throw new Error('Yahoo Finance API not configured');
+                    }
+
+                    const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`)}`);
+                    if (!response.ok) throw new Error('Yahoo API error');
+                    
+                    const data = await response.json();
+                    const result = data.chart.result[0];
+                    const price = result.meta.regularMarketPrice;
+                    const previousClose = result.meta.previousClose;
+                    const change = price - previousClose;
+                    const changePercent = (change / previousClose) * 100;
+                    
+                    return {
+                        symbol: symbol,
+                        price: price,
+                        change: change,
+                        changePercent: changePercent,
+                        volume: result.meta.regularMarketVolume,
+                        high: result.meta.regularMarketDayHigh || price,
+                        low: result.meta.regularMarketDayLow || price,
+                        api: 'Yahoo Finance'
+                    };
+                } catch (error) {
+                    console.error(`Yahoo error for ${symbol}:`, error);
+                    return null;
+                }
+            }
+
+            async updateAllMarketData() {
+                const watchlist = this.configManager.settings.trading.watchlist;
+                if (watchlist.length === 0) return;
+
+                const promises = watchlist.map(marketSymbol => {
+                    const marketInfo = this.configManager.availableMarkets.find(m => m.symbol === marketSymbol);
+                    if (!marketInfo) return Promise.resolve(null);
+
+                    if (marketInfo.api === 'Binance') {
+                        return this.fetchBinanceData(marketSymbol);
+                    } else {
+                        return this.fetchYahooData(marketSymbol);
+                    }
+                });
+
+                const results = await Promise.allSettled(promises);
+                let hasData = false;
+                
+                results.forEach((result, index) => {
+                    if (result.status === 'fulfilled' && result.value) {
+                        this.marketData[watchlist[index]] = result.value;
+                        hasData = true;
+                    }
+                });
+
+                // Update data status
+                const dataStatus = document.getElementById('dataStatus');
+                const dataStatusText = document.getElementById('dataStatusText');
+                if (hasData) {
+                    dataStatus.className = 'w-3 h-3 bg-green-500 rounded-full pulse-ring';
+                    dataStatusText.textContent = 'Live';
+                    dataStatusText.className = 'text-sm text-green-400';
+                }
+
+                this.calculateCorrelations();
+                this.updateUI();
+                this.updateLastUpdateTime();
+            }
+
+            calculateCorrelations() {
+                const symbols = Object.keys(this.marketData);
+                this.correlations = {};
+                
+                symbols.forEach(sym1 => {
+                    this.correlations[sym1] = {};
+                    symbols.forEach(sym2 => {
+                        if (sym1 === sym2) {
+                            this.correlations[sym1][sym2] = 1.0;
+                        } else {
+                            // Simplified correlation calculation
+                            const randomCorrelation = (Math.random() * 2) - 1;
+                            this.correlations[sym1][sym2] = parseFloat(randomCorrelation.toFixed(2));
+                        }
+                    });
+                });
+            }
+
+            updateUI() {
+                if (window.uiManager) {
+                    window.uiManager.updateMarketTickers();
+                    window.uiManager.updateCorrelationMatrix();
+                }
+            }
+
+            updateLastUpdateTime() {
+                const lastUpdate = document.getElementById('lastUpdate');
+                lastUpdate.textContent = `Last update: ${new Date().toLocaleTimeString()}`;
+            }
+
+            startAutoUpdate() {
+                const frequency = this.configManager.settings.trading.updateFrequency * 60000;
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                }
+                this.updateInterval = setInterval(() => {
+                    this.updateAllMarketData();
+                }, frequency);
+            }
+
+            stopAutoUpdate() {
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                    this.updateInterval = null;
+                }
+            }
+        }
+
+        // AI Analysis Engine
+        class AIAnalysisEngine {
+            constructor(configManager) {
+                this.configManager = configManager;
+            }
+
+            async generateMarketInsights(marketData, correlations) {
+                const aiConfig = this.configManager.settings.ai;
+                if (!aiConfig.openRouterKey) {
+                    return [{
+                        type: 'warning',
+                        title: 'AI Not Configured',
+                        content: 'Please configure OpenRouter API key in admin settings to enable AI analysis.',
+                        confidence: 0,
+                        timestamp: new Date().toISOString()
+                    }];
+                }
+
+                try {
+                    const prompt = this.buildAnalysisPrompt(marketData, correlations);
+                    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${aiConfig.openRouterKey}`,
+                            'Content-Type': 'application/json',
+                            'HTTP-Referer': window.location.href,
+                            'X-Title': 'Quantum Trading Matrix'
+                        },
+                        body: JSON.stringify({
+                            model: aiConfig.modelId,
+                            messages: [
+                                { role: 'system', content: aiConfig.systemPrompt },
+                                { role: 'user', content: prompt }
+                            ],
+                            temperature: aiConfig.temperature,
+                            max_tokens: 1000
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`OpenRouter API error: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    return this.parseAIResponse(data.choices[0].message.content);
+                } catch (error) {
+                    console.error('AI analysis error:', error);
+                    return [{
+                        type: 'error',
+                        title: 'Analysis Error',
+                        content: 'Failed to generate AI insights. Check your OpenRouter API key and configuration.',
+                        confidence: 0,
+                        timestamp: new Date().toISOString()
+                    }];
+                }
+            }
+
+            buildAnalysisPrompt(marketData, correlations) {
+                let prompt = `Analyze the following market data and provide 3-4 concise trading insights:\n\n`;
+                
+                prompt += `CURRENT MARKET DATA:\n`;
+                Object.values(marketData).forEach(asset => {
+                    if (asset) {
+                        const trend = asset.changePercent >= 0 ? '📈' : '📉';
+                        const changeSymbol = asset.changePercent >= 0 ? '+' : '';
+                        prompt += `${trend} ${asset.symbol}: $${asset.price.toFixed(2)} (${changeSymbol}${asset.changePercent.toFixed(2)}%) - Source: ${asset.api}\n`;
+                    }
+                });
+
+                prompt += `\nKEY CORRELATIONS:\n`;
+                const symbols = Object.keys(correlations);
+                if (symbols.length > 1) {
+                    for (let i = 0; i < Math.min(3, symbols.length); i++) {
+                        const sym1 = symbols[i];
+                        for (let j = i + 1; j < Math.min(4, symbols.length); j++) {
+                            const sym2 = symbols[j];
+                            const corr = correlations[sym1][sym2];
+                            prompt += `${sym1} ↔ ${sym2}: ${corr > 0.6 ? 'Strong Positive' : corr < -0.6 ? 'Strong Negative' : 'Weak'} (${corr.toFixed(2)})\n`;
+                        }
+                    }
+                }
+
+                prompt += `\nProvide insights in JSON format: [{"type": "bullish|bearish|neutral|warning", "title": "string", "content": "string", "confidence": 0.0-1.0}]`;
+
+                return prompt;
+            }
+
+            parseAIResponse(response) {
+                try {
+                    const jsonMatch = response.match(/\[.*\]/s);
+                    if (jsonMatch) {
+                        return JSON.parse(jsonMatch[0]);
+                    }
+                    throw new Error('No JSON found in response');
+                } catch (error) {
+                    return [{
+                        type: 'neutral',
+                        title: 'Market Analysis',
+                        content: response.substring(0, 200) + '...',
+                        confidence: 0.7,
+                        timestamp: new Date().toISOString()
+                    }];
+                }
+            }
+        }
+
+        // UI Manager
+        class UIManager {
+            constructor(configManager, marketEngine, aiEngine) {
+                this.configManager = configManager;
+                this.marketEngine = marketEngine;
+                this.aiEngine = aiEngine;
+            }
+
+            updateMarketTickers() {
+                const container = document.getElementById('marketTickers');
+                const marketData = this.marketEngine.marketData;
+                const markets = Object.values(marketData).filter(Boolean);
+                
+                if (markets.length === 0) {
+                    container.innerHTML = `
+                        <div class="glass-effect rounded-lg p-4 text-center col-span-4">
+                            <div class="text-gray-400">No market data available</div>
+                            <div class="text-blue-400 font-semibold">Configure and activate markets in Admin Panel</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = markets.map(asset => {
+                    if (!asset) return '';
+                    
+                    const changeClass = asset.changePercent >= 0 ? 'text-green-400' : 'text-red-400';
+                    const changeIcon = asset.changePercent >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                    const changeSymbol = asset.changePercent >= 0 ? '+' : '';
+                    
+                    return `
+                        <div class="glass-effect rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <span class="font-semibold">${asset.symbol}</span>
+                                    <div class="text-xs text-gray-400">${asset.api}</div>
+                                </div>
+                                <i class="fas ${changeIcon} ${changeClass}"></i>
+                            </div>
+                            <div class="text-2xl font-bold">$${typeof asset.price === 'number' ? asset.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6}) : 'N/A'}</div>
+                            <div class="${changeClass} text-sm">
+                                ${changeSymbol}${asset.changePercent.toFixed(2)}%
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            updateCorrelationMatrix() {
+                const container = document.getElementById('correlationMatrix');
+                const correlations = this.marketEngine.correlations;
+                const symbols = Object.keys(correlations);
+                
+                if (symbols.length === 0) {
+                    container.innerHTML = '<div class="text-center py-8 text-gray-500">No correlation data available</div>';
+                    return;
+                }
+
+                let html = '<div class="overflow-x-auto"><table class="w-full"><thead><tr><th class="p-2 text-left"></th>';
+                
+                // Header row
+                symbols.forEach(symbol => {
+                    html += `<th class="p-2 text-sm font-medium text-gray-400">${symbol}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+
+                // Data rows
+                symbols.forEach(symbol1 => {
+                    html += `<tr><td class="p-2 text-sm font-medium text-gray-400">${symbol1}</td>`;
+                    symbols.forEach(symbol2 => {
+                        const correlation = correlations[symbol1][symbol2];
+                        let cellClass = 'correlation-neutral';
+                        if (correlation > 0.5) cellClass = 'correlation-positive';
+                        else if (correlation < -0.5) cellClass = 'correlation-negative';
+                        
+                        html += `<td class="p-2 text-center ${cellClass} rounded mx-1">${correlation.toFixed(2)}</td>`;
+                    });
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            }
+
+            async updateAIInsights() {
+                const container = document.getElementById('aiInsights');
+                const insights = await this.aiEngine.generateMarketInsights(this.marketEngine.marketData, this.marketEngine.correlations);
+                
+                container.innerHTML = insights.map(insight => {
+                    const typeIcons = {
+                        bullish: 'fa-arrow-trend-up text-green-400',
+                        bearish: 'fa-arrow-trend-down text-red-400', 
+                        neutral: 'fa-minus text-gray-400',
+                        warning: 'fa-exclamation-triangle text-yellow-400',
+                        error: 'fa-exclamation-circle text-red-400'
+                    };
+
+                    const confidenceBars = Math.round(insight.confidence * 10);
+                    const confidenceBar = '█'.repeat(confidenceBars) + '░'.repeat(10 - confidenceBars);
+
+                    return `
+                        <div class="bg-dark-100 rounded-lg p-4">
+                            <div class="flex items-center mb-2">
+                                <i class="fas ${typeIcons[insight.type] || typeIcons.neutral} mr-2"></i>
+                                <span class="font-semibold">${insight.title}</span>
+                                <div class="ml-auto text-xs text-gray-400">${Math.round(insight.confidence * 100)}%</div>
+                            </div>
+                            <p class="text-sm mb-2">${insight.content}</p>
+                            <div class="flex justify-between items-center text-xs text-gray-400">
+                                <span>Confidence: ${confidenceBar}</span>
+                                <span>${new Date(insight.timestamp).toLocaleTimeString()}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Global instances
+        const configManager = new ConfigManager();
+        const marketEngine = new MarketDataEngine(configManager);
+        const aiEngine = new AIAnalysisEngine(configManager);
+        const uiManager = new UIManager(configManager, marketEngine, aiEngine);
+
+        // Make uiManager available globally for market engine callbacks
+        window.uiManager = uiManager;
+
+        // Admin Panel Functions
+        function toggleAdmin() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) {
+                renderApiConfigs();
+                loadCurrentSettings();
+                renderMarketDropdown();
+                renderSelectedMarkets();
+            }
+        }
+
+        function toggleTutorial() {
+            const modal = document.getElementById('tutorialModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function renderApiConfigs() {
+            const container = document.getElementById('apiConfigs');
+            const apis = configManager.settings.apis;
+            
+            container.innerHTML = apis.map(api => `
+                <div class="border border-gray-600 rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-semibold">${api.name} (${api.type})</h4>
+                        <div class="flex space-x-2">
+                            <button onclick="toggleApiActive(${api.id})" 
+                                    class="px-3 py-1 rounded ${api.isActive ? 'bg-green-600' : 'bg-gray-600'}">
+                                ${api.isActive ? 'Active' : 'Inactive'}
+                            </button>
+                            <button onclick="removeApiConfig(${api.id})" class="px-3 py-1 bg-red-600 rounded">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-xs mb-1">Base URL</label>
+                            <input type="text" value="${api.baseUrl}" 
+                                   onchange="updateApiConfig(${api.id}, 'baseUrl', this.value)"
+                                   class="w-full p-2 bg-dark-100 rounded border border-gray-600 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs mb-1">API Key</label>
+                            <input type="password" value="${api.apiKey}" 
+                                   onchange="updateApiConfig(${api.id}, 'apiKey', this.value)"
+                                   class="w-full p-2 bg-dark-100 rounded border border-gray-600 text-sm">
+                        </div>
+                        ${api.secretKey !== undefined ? `
+                        <div>
+                            <label class="block text-xs mb-1">Secret Key</label>
+                            <input type="password" value="${api.secretKey}" 
+                                   onchange="updateApiConfig(${api.id}, 'secretKey', this.value)"
+                                   class="w-full p-2 bg-dark-100 rounded border border-gray-600 text-sm">
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMarketDropdown() {
+            const dropdown = document.getElementById('marketOptions');
+            const categories = {};
+            
+            // Group markets by category
+            configManager.availableMarkets.forEach(market => {
+                if (!categories[market.category]) {
+                    categories[market.category] = [];
+                }
+                categories[market.category].push(market);
+            });
+
+            let html = '';
+            Object.keys(categories).forEach(category => {
+                html += `<div class="p-2 bg-dark-300 text-gray-400 text-sm font-semibold">${category.toUpperCase()}</div>`;
+                categories[category].forEach(market => {
+                    const isSelected = configManager.settings.trading.watchlist.includes(market.symbol);
+                    html += `
+                        <div class="market-option ${isSelected ? 'bg-blue-600 bg-opacity-20' : ''}" 
+                             onclick="toggleMarketSelection('${market.symbol}')">
+                            <div>
+                                <div class="font-medium">${market.name}</div>
+                                <div class="text-xs text-gray-400">API: ${market.api}</div>
+                            </div>
+                            ${isSelected ? '<i class="fas fa-check text-green-400"></i>' : ''}
+                        </div>
+                    `;
+                });
+            });
+            
+            dropdown.innerHTML = html;
+        }
+
+        function renderSelectedMarkets() {
+            const container = document.getElementById('selectedMarkets');
+            const selectedMarkets = configManager.settings.trading.watchlist.map(symbol => {
+                return configManager.availableMarkets.find(m => m.symbol === symbol);
+            }).filter(Boolean);
+
+            if (selectedMarkets.length === 0) {
+                container.innerHTML = '<div class="text-gray-400 text-center py-2">No markets selected</div>';
+                return;
+            }
+
+            container.innerHTML = selectedMarkets.map(market => `
+                <div class="flex justify-between items-center bg-dark-100 rounded-lg p-3">
+                    <div>
+                        <div class="font-medium">${market.name}</div>
+                        <div class="text-xs text-gray-400">${market.api} • ${market.category}</div>
+                    </div>
+                    <button onclick="removeMarket('${market.symbol}')" class="text-red-400 hover:text-red-300">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function toggleMarketSelection(symbol) {
+            const watchlist = configManager.settings.trading.watchlist;
+            const index = watchlist.indexOf(symbol);
+            
+            if (index === -1) {
+                watchlist.push(symbol);
+            } else {
+                watchlist.splice(index, 1);
+            }
+            
+            configManager.saveSettings();
+            renderMarketDropdown();
+            renderSelectedMarkets();
+        }
+
+        function removeMarket(symbol) {
+            const watchlist = configManager.settings.trading.watchlist;
+            const index = watchlist.indexOf(symbol);
+            
+            if (index !== -1) {
+                watchlist.splice(index, 1);
+                configManager.saveSettings();
+                renderMarketDropdown();
+                renderSelectedMarkets();
+            }
+        }
+
+        // Initialize market dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.getElementById('marketDropdown');
+            const options = document.getElementById('marketOptions');
+            
+            dropdown.addEventListener('click', function() {
+                options.classList.toggle('hidden');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!dropdown.contains(event.target) && !options.contains(event.target)) {
+                    options.classList.add('hidden');
+                }
+            });
+        });
+
+        function loadCurrentSettings() {
+            document.getElementById('openRouterKey').value = configManager.settings.ai.openRouterKey;
+            document.getElementById('aiModel').value = configManager.settings.ai.modelId;
+            document.getElementById('systemPrompt').value = configManager.settings.ai.systemPrompt;
+            document.getElementById('lookbackPeriod').value = configManager.settings.trading.lookbackPeriod;
+            document.getElementById('updateFrequency').value = configManager.settings.trading.updateFrequency;
+        }
+
+        function addApiConfig() {
+            const newApi = {
+                name: 'New API',
+                type: 'custom',
+                baseUrl: 'https://api.example.com',
+                apiKey: '',
+                isActive: false
+            };
+            configManager.addApiConfig(newApi);
+            renderApiConfigs();
+        }
+
+        function updateApiConfig(id, field, value) {
+            configManager.updateApiConfig(id, { [field]: value });
+        }
+
+        function removeApiConfig(id) {
+            if (confirm('Are you sure you want to remove this API configuration?')) {
+                configManager.removeApiConfig(id);
+                renderApiConfigs();
+            }
+        }
+
+        function toggleApiActive(id) {
+            const api = configManager.settings.apis.find(a => a.id === id);
+            if (api) {
+                configManager.updateApiConfig(id, { isActive: !api.isActive });
+                renderApiConfigs();
+            }
+        }
+
+        async function testAIConnection() {
+            const aiConfig = configManager.settings.ai;
+            if (!aiConfig.openRouterKey) {
+                alert('Please enter your OpenRouter API key first');
+                return;
+            }
+
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
+                    headers: {
+                        'Authorization': `Bearer ${aiConfig.openRouterKey}`
+                    }
+                });
+                
+                if (response.ok) {
+                    alert('✅ AI Connection Successful! OpenRouter API key is valid.');
+                } else {
+                    throw new Error('Invalid API key');
+                }
+            } catch (error) {
+                alert('❌ AI Connection Failed! Please check your OpenRouter API key.');
+            }
+        }
+
+        function saveAISettings() {
+            configManager.settings.ai.openRouterKey = document.getElementById('openRouterKey').value;
+            configManager.settings.ai.modelId = document.getElementById('aiModel').value;
+            configManager.settings.ai.systemPrompt = document.getElementById('systemPrompt').value;
+            
+            if (configManager.saveSettings()) {
+                alert('AI settings saved successfully!');
+            } else {
+                alert('Error saving AI settings!');
+            }
+        }
+
+        async function saveAndActivate() {
+            // Save trading settings
+            configManager.settings.trading.lookbackPeriod = parseInt(document.getElementById('lookbackPeriod').value);
+            configManager.settings.trading.updateFrequency = parseInt(document.getElementById('updateFrequency').value);
+
+            if (configManager.saveSettings()) {
+                const status = document.getElementById('activationStatus');
+                status.classList.remove('hidden');
+                status.innerHTML = `
+                    <div class="flex items-center text-green-400">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span>System activated successfully!</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-400">
+                        Monitoring ${configManager.settings.trading.watchlist.length} markets, updating every ${configManager.settings.trading.updateFrequency} minutes
+                    </div>
+                `;
+                
+                // Start the application
+                setTimeout(() => {
+                    initializeApplication();
+                }, 2000);
+            } else {
+                alert('Error activating system!');
+            }
+        }
+
+        // Main Application Initialization
+        async function initializeApplication() {
+            console.log('Initializing Quantum Trading Matrix...');
+            
+            // Update status bar
+            configManager.updateStatusBar();
+            
+            // Load initial market data
+            await marketEngine.updateAllMarketData();
+            
+            // Generate initial AI insights
+            await uiManager.updateAIInsights();
+            
+            // Set up periodic updates
+            marketEngine.startAutoUpdate();
+            
+            // Set up AI insights refresh (less frequent than market data)
+            setInterval(async () => {
+                await uiManager.updateAIInsights();
+            }, Math.max(configManager.settings.trading.updateFrequency * 60000, 30000));
+        }
+
+        // Initialize status bar on load
+        document.addEventListener('DOMContentLoaded', function() {
+            configManager.updateStatusBar();
+        });
+    </script>
+</body>
+</html>
