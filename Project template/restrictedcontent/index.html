@@ -1,0 +1,3064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Hub Pro - Plugin Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-surface: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+            --sidebar-width: 280px;
+            --sidebar-collapsed-width: 60px;
+            --header-height: 64px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Layout */
+        .app {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            border-bottom: 1px solid var(--border);
+            gap: 0.75rem;
+            position: relative;
+            justify-content: space-between;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .logo {
+            color: var(--accent);
+            font-size: 1.25rem;
+            min-width: 20px;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.125rem;
+            white-space: nowrap;
+            transition: opacity 0.3s ease;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .logo-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            min-width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .sidebar-header {
+            padding: 0 0.5rem;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .sidebar-brand {
+            justify-content: center;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .nav-menu {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+            border-left-color: var(--accent);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            min-width: 20px;
+        }
+
+        .nav-item span {
+            white-space: nowrap;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 0.75rem;
+        }
+
+        .sidebar.collapsed .nav-item span {
+            opacity: 0;
+            position: absolute;
+            left: 60px;
+            background: var(--bg-surface);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            z-index: 1000;
+            white-space: nowrap;
+            transform: translateY(-50%);
+            top: 50%;
+        }
+
+        .sidebar.collapsed .nav-item:hover span {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .plugin-indicator {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+        }
+
+        .sidebar.collapsed .plugin-indicator {
+            top: 4px;
+            right: 4px;
+            width: 4px;
+            height: 4px;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            height: var(--header-height);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            gap: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.25rem;
+            margin-left: 1rem;
+            overflow-x: auto;
+            flex: 1;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            font-size: 0.875rem;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+        }
+
+        .tab.has-plugin {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .btn.primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .content {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+        }
+
+        .content.plugin-active {
+            overflow: hidden;
+        }
+
+        .content-section {
+            display: none;
+            height: 100%;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .page-content {
+            padding: 2rem;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .plugin-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        /* Welcome Screen */
+        .welcome {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        .welcome h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .welcome p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .welcome-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-surface);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .menu-item {
+            background: var(--bg-surface);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .menu-item-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .menu-item-info {
+            flex: 1;
+        }
+
+        .menu-item-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .menu-item-type {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .menu-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 4px;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            border-color: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* Order Controls */
+        .order-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-right: 0.5rem;
+        }
+
+        .order-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.25rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.75rem;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .order-btn:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .order-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .order-btn:disabled:hover {
+            background: transparent;
+            border-color: var(--border);
+            color: var(--text-secondary);
+        }
+
+        /* Icon Picker Styles */
+        .icon-picker-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1100;
+            padding: 2rem;
+        }
+
+        .icon-picker-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-picker-content {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .icon-picker-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .icon-picker-search {
+            flex: 1;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .icon-picker-search:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .icon-picker-categories {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .icon-category-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+
+        .icon-category-btn:hover,
+        .icon-category-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .icon-picker-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .icon-item {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .icon-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .icon-item.selected {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .icon-item i {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .icon-item-name {
+            font-size: 0.625rem;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .icon-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .icon-input {
+            flex: 1;
+        }
+
+        .icon-preview {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .icon-preview:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent);
+        }
+
+        .icon-preview i {
+            font-size: 1.25rem;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--bg-surface);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: var(--text-primary);
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+            max-width: 350px;
+        }
+
+        .notification.success {
+            border-left-color: var(--success);
+        }
+
+        .notification.error {
+            border-left-color: var(--error);
+        }
+
+        .notification.warning {
+            border-left-color: var(--warning);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .mobile-toggle {
+            display: none;
+        }
+
+        /* User Role Indicator */
+        .user-role {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .user-role.admin {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mobile-toggle {
+                display: block;
+            }
+
+            .sidebar .sidebar-toggle {
+                display: none;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 100;
+                width: var(--sidebar-width);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.collapsed {
+                transform: translateX(-100%);
+                width: var(--sidebar-width);
+            }
+
+            .main {
+                width: 100%;
+            }
+
+            .header-title {
+                font-size: 1rem;
+            }
+
+            .tabs {
+                margin-left: 0.5rem;
+            }
+
+            .header-actions .btn span {
+                display: none;
+            }
+
+            .icon-picker-content {
+                max-width: 95vw;
+                max-height: 95vh;
+            }
+
+            .icon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            }
+        }
+
+        /* Debug styles */
+        .debug-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            z-index: 1002;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <i class="fas fa-rocket logo"></i>
+                    <span class="logo-text">AI Hub Pro</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle" title="Collapse Sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <!-- Navigation will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <div class="header">
+                <button class="sidebar-toggle mobile-toggle" id="mobileToggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="header-title" id="headerTitle">Dashboard</h1>
+                <div class="tabs" id="tabs">
+                    <!-- Tabs will be populated by JavaScript -->
+                </div>
+                <div class="header-actions">
+                    <div class="user-role" id="userRoleIndicator">
+                        <i class="fas fa-user"></i>
+                        <span id="userRoleText">User</span>
+                    </div>
+                    <!-- Admin buttons will be added here dynamically -->
+                </div>
+            </div>
+            <div class="content" id="content">
+                <!-- Content sections will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Plugin Management Modal -->
+    <div class="modal" id="marketplaceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Plugin Management</h2>
+                <button class="modal-close" onclick="app.closeMarketplace()">&times;</button>
+            </div>
+            <div class="modal-body" id="marketplaceBody">
+                <!-- Plugin management content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Manager Modal -->
+    <div class="modal" id="menuManagerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Menu Manager</h2>
+                <button class="modal-close" onclick="app.closeMenuManager()">&times;</button>
+            </div>
+            <div class="modal-body" id="menuManagerBody">
+                <!-- Menu manager content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Icon Picker Modal -->
+    <div class="icon-picker-modal" id="iconPickerModal">
+        <div class="icon-picker-content">
+            <div class="icon-picker-header">
+                <h3 style="margin: 0; color: var(--text-primary);">Choose an Icon</h3>
+                <input type="text" class="icon-picker-search" id="iconSearch" placeholder="Search icons...">
+                <button class="modal-close" onclick="app.closeIconPicker()" style="margin-left: 1rem;">&times;</button>
+            </div>
+            <div class="icon-picker-categories" id="iconCategories">
+                <!-- Categories will be populated by JavaScript -->
+            </div>
+            <div class="icon-picker-grid">
+                <div class="icon-grid" id="iconGrid">
+                    <!-- Icons will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug info -->
+    <div class="debug-info" id="debugInfo">
+        Debug: Ready
+    </div>
+
+    <script>
+        class AIHubApp {
+            constructor() {
+                // Initialize storage check
+                this.storageAvailable = this.checkStorageAvailability();
+                
+                // User role management - default to 'user' for non-admins
+                this.userRole = this.loadUserRole() || 'user'; // 'user' or 'admin'
+                
+                this.navigation = this.loadNavigation();
+                this.plugins = this.loadPlugins();
+                this.currentSection = 'dashboard';
+                this.currentTab = null;
+                
+                // Icon picker state
+                this.iconPickerCallback = null;
+                this.selectedIcon = null;
+                this.currentIconCategory = 'general';
+                
+                this.initializeDefaultData();
+                this.initializeIconLibrary();
+                this.init();
+            }
+
+            checkStorageAvailability() {
+                try {
+                    const test = 'test';
+                    localStorage.setItem(test, test);
+                    localStorage.removeItem(test);
+                    return true;
+                } catch (e) {
+                    console.warn('localStorage not available, using memory storage');
+                    return false;
+                }
+            }
+
+            // User role management methods
+            loadUserRole() {
+                if (!this.storageAvailable) return 'user';
+                
+                try {
+                    return localStorage.getItem('aihub_user_role') || 'user';
+                } catch (error) {
+                    console.error('Failed to load user role:', error);
+                    return 'user';
+                }
+            }
+
+            saveUserRole(role) {
+                if (!this.storageAvailable) {
+                    console.warn('Storage not available, role change will not persist');
+                    return;
+                }
+                
+                try {
+                    localStorage.setItem('aihub_user_role', role);
+                    this.userRole = role;
+                    this.updateUserRoleIndicator();
+                    this.debug(`User role changed to: ${role}`);
+                } catch (error) {
+                    console.error('Failed to save user role:', error);
+                }
+            }
+
+            updateUserRoleIndicator() {
+                const indicator = document.getElementById('userRoleIndicator');
+                const roleText = document.getElementById('userRoleText');
+                
+                if (indicator && roleText) {
+                    if (this.userRole === 'admin') {
+                        indicator.classList.add('admin');
+                        roleText.textContent = 'Admin';
+                    } else {
+                        indicator.classList.remove('admin');
+                        roleText.textContent = 'User';
+                    }
+                }
+            }
+
+            toggleUserRole() {
+                const newRole = this.userRole === 'admin' ? 'user' : 'admin';
+                this.saveUserRole(newRole);
+                this.showNotification(`Switched to ${newRole} mode`, 'success');
+                
+                // Refresh the UI to show/hide admin features
+                this.refreshAdminUI();
+            }
+
+            refreshAdminUI() {
+                // Update header actions
+                this.updateHeaderActions();
+                
+                // Update dashboard content if currently on dashboard
+                if (this.currentSection === 'dashboard') {
+                    this.renderContent('dashboard');
+                }
+                
+                // Close any open admin modals if user is no longer admin
+                if (this.userRole !== 'admin') {
+                    this.closeAllModals();
+                }
+            }
+
+            updateHeaderActions() {
+                const headerActions = document.querySelector('.header-actions');
+                if (!headerActions) return;
+                
+                // Keep the user role indicator
+                const roleIndicator = document.getElementById('userRoleIndicator');
+                
+                // Remove existing admin buttons
+                const existingButtons = headerActions.querySelectorAll('.admin-btn');
+                existingButtons.forEach(btn => btn.remove());
+                
+                // Add admin buttons if user is admin
+                if (this.userRole === 'admin') {
+                    const pluginBtn = document.createElement('button');
+                    pluginBtn.className = 'btn admin-btn';
+                    pluginBtn.innerHTML = '<i class="fas fa-puzzle-piece"></i><span>Plugin Management</span>';
+                    pluginBtn.onclick = () => this.openMarketplace();
+                    
+                    const menuBtn = document.createElement('button');
+                    menuBtn.className = 'btn admin-btn';
+                    menuBtn.innerHTML = '<i class="fas fa-edit"></i><span>Menu Management</span>';
+                    menuBtn.onclick = () => this.openMenuManager();
+                    
+                    headerActions.insertBefore(pluginBtn, roleIndicator);
+                    headerActions.insertBefore(menuBtn, roleIndicator);
+                }
+            }
+
+            // Check if current user has admin privileges
+            isAdmin() {
+                return this.userRole === 'admin';
+            }
+
+            initializeIconLibrary() {
+                this.iconLibrary = {
+                    general: [
+                        { name: 'home', class: 'fas fa-home' },
+                        { name: 'star', class: 'fas fa-star' },
+                        { name: 'heart', class: 'fas fa-heart' },
+                        { name: 'bookmark', class: 'fas fa-bookmark' },
+                        { name: 'flag', class: 'fas fa-flag' },
+                        { name: 'fire', class: 'fas fa-fire' },
+                        { name: 'bell', class: 'fas fa-bell' },
+                        { name: 'gift', class: 'fas fa-gift' },
+                        { name: 'globe', class: 'fas fa-globe' },
+                        { name: 'compass', class: 'fas fa-compass' },
+                        { name: 'map', class: 'fas fa-map' },
+                        { name: 'location', class: 'fas fa-map-marker-alt' },
+                        { name: 'search', class: 'fas fa-search' },
+                        { name: 'filter', class: 'fas fa-filter' },
+                        { name: 'settings', class: 'fas fa-cog' },
+                        { name: 'tools', class: 'fas fa-tools' },
+                        { name: 'wrench', class: 'fas fa-wrench' },
+                        { name: 'key', class: 'fas fa-key' },
+                        { name: 'lock', class: 'fas fa-lock' },
+                        { name: 'shield', class: 'fas fa-shield-alt' }
+                    ],
+                    business: [
+                        { name: 'briefcase', class: 'fas fa-briefcase' },
+                        { name: 'building', class: 'fas fa-building' },
+                        { name: 'chart-line', class: 'fas fa-chart-line' },
+                        { name: 'chart-bar', class: 'fas fa-chart-bar' },
+                        { name: 'chart-pie', class: 'fas fa-chart-pie' },
+                        { name: 'users', class: 'fas fa-users' },
+                        { name: 'user-tie', class: 'fas fa-user-tie' },
+                        { name: 'handshake', class: 'fas fa-handshake' },
+                        { name: 'bullseye', class: 'fas fa-bullseye' },
+                        { name: 'trophy', class: 'fas fa-trophy' },
+                        { name: 'medal', class: 'fas fa-medal' },
+                        { name: 'dollar-sign', class: 'fas fa-dollar-sign' },
+                        { name: 'coins', class: 'fas fa-coins' },
+                        { name: 'credit-card', class: 'fas fa-credit-card' },
+                        { name: 'calculator', class: 'fas fa-calculator' },
+                        { name: 'calendar', class: 'fas fa-calendar' },
+                        { name: 'clock', class: 'fas fa-clock' },
+                        { name: 'clipboard', class: 'fas fa-clipboard' },
+                        { name: 'tasks', class: 'fas fa-tasks' },
+                        { name: 'project', class: 'fas fa-project-diagram' }
+                    ],
+                    technology: [
+                        { name: 'laptop', class: 'fas fa-laptop' },
+                        { name: 'desktop', class: 'fas fa-desktop' },
+                        { name: 'mobile', class: 'fas fa-mobile-alt' },
+                        { name: 'tablet', class: 'fas fa-tablet-alt' },
+                        { name: 'keyboard', class: 'fas fa-keyboard' },
+                        { name: 'mouse', class: 'fas fa-computer-mouse' },
+                        { name: 'server', class: 'fas fa-server' },
+                        { name: 'database', class: 'fas fa-database' },
+                        { name: 'cloud', class: 'fas fa-cloud' },
+                        { name: 'wifi', class: 'fas fa-wifi' },
+                        { name: 'code', class: 'fas fa-code' },
+                        { name: 'terminal', class: 'fas fa-terminal' },
+                        { name: 'bug', class: 'fas fa-bug' },
+                        { name: 'rocket', class: 'fas fa-rocket' },
+                        { name: 'microchip', class: 'fas fa-microchip' },
+                        { name: 'robot', class: 'fas fa-robot' },
+                        { name: 'cogs', class: 'fas fa-cogs' },
+                        { name: 'plug', class: 'fas fa-plug' },
+                        { name: 'ethernet', class: 'fas fa-ethernet' },
+                        { name: 'usb', class: 'fas fa-usb' }
+                    ],
+                    media: [
+                        { name: 'play', class: 'fas fa-play' },
+                        { name: 'pause', class: 'fas fa-pause' },
+                        { name: 'stop', class: 'fas fa-stop' },
+                        { name: 'music', class: 'fas fa-music' },
+                        { name: 'video', class: 'fas fa-video' },
+                        { name: 'camera', class: 'fas fa-camera' },
+                        { name: 'image', class: 'fas fa-image' },
+                        { name: 'photo', class: 'fas fa-camera-retro' },
+                        { name: 'film', class: 'fas fa-film' },
+                        { name: 'youtube', class: 'fab fa-youtube' },
+                        { name: 'volume-up', class: 'fas fa-volume-up' },
+                        { name: 'microphone', class: 'fas fa-microphone' },
+                        { name: 'headphones', class: 'fas fa-headphones' },
+                        { name: 'broadcast', class: 'fas fa-broadcast-tower' },
+                        { name: 'podcast', class: 'fas fa-podcast' },
+                        { name: 'rss', class: 'fas fa-rss' },
+                        { name: 'radio', class: 'fas fa-radio' },
+                        { name: 'tv', class: 'fas fa-tv' },
+                        { name: 'gamepad', class: 'fas fa-gamepad' },
+                        { name: 'palette', class: 'fas fa-palette' }
+                    ],
+                    communication: [
+                        { name: 'envelope', class: 'fas fa-envelope' },
+                        { name: 'phone', class: 'fas fa-phone' },
+                        { name: 'comment', class: 'fas fa-comment' },
+                        { name: 'comments', class: 'fas fa-comments' },
+                        { name: 'chat', class: 'fas fa-comment-dots' },
+                        { name: 'inbox', class: 'fas fa-inbox' },
+                        { name: 'paper-plane', class: 'fas fa-paper-plane' },
+                        { name: 'bullhorn', class: 'fas fa-bullhorn' },
+                        { name: 'satellite', class: 'fas fa-satellite' },
+                        { name: 'signal', class: 'fas fa-signal' },
+                        { name: 'at', class: 'fas fa-at' },
+                        { name: 'hashtag', class: 'fas fa-hashtag' },
+                        { name: 'share', class: 'fas fa-share' },
+                        { name: 'retweet', class: 'fas fa-retweet' },
+                        { name: 'thumbs-up', class: 'fas fa-thumbs-up' },
+                        { name: 'thumbs-down', class: 'fas fa-thumbs-down' },
+                        { name: 'facebook', class: 'fab fa-facebook' },
+                        { name: 'twitter', class: 'fab fa-twitter' },
+                        { name: 'instagram', class: 'fab fa-instagram' },
+                        { name: 'linkedin', class: 'fab fa-linkedin' }
+                    ],
+                    education: [
+                        { name: 'book', class: 'fas fa-book' },
+                        { name: 'graduation-cap', class: 'fas fa-graduation-cap' },
+                        { name: 'school', class: 'fas fa-school' },
+                        { name: 'university', class: 'fas fa-university' },
+                        { name: 'chalkboard', class: 'fas fa-chalkboard' },
+                        { name: 'pencil', class: 'fas fa-pencil-alt' },
+                        { name: 'pen', class: 'fas fa-pen' },
+                        { name: 'highlighter', class: 'fas fa-highlighter' },
+                        { name: 'eraser', class: 'fas fa-eraser' },
+                        { name: 'ruler', class: 'fas fa-ruler' },
+                        { name: 'microscope', class: 'fas fa-microscope' },
+                        { name: 'flask', class: 'fas fa-flask' },
+                        { name: 'atom', class: 'fas fa-atom' },
+                        { name: 'dna', class: 'fas fa-dna' },
+                        { name: 'brain', class: 'fas fa-brain' },
+                        { name: 'lightbulb', class: 'fas fa-lightbulb' },
+                        { name: 'question', class: 'fas fa-question' },
+                        { name: 'info', class: 'fas fa-info' },
+                        { name: 'exclamation', class: 'fas fa-exclamation' },
+                        { name: 'certificate', class: 'fas fa-certificate' }
+                    ],
+                    files: [
+                        { name: 'file', class: 'fas fa-file' },
+                        { name: 'folder', class: 'fas fa-folder' },
+                        { name: 'folder-open', class: 'fas fa-folder-open' },
+                        { name: 'file-text', class: 'fas fa-file-alt' },
+                        { name: 'file-pdf', class: 'fas fa-file-pdf' },
+                        { name: 'file-word', class: 'fas fa-file-word' },
+                        { name: 'file-excel', class: 'fas fa-file-excel' },
+                        { name: 'file-powerpoint', class: 'fas fa-file-powerpoint' },
+                        { name: 'file-image', class: 'fas fa-file-image' },
+                        { name: 'file-video', class: 'fas fa-file-video' },
+                        { name: 'file-audio', class: 'fas fa-file-audio' },
+                        { name: 'file-code', class: 'fas fa-file-code' },
+                        { name: 'file-archive', class: 'fas fa-file-archive' },
+                        { name: 'download', class: 'fas fa-download' },
+                        { name: 'upload', class: 'fas fa-upload' },
+                        { name: 'cloud-download', class: 'fas fa-cloud-download-alt' },
+                        { name: 'cloud-upload', class: 'fas fa-cloud-upload-alt' },
+                        { name: 'save', class: 'fas fa-save' },
+                        { name: 'copy', class: 'fas fa-copy' },
+                        { name: 'cut', class: 'fas fa-cut' }
+                    ],
+                    navigation: [
+                        { name: 'arrow-up', class: 'fas fa-arrow-up' },
+                        { name: 'arrow-down', class: 'fas fa-arrow-down' },
+                        { name: 'arrow-left', class: 'fas fa-arrow-left' },
+                        { name: 'arrow-right', class: 'fas fa-arrow-right' },
+                        { name: 'chevron-up', class: 'fas fa-chevron-up' },
+                        { name: 'chevron-down', class: 'fas fa-chevron-down' },
+                        { name: 'chevron-left', class: 'fas fa-chevron-left' },
+                        { name: 'chevron-right', class: 'fas fa-chevron-right' },
+                        { name: 'angle-up', class: 'fas fa-angle-up' },
+                        { name: 'angle-down', class: 'fas fa-angle-down' },
+                        { name: 'angle-left', class: 'fas fa-angle-left' },
+                        { name: 'angle-right', class: 'fas fa-angle-right' },
+                        { name: 'bars', class: 'fas fa-bars' },
+                        { name: 'times', class: 'fas fa-times' },
+                        { name: 'plus', class: 'fas fa-plus' },
+                        { name: 'minus', class: 'fas fa-minus' },
+                        { name: 'check', class: 'fas fa-check' },
+                        { name: 'expand', class: 'fas fa-expand' },
+                        { name: 'compress', class: 'fas fa-compress' },
+                        { name: 'external-link', class: 'fas fa-external-link-alt' }
+                    ]
+                };
+            }
+
+            initializeDefaultData() {
+                // Initialize default navigation if empty
+                if (Object.keys(this.navigation).length === 0) {
+                    this.navigation = {
+                        'dashboard': {
+                            id: 'dashboard',
+                            name: 'Dashboard',
+                            icon: 'fas fa-home',
+                            order: 0,
+                            type: 'page',
+                            plugin: null,
+                            content: 'default-dashboard'
+                        },
+                        'projects': {
+                            id: 'projects',
+                            name: 'Projects',
+                            icon: 'fas fa-folder',
+                            order: 1,
+                            type: 'tabs',
+                            tabs: {
+                                'active': {
+                                    id: 'active',
+                                    name: 'Active',
+                                    order: 0,
+                                    plugin: null,
+                                    content: 'This is where your active projects will appear.\n\nYou can assign a plugin here or add custom content!'
+                                },
+                                'completed': {
+                                    id: 'completed',
+                                    name: 'Completed',
+                                    order: 1,
+                                    plugin: null,
+                                    content: 'Completed projects will be shown here.\n\nDrag a plugin here to add functionality!'
+                                }
+                            }
+                        },
+                        'tools': {
+                            id: 'tools',
+                            name: 'Tools',
+                            icon: 'fas fa-tools',
+                            order: 2,
+                            type: 'page',
+                            plugin: null,
+                            content: 'Your productivity tools will appear here.\n\nPerfect place for calculator, notes, or other utility plugins!'
+                        },
+                        'settings': {
+                            id: 'settings',
+                            name: 'Settings',
+                            icon: 'fas fa-cog',
+                            order: 3,
+                            type: 'page',
+                            plugin: null,
+                            content: 'default-settings'
+                        }
+                    };
+                    this.saveNavigation();
+                }
+
+                // Initialize default plugins if empty
+                if (this.plugins.length === 0) {
+                    this.plugins = [
+                        {
+                            id: 'calculator-demo',
+                            name: 'Calculator',
+                            description: 'Simple calculator for quick calculations',
+                            icon: 'fas fa-calculator',
+                            category: 'utilities',
+                            version: '1.0.0',
+                            author: 'AI Hub Team',
+                            url: 'data:text/html,<html><body style="font-family:Arial;padding:20px;background:#1e293b;color:white;"><h2>🧮 Calculator Demo</h2><p>This is a demo calculator plugin.</p><p>In a real implementation, this would be a full calculator interface.</p></body></html>',
+                            type: 'demo'
+                        },
+                        {
+                            id: 'todo-list',
+                            name: 'Todo List',
+                            description: 'Manage your daily tasks and todos',
+                            icon: 'fas fa-list-ul',
+                            category: 'productivity',
+                            version: '1.0.0',
+                            author: 'AI Hub Team',
+                            url: 'data:text/html,<html><body style="font-family:Arial;padding:20px;background:#1e293b;color:white;"><h2>📝 Todo List Demo</h2><p>This is a demo todo list plugin.</p><p>In a real implementation, this would have full task management.</p></body></html>',
+                            type: 'demo'
+                        },
+                        {
+                            id: 'notes-app',
+                            name: 'Quick Notes',
+                            description: 'Simple note-taking application',
+                            icon: 'fas fa-sticky-note',
+                            category: 'productivity',
+                            version: '1.0.0',
+                            author: 'AI Hub Team',
+                            url: 'data:text/html,<html><body style="font-family:Arial;padding:20px;background:#1e293b;color:white;"><h2>📄 Notes Demo</h2><p>This is a demo notes plugin.</p><p>In a real implementation, this would have full note editing capabilities.</p></body></html>',
+                            type: 'demo'
+                        },
+                        {
+                            id: 'google-example',
+                            name: 'Google Search',
+                            description: 'Example external plugin',
+                            icon: 'fas fa-search',
+                            category: 'utilities',
+                            version: '1.0.0',
+                            author: 'External',
+                            url: 'https://www.google.com',
+                            type: 'external'
+                        }
+                    ];
+                    this.savePlugins();
+                }
+            }
+
+            init() {
+                this.renderNavigation();
+                this.navigateToSection('dashboard');
+                this.setupEventListeners();
+                this.setupIconPicker();
+                this.updateUserRoleIndicator();
+                this.updateHeaderActions();
+                this.debug('AI Hub Pro initialized successfully!');
+                console.log('🚀 AI Hub Pro initialized successfully!');
+            }
+
+            debug(message) {
+                console.log('DEBUG:', message);
+                const debugEl = document.getElementById('debugInfo');
+                if (debugEl) {
+                    debugEl.textContent = 'Debug: ' + message;
+                    debugEl.style.display = 'block';
+                    setTimeout(() => {
+                        debugEl.style.display = 'none';
+                    }, 3000);
+                }
+            }
+
+            setupEventListeners() {
+                // Sidebar toggle (desktop)
+                const sidebarToggle = document.getElementById('sidebarToggle');
+                if (sidebarToggle) {
+                    sidebarToggle.addEventListener('click', () => {
+                        this.toggleSidebar();
+                    });
+                }
+
+                // Mobile toggle
+                const mobileToggle = document.getElementById('mobileToggle');
+                if (mobileToggle) {
+                    mobileToggle.addEventListener('click', () => {
+                        this.toggleSidebar();
+                    });
+                }
+
+                // Close modals on outside click
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('modal') || e.target.classList.contains('icon-picker-modal')) {
+                        this.closeAllModals();
+                    }
+                });
+
+                // Escape key to close modals
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.closeAllModals();
+                    }
+                });
+
+                // Double-click on user role indicator to toggle role (for demo purposes)
+                const roleIndicator = document.getElementById('userRoleIndicator');
+                if (roleIndicator) {
+                    roleIndicator.addEventListener('dblclick', () => {
+                        this.toggleUserRole();
+                    });
+                }
+            }
+
+            setupIconPicker() {
+                // Icon search functionality
+                const iconSearch = document.getElementById('iconSearch');
+                if (iconSearch) {
+                    iconSearch.addEventListener('input', (e) => {
+                        this.filterIcons(e.target.value);
+                    });
+                }
+            }
+
+            toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                const sidebarToggle = document.getElementById('sidebarToggle');
+                const toggleIcon = sidebarToggle?.querySelector('i');
+                
+                if (sidebar) {
+                    const isCollapsed = sidebar.classList.toggle('collapsed');
+                    
+                    // Update the toggle icon
+                    if (toggleIcon) {
+                        if (isCollapsed) {
+                            toggleIcon.className = 'fas fa-chevron-right';
+                            sidebarToggle.title = 'Expand Sidebar';
+                        } else {
+                            toggleIcon.className = 'fas fa-chevron-left';
+                            sidebarToggle.title = 'Collapse Sidebar';
+                        }
+                    }
+                    
+                    this.debug(isCollapsed ? 'Sidebar collapsed' : 'Sidebar expanded');
+                }
+            }
+
+            // Section Reordering Methods
+            moveSectionUp(sectionId) {
+                const sections = Object.values(this.navigation).sort((a, b) => a.order - b.order);
+                const currentIndex = sections.findIndex(s => s.id === sectionId);
+                
+                if (currentIndex <= 0) return; // Already at top or not found
+                
+                // Swap orders with the previous section
+                const currentSection = sections[currentIndex];
+                const previousSection = sections[currentIndex - 1];
+                
+                const tempOrder = currentSection.order;
+                currentSection.order = previousSection.order;
+                previousSection.order = tempOrder;
+                
+                this.saveNavigation();
+                this.showNotification(`"${currentSection.name}" moved up`, 'success');
+                this.refreshViews();
+                this.openMenuManager();
+            }
+
+            moveSectionDown(sectionId) {
+                const sections = Object.values(this.navigation).sort((a, b) => a.order - b.order);
+                const currentIndex = sections.findIndex(s => s.id === sectionId);
+                
+                if (currentIndex >= sections.length - 1 || currentIndex === -1) return; // Already at bottom or not found
+                
+                // Swap orders with the next section
+                const currentSection = sections[currentIndex];
+                const nextSection = sections[currentIndex + 1];
+                
+                const tempOrder = currentSection.order;
+                currentSection.order = nextSection.order;
+                nextSection.order = tempOrder;
+                
+                this.saveNavigation();
+                this.showNotification(`"${currentSection.name}" moved down`, 'success');
+                this.refreshViews();
+                this.openMenuManager();
+            }
+
+            // Icon Picker Methods
+            openIconPicker(callback, currentIcon = 'fas fa-star') {
+                this.iconPickerCallback = callback;
+                this.selectedIcon = currentIcon;
+                this.currentIconCategory = 'general';
+                
+                this.renderIconCategories();
+                this.renderIconGrid();
+                
+                const modal = document.getElementById('iconPickerModal');
+                if (modal) {
+                    modal.classList.add('active');
+                }
+                
+                // Clear search
+                const search = document.getElementById('iconSearch');
+                if (search) {
+                    search.value = '';
+                }
+                
+                this.debug('Icon picker opened');
+            }
+
+            closeIconPicker() {
+                const modal = document.getElementById('iconPickerModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+                this.iconPickerCallback = null;
+                this.selectedIcon = null;
+                this.debug('Icon picker closed');
+            }
+
+            renderIconCategories() {
+                const container = document.getElementById('iconCategories');
+                if (!container) return;
+                
+                const categories = Object.keys(this.iconLibrary);
+                
+                container.innerHTML = categories.map(category => 
+                    `<button class="icon-category-btn ${category === this.currentIconCategory ? 'active' : ''}" 
+                             onclick="app.selectIconCategory('${category}')">
+                        ${category.charAt(0).toUpperCase() + category.slice(1)}
+                    </button>`
+                ).join('');
+            }
+
+            selectIconCategory(category) {
+                this.currentIconCategory = category;
+                this.renderIconCategories();
+                this.renderIconGrid();
+                
+                // Clear search when switching categories
+                const search = document.getElementById('iconSearch');
+                if (search) {
+                    search.value = '';
+                }
+            }
+
+            renderIconGrid(filteredIcons = null) {
+                const container = document.getElementById('iconGrid');
+                if (!container) return;
+                
+                let iconsToShow;
+                if (filteredIcons) {
+                    iconsToShow = filteredIcons;
+                } else {
+                    iconsToShow = this.iconLibrary[this.currentIconCategory] || [];
+                }
+                
+                container.innerHTML = iconsToShow.map(icon => 
+                    `<div class="icon-item ${icon.class === this.selectedIcon ? 'selected' : ''}" 
+                          onclick="app.selectIcon('${icon.class}')">
+                        <i class="${icon.class}"></i>
+                        <div class="icon-item-name">${icon.name}</div>
+                    </div>`
+                ).join('');
+            }
+
+            selectIcon(iconClass) {
+                this.selectedIcon = iconClass;
+                this.renderIconGrid();
+                
+                // Apply selection and close
+                if (this.iconPickerCallback) {
+                    this.iconPickerCallback(iconClass);
+                }
+                this.closeIconPicker();
+            }
+
+            filterIcons(searchTerm) {
+                if (!searchTerm) {
+                    this.renderIconGrid();
+                    return;
+                }
+                
+                const term = searchTerm.toLowerCase();
+                const allIcons = [];
+                
+                // Search across all categories
+                Object.values(this.iconLibrary).forEach(categoryIcons => {
+                    categoryIcons.forEach(icon => {
+                        if (icon.name.toLowerCase().includes(term) || 
+                            icon.class.toLowerCase().includes(term)) {
+                            allIcons.push(icon);
+                        }
+                    });
+                });
+                
+                this.renderIconGrid(allIcons);
+            }
+
+            createIconInput(fieldName, currentValue = 'fas fa-star', placeholder = 'fas fa-star') {
+                const inputId = `${fieldName}_${Date.now()}`;
+                
+                return `<div class="icon-input-wrapper">
+                    <input type="text" class="form-input icon-input" 
+                           name="${fieldName}" 
+                           id="${inputId}"
+                           value="${currentValue}" 
+                           placeholder="${placeholder}">
+                    <div class="icon-preview" onclick="app.openIconPickerForInput('${inputId}')">
+                        <i class="${currentValue}"></i>
+                    </div>
+                </div>`;
+            }
+
+            openIconPickerForInput(inputId) {
+                const input = document.getElementById(inputId);
+                if (!input) return;
+                
+                const currentValue = input.value || 'fas fa-star';
+                
+                this.openIconPicker((selectedIcon) => {
+                    input.value = selectedIcon;
+                    
+                    // Update preview
+                    const preview = input.parentElement.querySelector('.icon-preview i');
+                    if (preview) {
+                        preview.className = selectedIcon;
+                    }
+                }, currentValue);
+            }
+
+            renderNavigation() {
+                const navMenu = document.getElementById('navMenu');
+                if (!navMenu) return;
+                
+                const sorted = Object.values(this.navigation).sort((a, b) => a.order - b.order);
+                
+                navMenu.innerHTML = sorted.map(section => {
+                    const hasPlugin = this.hasPluginAssigned(section);
+                    return `<div class="nav-item" data-section="${section.id}" onclick="app.navigateToSection('${section.id}')">
+                        <i class="${section.icon}"></i>
+                        <span>${section.name}</span>
+                        ${hasPlugin ? '<div class="plugin-indicator"></div>' : ''}
+                    </div>`;
+                }).join('');
+            }
+
+            renderTabs(sectionId) {
+                const tabsContainer = document.getElementById('tabs');
+                if (!tabsContainer) return;
+                
+                const section = this.navigation[sectionId];
+                
+                if (!section || section.type !== 'tabs' || !section.tabs) {
+                    tabsContainer.innerHTML = '';
+                    return;
+                }
+
+                const sorted = Object.values(section.tabs).sort((a, b) => a.order - b.order);
+                
+                tabsContainer.innerHTML = sorted.map((tab, index) => {
+                    const hasPlugin = tab.plugin;
+                    return `<div class="tab ${hasPlugin ? 'has-plugin' : ''} ${index === 0 ? 'active' : ''}" 
+                        data-tab="${tab.id}" data-section="${sectionId}" 
+                        onclick="app.navigateToTab('${sectionId}', '${tab.id}')">
+                        ${tab.name}
+                    </div>`;
+                }).join('');
+            }
+
+            navigateToSection(sectionId, tabId = null) {
+                this.currentSection = sectionId;
+                this.currentTab = tabId;
+
+                // Update navigation active state
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.section === sectionId);
+                });
+
+                // Update title
+                const section = this.navigation[sectionId];
+                if (section) {
+                    const headerTitle = document.getElementById('headerTitle');
+                    if (headerTitle) {
+                        headerTitle.textContent = section.name;
+                    }
+                }
+
+                // Render tabs if section has them
+                this.renderTabs(sectionId);
+
+                // Auto-select first tab if no specific tab
+                if (!tabId && section && section.tabs) {
+                    const firstTab = Object.values(section.tabs).sort((a, b) => a.order - b.order)[0];
+                    if (firstTab) {
+                        tabId = firstTab.id;
+                        this.currentTab = tabId;
+                    }
+                }
+
+                // Render content
+                this.renderContent(sectionId, tabId);
+            }
+
+            navigateToTab(sectionId, tabId) {
+                this.currentTab = tabId;
+
+                // Update tab active state
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.tab === tabId);
+                });
+
+                // Render content
+                this.renderContent(sectionId, tabId);
+            }
+
+            renderContent(sectionId, tabId = null) {
+                const contentContainer = document.getElementById('content');
+                if (!contentContainer) return;
+                
+                let contentData;
+                let pluginId = null;
+
+                if (tabId) {
+                    const section = this.navigation[sectionId];
+                    if (section && section.tabs && section.tabs[tabId]) {
+                        contentData = section.tabs[tabId].content;
+                        pluginId = section.tabs[tabId].plugin;
+                    }
+                } else {
+                    const section = this.navigation[sectionId];
+                    if (section) {
+                        contentData = section.content;
+                        pluginId = section.plugin;
+                    }
+                }
+
+                // Show plugin if assigned
+                if (pluginId) {
+                    this.renderPlugin(pluginId, contentContainer);
+                    return;
+                }
+
+                // Remove plugin-active class for regular content
+                contentContainer.classList.remove('plugin-active');
+
+                // Show default content
+                if (contentData === 'default-dashboard') {
+                    contentContainer.innerHTML = this.getDefaultDashboard();
+                } else if (contentData === 'default-settings') {
+                    contentContainer.innerHTML = this.getDefaultSettings();
+                } else if (contentData) {
+                    contentContainer.innerHTML = `<div class="page-content">
+                        <div style="white-space: pre-wrap; line-height: 1.6; color: var(--text-secondary);">
+                            ${contentData}
+                        </div>
+                    </div>`;
+                } else {
+                    contentContainer.innerHTML = `<div class="page-content">
+                        <div style="text-align: center; color: var(--text-muted); margin-top: 3rem;">
+                            <i class="fas fa-file-alt" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <h3>Empty Content</h3>
+                            <p>No content assigned to this location yet.</p>
+                        </div>
+                    </div>`;
+                }
+            }
+
+            renderPlugin(pluginId, container) {
+                const plugin = this.plugins.find(p => p.id === pluginId);
+                if (!plugin) {
+                    container.innerHTML = '<div class="page-content"><p>Plugin not found</p></div>';
+                    container.classList.remove('plugin-active');
+                    return;
+                }
+
+                // Add plugin-active class to prevent double scrollbars
+                container.classList.add('plugin-active');
+
+                container.innerHTML = `
+                    <div style="height: 100%; position: relative; overflow: hidden;">
+                        <iframe class="plugin-frame" src="${plugin.url}" title="${plugin.name}"></iframe>
+                    </div>`;
+            }
+
+            getDefaultDashboard() {
+                return `<div class="page-content">
+                    <div class="welcome">
+                        <div class="welcome-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h2>Welcome to AI Hub Pro!</h2>
+                        <p>Your personal workspace with powerful plugin management. Install or import plugins and assign them to any section or tab!</p>
+                        <div class="welcome-actions">
+                            ${this.isAdmin() ? `
+                                <button class="btn primary" onclick="app.openMarketplace()">
+                                    <i class="fas fa-puzzle-piece"></i>
+                                    Plugin Management
+                                </button>
+                                <button class="btn" onclick="app.openMenuManager()">
+                                    <i class="fas fa-edit"></i>
+                                    Menu Management
+                                </button>
+                            ` : ''}
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value">${this.getInstalledPluginsCount()}</div>
+                                <div class="stat-label">Available Plugins</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${this.getAssignedPluginsCount()}</div>
+                                <div class="stat-label">Active Plugins</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${Object.keys(this.navigation).length}</div>
+                                <div class="stat-label">Navigation Items</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${this.getTotalTabsCount()}</div>
+                                <div class="stat-label">Total Tabs</div>
+                            </div>
+                        </div>
+                        ${!this.isAdmin() ? `
+                            <div style="margin-top: 2rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 6px; border-left: 3px solid var(--accent);">
+                                <h4 style="margin: 0 0 0.5rem 0; color: var(--accent);">💡 User Mode</h4>
+                                <p style="margin: 0; font-size: 0.875rem; line-height: 1.5;">
+                                    You're currently in user mode. Plugin and menu management features are only available to administrators.
+                                </p>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>`;
+            }
+
+            getDefaultSettings() {
+                return `<div class="page-content">
+                    <div style="max-width: 600px; margin: 0 auto;">
+                        <h2 style="margin-bottom: 2rem;">Settings</h2>
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                            <h3 style="margin-bottom: 1rem;">User Information</h3>
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div class="user-role ${this.isAdmin() ? 'admin' : ''}" style="cursor: pointer;" onclick="app.toggleUserRole()" title="Double-click to toggle role (demo only)">
+                                    <i class="fas fa-${this.isAdmin() ? 'user-shield' : 'user'}"></i>
+                                    <span>${this.isAdmin() ? 'Admin' : 'User'}</span>
+                                </div>
+                                <div style="font-size: 0.875rem; color: var(--text-muted);">
+                                    Current role: ${this.isAdmin() ? 'Administrator' : 'Regular User'}
+                                </div>
+                            </div>
+                            ${this.isAdmin() ? `
+                                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                                    <h3 style="margin-bottom: 1rem;">Plugin Management</h3>
+                                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                        <button class="btn primary" onclick="app.openMarketplace()">
+                                            <i class="fas fa-store"></i>
+                                            Browse & Assign Plugins
+                                        </button>
+                                        <button class="btn" onclick="app.openMenuManager()">
+                                            <i class="fas fa-edit"></i>
+                                            Manage Menus
+                                        </button>
+                                    </div>
+                                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 6px; border-left: 3px solid var(--accent);">
+                                        <h4 style="margin: 0 0 0.5rem 0; color: var(--accent);">💡 Quick Tip</h4>
+                                        <p style="margin: 0; font-size: 0.875rem; line-height: 1.5;">
+                                            Navigate to any section or tab, then open the marketplace to quickly assign plugins to that location.
+                                            You can also choose specific locations when assigning plugins.
+                                        </p>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div style="margin-top: 1rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border-radius: 6px; border-left: 3px solid var(--error);">
+                                    <h4 style="margin: 0 0 0.5rem 0; color: var(--error);">🔒 Limited Access</h4>
+                                    <p style="margin: 0; font-size: 0.875rem; line-height: 1.5;">
+                                        Plugin and menu management features are only available to administrators.
+                                        Contact your system administrator for access to these features.
+                                    </p>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            togglePluginMode() {
+                this.pluginMode = !this.pluginMode;
+                const btn = document.getElementById('pluginModeBtn');
+                const text = document.getElementById('pluginModeText');
+                
+                if (btn && text) {
+                    if (this.pluginMode) {
+                        btn.style.background = 'var(--warning)';
+                        btn.style.borderColor = 'var(--warning)';
+                        text.textContent = 'Exit Plugin Mode';
+                        this.showNotification('Plugin Mode Active!', 'info');
+                    } else {
+                        btn.style.background = 'var(--success)';
+                        btn.style.borderColor = 'var(--success)';
+                        text.textContent = 'Plugin Mode';
+                        this.showNotification('Plugin Mode Disabled', 'success');
+                    }
+                }
+                
+                this.renderNavigation();
+                this.renderTabs(this.currentSection);
+                this.renderContent(this.currentSection, this.currentTab);
+            }
+
+            openMarketplace() {
+                // Check if user has admin privileges
+                if (!this.isAdmin()) {
+                    this.showNotification('Access denied. Admin privileges required.', 'error');
+                    return;
+                }
+                
+                this.debug('Opening Plugin Management');
+                const modal = document.getElementById('marketplaceModal');
+                const body = document.getElementById('marketplaceBody');
+                
+                if (modal && body) {
+                    body.innerHTML = this.getMarketplaceContent();
+                    modal.classList.add('active');
+                }
+            }
+
+            closeMarketplace() {
+                this.debug('Closing Plugin Management');
+                const modal = document.getElementById('marketplaceModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+
+            openMenuManager() {
+                // Check if user has admin privileges
+                if (!this.isAdmin()) {
+                    this.showNotification('Access denied. Admin privileges required.', 'error');
+                    return;
+                }
+                
+                this.debug('Opening menu manager');
+                const modal = document.getElementById('menuManagerModal');
+                const body = document.getElementById('menuManagerBody');
+                
+                if (modal && body) {
+                    body.innerHTML = this.getMenuManagerContent();
+                    modal.classList.add('active');
+                } else {
+                    this.debug('Menu manager modal elements not found');
+                }
+            }
+
+            closeMenuManager() {
+                this.debug('Closing menu manager');
+                const modal = document.getElementById('menuManagerModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            }
+
+            getMenuManagerContent() {
+                const sorted = Object.values(this.navigation).sort((a, b) => a.order - b.order);
+                
+                return `<div style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="margin: 0;">Navigation Structure</h3>
+                        <button class="btn primary" onclick="app.showCreateSectionForm()">
+                            <i class="fas fa-plus"></i> Add Section
+                        </button>
+                    </div>
+                    <div>
+                        ${sorted.map((section, index) => 
+                            `<div class="menu-item">
+                                <div class="order-controls">
+                                    <button class="order-btn ${index === 0 ? 'disabled' : ''}" 
+                                            onclick="app.moveSectionUp('${section.id}')" 
+                                            ${index === 0 ? 'disabled' : ''} 
+                                            title="Move Up">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                    <button class="order-btn ${index === sorted.length - 1 ? 'disabled' : ''}" 
+                                            onclick="app.moveSectionDown('${section.id}')" 
+                                            ${index === sorted.length - 1 ? 'disabled' : ''} 
+                                            title="Move Down">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
+                                <div class="menu-item-icon">
+                                    <i class="${section.icon}"></i>
+                                </div>
+                                <div class="menu-item-info">
+                                    <div class="menu-item-name">${section.name}</div>
+                                    <div class="menu-item-type">${section.type}${section.tabs ? ` (${Object.keys(section.tabs).length} tabs)` : ''}</div>
+                                </div>
+                                <div class="menu-item-actions">
+                                    ${section.type === 'tabs' ? 
+                                        `<button class="btn btn-small" onclick="app.showCreateTabForm('${section.id}')">
+                                            <i class="fas fa-plus"></i> Add Tab
+                                        </button>`
+                                    : ''}
+                                    <button class="btn btn-small" onclick="app.showEditSectionForm('${section.id}')">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    ${section.id !== 'dashboard' ? `<button class="btn btn-small btn-danger" onclick="app.deleteSection('${section.id}')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>` : ''}
+                                </div>
+                            </div>
+                            ${section.tabs ? 
+                                `<div style="margin-left: 2rem; margin-bottom: 1rem;">
+                                    ${Object.values(section.tabs).sort((a, b) => a.order - b.order).map(tab =>
+                                        `<div class="menu-item" style="margin-bottom: 0.5rem;">
+                                            <div style="width: 24px; height: 24px; background: rgba(16, 185, 129, 0.1); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--success);">
+                                                <i class="fas fa-file"></i>
+                                            </div>
+                                            <div class="menu-item-info">
+                                                <div class="menu-item-name" style="font-size: 0.875rem;">${tab.name}</div>
+                                            </div>
+                                            <div class="menu-item-actions">
+                                                <button class="btn btn-small" onclick="app.showEditTabForm('${section.id}', '${tab.id}')">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <button class="btn btn-small btn-danger" onclick="app.deleteTab('${section.id}', '${tab.id}')">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </div>
+                                        </div>`
+                                    ).join('')}
+                                </div>`
+                            : ''}`
+                        ).join('')}
+                    </div>
+                </div>`;
+            }
+
+            showCreateSectionForm() {
+                this.debug('Showing create section form');
+                const body = document.getElementById('menuManagerBody');
+                if (!body) return;
+                
+                body.innerHTML = `<form onsubmit="app.createSection(event); return false;">
+                    <h3 style="margin-bottom: 1.5rem;">Create New Section</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Section Name</label>
+                            <input type="text" class="form-input" name="name" required placeholder="My Section">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Icon</label>
+                            ${this.createIconInput('icon', 'fas fa-star')}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-input" name="type">
+                            <option value="page">Single Page</option>
+                            <option value="tabs">With Tabs</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-plus"></i> Create Section
+                        </button>
+                        <button type="button" class="btn" onclick="app.openMenuManager()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                </form>`;
+            }
+
+            showEditSectionForm(sectionId) {
+                const section = this.navigation[sectionId];
+                if (!section) return;
+                
+                this.debug(`Editing section: ${sectionId}`);
+                const body = document.getElementById('menuManagerBody');
+                if (!body) return;
+                
+                body.innerHTML = `<form onsubmit="app.editSection(event, '${sectionId}'); return false;">
+                    <h3 style="margin-bottom: 1.5rem;">Edit Section</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Section Name</label>
+                            <input type="text" class="form-input" name="name" required value="${section.name}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Icon</label>
+                            ${this.createIconInput('icon', section.icon)}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-input" name="type">
+                            <option value="page"${section.type === 'page' ? ' selected' : ''}>Single Page</option>
+                            <option value="tabs"${section.type === 'tabs' ? ' selected' : ''}>With Tabs</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <button type="button" class="btn" onclick="app.openMenuManager()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                </form>`;
+            }
+
+            showCreateTabForm(sectionId) {
+                this.debug(`Creating tab for section: ${sectionId}`);
+                const body = document.getElementById('menuManagerBody');
+                if (!body) return;
+                
+                body.innerHTML = `<form onsubmit="app.createTab(event, '${sectionId}'); return false;">
+                    <h3 style="margin-bottom: 1.5rem;">Create New Tab</h3>
+                    <div class="form-group">
+                        <label class="form-label">Tab Name</label>
+                        <input type="text" class="form-input" name="name" required placeholder="My Tab">
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-plus"></i> Create Tab
+                        </button>
+                        <button type="button" class="btn" onclick="app.openMenuManager()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                </form>`;
+            }
+
+            showEditTabForm(sectionId, tabId) {
+                const section = this.navigation[sectionId];
+                const tab = section?.tabs?.[tabId];
+                if (!tab) return;
+                
+                this.debug(`Editing tab: ${tabId} in section: ${sectionId}`);
+                const body = document.getElementById('menuManagerBody');
+                if (!body) return;
+                
+                body.innerHTML = `<form onsubmit="app.editTab(event, '${sectionId}', '${tabId}'); return false;">
+                    <h3 style="margin-bottom: 1.5rem;">Edit Tab</h3>
+                    <div class="form-group">
+                        <label class="form-label">Tab Name</label>
+                        <input type="text" class="form-input" name="name" required value="${tab.name}">
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <button type="button" class="btn" onclick="app.openMenuManager()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                </form>`;
+            }
+
+            createSection(event) {
+                event.preventDefault();
+                this.debug('Creating new section');
+                
+                const formData = new FormData(event.target);
+                
+                const newId = 'sec' + Date.now();
+                const maxOrder = Math.max(...Object.values(this.navigation).map(s => s.order), -1) + 1;
+                
+                this.navigation[newId] = {
+                    id: newId,
+                    name: formData.get('name'),
+                    icon: formData.get('icon'),
+                    order: maxOrder,
+                    type: formData.get('type'),
+                    plugin: null,
+                    content: `New content area for ${formData.get('name')}`
+                };
+                
+                if (formData.get('type') === 'tabs') {
+                    this.navigation[newId].tabs = {};
+                }
+                
+                this.saveNavigation();
+                this.showNotification(`Section "${formData.get('name')}" created!`, 'success');
+                this.refreshViews();
+                this.openMenuManager();
+            }
+
+            editSection(event, sectionId) {
+                event.preventDefault();
+                this.debug(`Saving section: ${sectionId}`);
+                
+                const formData = new FormData(event.target);
+                const section = this.navigation[sectionId];
+                
+                if (!section) return;
+                
+                section.name = formData.get('name');
+                section.icon = formData.get('icon');
+                const newType = formData.get('type');
+                
+                if (newType !== section.type) {
+                    if (newType === 'tabs' && !section.tabs) {
+                        section.tabs = {};
+                    } else if (newType === 'page' && section.tabs) {
+                        delete section.tabs;
+                    }
+                    section.type = newType;
+                }
+                
+                this.saveNavigation();
+                this.showNotification('Section updated!', 'success');
+                this.refreshViews();
+                this.openMenuManager();
+            }
+
+            createTab(event, sectionId) {
+                event.preventDefault();
+                this.debug(`Creating tab for section: ${sectionId}`);
+                
+                const formData = new FormData(event.target);
+                const section = this.navigation[sectionId];
+                
+                if (!section || section.type !== 'tabs') return;
+                
+                if (!section.tabs) {
+                    section.tabs = {};
+                }
+                
+                const newTabId = 'tab_' + Date.now();
+                const maxOrder = section.tabs ? Math.max(...Object.values(section.tabs).map(t => t.order), -1) + 1 : 0;
+                
+                section.tabs[newTabId] = {
+                    id: newTabId,
+                    name: formData.get('name'),
+                    order: maxOrder,
+                    plugin: null,
+                    content: `New tab content for ${formData.get('name')}`
+                };
+                
+                this.saveNavigation();
+                this.showNotification(`Tab "${formData.get('name')}" created!`, 'success');
+                this.refreshViews();
+                this.openMenuManager();
+            }
+
+            editTab(event, sectionId, tabId) {
+                event.preventDefault();
+                this.debug(`Saving tab: ${tabId}`);
+                
+                const formData = new FormData(event.target);
+                const section = this.navigation[sectionId];
+                const tab = section?.tabs?.[tabId];
+                
+                if (!tab) return;
+                
+                tab.name = formData.get('name');
+                
+                this.saveNavigation();
+                this.showNotification('Tab updated!', 'success');
+                this.refreshViews();
+                this.openMenuManager();
+            }
+
+            deleteSection(sectionId) {
+                const section = this.navigation[sectionId];
+                if (!section) return;
+                
+                if (confirm(`Are you sure you want to delete "${section.name}"? This cannot be undone.`)) {
+                    delete this.navigation[sectionId];
+                    this.saveNavigation();
+                    this.showNotification('Section deleted!', 'success');
+                    
+                    // If we're currently viewing the deleted section, go to dashboard
+                    if (this.currentSection === sectionId) {
+                        this.navigateToSection('dashboard');
+                    }
+                    
+                    this.refreshViews();
+                    this.openMenuManager();
+                }
+            }
+
+            deleteTab(sectionId, tabId) {
+                const section = this.navigation[sectionId];
+                const tab = section?.tabs?.[tabId];
+                if (!tab) return;
+                
+                if (confirm(`Are you sure you want to delete tab "${tab.name}"? This cannot be undone.`)) {
+                    delete section.tabs[tabId];
+                    this.saveNavigation();
+                    this.showNotification('Tab deleted!', 'success');
+                    this.refreshViews();
+                    this.openMenuManager();
+                }
+            }
+
+            getMarketplaceContent() {
+                return `<div style="margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="margin: 0;">Plugin Management</h3>
+                        <div style="display: flex; gap: 1rem;">
+                            <button class="btn" onclick="app.showImportPluginForm()">
+                                <i class="fas fa-download"></i> Import Plugin
+                            </button>
+                            <button class="btn primary" onclick="app.showAddPluginForm()">
+                                <i class="fas fa-plus"></i> Install Plugin
+                            </button>
+                        </div>
+                    </div>
+                    
+                    ${this.plugins.length === 0 ? 
+                        `<div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                            <i class="fas fa-puzzle-piece" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <h3>No Plugins Installed</h3>
+                            <p>Install your first plugin to get started!</p>
+                        </div>` 
+                    :
+                        `<div style="display: grid; gap: 1rem;">
+                            ${this.plugins.map(plugin => {
+                                const assignedLocation = this.getPluginAssignmentLocation(plugin.id);
+                                return `<div style="background: var(--bg-surface); border-radius: 8px; padding: 1.5rem; border: 1px solid var(--border);">
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <div style="width: 48px; height: 48px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                                            <i class="${plugin.icon}"></i>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <div style="font-weight: 600; font-size: 1.125rem; margin-bottom: 0.5rem;">${plugin.name}</div>
+                                            <div style="color: var(--text-secondary); margin-bottom: 0.5rem;">${plugin.description}</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                                v${plugin.version} • ${plugin.category}
+                                                ${assignedLocation ? ` • <span style="color: var(--success); font-weight: 600;">Assigned to: ${assignedLocation}</span>` : ' • <span style="color: var(--warning);">Not assigned</span>'}
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; gap: 1rem; align-items: center;">
+                                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                                <select class="form-input" id="location_${plugin.id}" style="width: 220px; padding: 0.5rem;">
+                                                    ${this.getLocationOptions(plugin.id)}
+                                                </select>
+                                                <button class="btn primary" onclick="app.savePluginAssignment('${plugin.id}')" style="font-size: 0.75rem; padding: 0.25rem 0.75rem;">
+                                                    <i class="fas fa-save"></i> Save Assignment
+                                                </button>
+                                            </div>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <button class="btn btn-small" onclick="app.editPlugin('${plugin.id}')" title="Edit Plugin">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-small btn-danger" onclick="app.deletePlugin('${plugin.id}')" title="Delete Plugin">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                            }).join('')}
+                        </div>`
+                    }
+                </div>`;
+            }
+
+            getPluginAssignmentLocation(pluginId) {
+                for (const section of Object.values(this.navigation)) {
+                    if (section.plugin === pluginId) {
+                        return section.name;
+                    }
+                    if (section.tabs) {
+                        for (const tab of Object.values(section.tabs)) {
+                            if (tab.plugin === pluginId) {
+                                return `${section.name} → ${tab.name}`;
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+
+            removePluginAssignmentSilent(pluginId) {
+                console.log('Removing plugin assignment for:', pluginId);
+                let removedCount = 0;
+                
+                Object.values(this.navigation).forEach(section => {
+                    if (section.plugin === pluginId) {
+                        section.plugin = null;
+                        removedCount++;
+                        console.log('Removed from section:', section.name);
+                    }
+                    if (section.tabs) {
+                        Object.values(section.tabs).forEach(tab => {
+                            if (tab.plugin === pluginId) {
+                                tab.plugin = null;
+                                removedCount++;
+                                console.log('Removed from tab:', section.name, '→', tab.name);
+                            }
+                        });
+                    }
+                });
+                
+                console.log('Total assignments removed:', removedCount);
+            }
+
+            removePluginAssignment(pluginId) {
+                if (confirm('Remove this plugin assignment?')) {
+                    this.removePluginAssignmentSilent(pluginId);
+                    this.saveNavigation();
+                    this.showNotification('Plugin assignment removed!', 'success');
+                    this.refreshViews();
+                }
+            }
+
+            getLocationOptions(currentPluginId) {
+                let options = '';
+                const currentAssignment = this.getPluginAssignmentLocation(currentPluginId);
+                
+                // Add default option
+                if (currentAssignment) {
+                    options += '<option value="">Change location...</option>';
+                    options += '<option value="unassign">Remove Assignment</option>';
+                } else {
+                    options += '<option value="" selected>Select location...</option>';
+                }
+                
+                // Add all sections and tabs
+                Object.values(this.navigation).forEach(section => {
+                    const isOccupied = section.plugin && section.plugin !== currentPluginId;
+                    const isSelected = section.plugin === currentPluginId;
+                    options += `<option value="section_${section.id}" ${isOccupied ? 'disabled' : ''} ${isSelected ? 'selected' : ''}>${section.name}${isOccupied ? ' (occupied)' : ''}</option>`;
+                    
+                    if (section.tabs) {
+                        Object.values(section.tabs).forEach(tab => {
+                            const isTabOccupied = tab.plugin && tab.plugin !== currentPluginId;
+                            const isTabSelected = tab.plugin === currentPluginId;
+                            options += `<option value="tab_${section.id}_${tab.id}" ${isTabOccupied ? 'disabled' : ''} ${isTabSelected ? 'selected' : ''}>&nbsp;&nbsp;└ ${tab.name}${isTabOccupied ? ' (occupied)' : ''}</option>`;
+                        });
+                    }
+                });
+                
+                return options;
+            }
+
+            savePluginAssignment(pluginId) {
+                const dropdown = document.getElementById(`location_${pluginId}`);
+                const saveBtn = document.querySelector(`button[onclick*="savePluginAssignment('${pluginId}')"]`);
+                
+                if (!dropdown) {
+                    this.showNotification('Assignment interface not found', 'error');
+                    return;
+                }
+                
+                const locationValue = dropdown.value;
+                console.log('Save button clicked for plugin:', pluginId, 'with location:', locationValue);
+                
+                if (!locationValue) {
+                    this.showNotification('⚠️ Please select a location first', 'warning');
+                    return;
+                }
+                
+                // Show loading state
+                if (saveBtn) {
+                    const originalHTML = saveBtn.innerHTML;
+                    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                    saveBtn.disabled = true;
+                    
+                    // Restore button if something goes wrong
+                    setTimeout(() => {
+                        if (saveBtn.innerHTML.includes('Saving...')) {
+                            saveBtn.innerHTML = originalHTML;
+                            saveBtn.disabled = false;
+                        }
+                    }, 5000);
+                }
+                
+                // Call the existing assignment logic
+                this.assignPlugin(pluginId, locationValue);
+            }
+
+            assignPlugin(pluginId, locationValue) {
+                console.log('Assigning plugin:', pluginId, 'to location:', locationValue);
+                
+                if (!locationValue) return;
+                
+                if (locationValue === 'unassign') {
+                    this.removePluginAssignmentSilent(pluginId);
+                    this.saveNavigation();
+                    this.showNotification(`✅ Plugin "${this.plugins.find(p => p.id === pluginId)?.name}" assignment removed`, 'success');
+                    this.updatePluginDropdown(pluginId);
+                    this.refreshViews();
+                    
+                    // Visual feedback on the save button
+                    const saveBtn = document.querySelector(`button[onclick*="savePluginAssignment('${pluginId}')"]`);
+                    if (saveBtn) {
+                        const originalHTML = '<i class="fas fa-save"></i> Save Assignment';
+                        saveBtn.innerHTML = '<i class="fas fa-check"></i> Removed!';
+                        saveBtn.style.background = 'var(--warning)';
+                        saveBtn.disabled = false;
+                        setTimeout(() => {
+                            saveBtn.innerHTML = originalHTML;
+                            saveBtn.style.background = '';
+                        }, 2000);
+                    }
+                    return;
+                }
+                
+                // Remove plugin from any existing assignment first
+                this.removePluginAssignmentSilent(pluginId);
+                
+                let assignmentSuccess = false;
+                let assignmentLocation = '';
+                
+                // Parse location
+                const parts = locationValue.split('_');
+                if (parts[0] === 'section') {
+                    const sectionId = parts[1];
+                    const section = this.navigation[sectionId];
+                    if (section) {
+                        section.plugin = pluginId;
+                        assignmentLocation = section.name;
+                        assignmentSuccess = true;
+                        console.log('Successfully assigned to section:', sectionId);
+                    }
+                } else if (parts[0] === 'tab') {
+                    const sectionId = parts[1];
+                    const tabId = parts.slice(2).join('_');
+                    const section = this.navigation[sectionId];
+                    if (section && section.tabs && section.tabs[tabId]) {
+                        section.tabs[tabId].plugin = pluginId;
+                        assignmentLocation = `${section.name} → ${section.tabs[tabId].name}`;
+                        assignmentSuccess = true;
+                        console.log('Successfully assigned to tab:', sectionId, tabId);
+                    }
+                }
+                
+                if (assignmentSuccess) {
+                    this.saveNavigation();
+                    this.refreshViews();
+                    this.updatePluginDropdown(pluginId);
+                    
+                    // Enhanced success feedback
+                    this.showNotification(`✅ Plugin "${this.plugins.find(p => p.id === pluginId)?.name}" assigned to ${assignmentLocation}`, 'success');
+                    console.log('Assignment completed successfully');
+                    
+                    // Visual feedback on the save button
+                    const saveBtn = document.querySelector(`button[onclick*="savePluginAssignment('${pluginId}')"]`);
+                    if (saveBtn) {
+                        const originalHTML = '<i class="fas fa-save"></i> Save Assignment';
+                        saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+                        saveBtn.style.background = 'var(--success)';
+                        saveBtn.disabled = false;
+                        setTimeout(() => {
+                            saveBtn.innerHTML = originalHTML;
+                            saveBtn.style.background = '';
+                        }, 2000);
+                    }
+                } else {
+                    this.showNotification('❌ Assignment failed - invalid location', 'error');
+                    console.error('Assignment failed for location:', locationValue);
+                    
+                    // Re-enable save button on failure
+                    const saveBtn = document.querySelector(`button[onclick*="savePluginAssignment('${pluginId}')"]`);
+                    if (saveBtn) {
+                        saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Assignment';
+                        saveBtn.disabled = false;
+                        saveBtn.style.background = '';
+                    }
+                }
+            }
+
+            updatePluginDropdown(pluginId) {
+                // Update the specific plugin's dropdown to reflect current assignment
+                const dropdown = document.getElementById(`location_${pluginId}`);
+                if (dropdown) {
+                    dropdown.innerHTML = this.getLocationOptions(pluginId);
+                    console.log('Updated dropdown for plugin:', pluginId);
+                } else {
+                    console.log('Dropdown not found for plugin:', pluginId);
+                    // Fallback: refresh the entire marketplace if dropdown not found
+                    setTimeout(() => {
+                        this.openMarketplace();
+                    }, 100);
+                }
+            }
+
+            showImportPluginForm() {
+                const body = document.getElementById('marketplaceBody');
+                if (!body) return;
+                
+                body.innerHTML = `<form onsubmit="app.importPlugin(event); return false;">
+                    <h3 style="margin-bottom: 1.5rem;">Import Plugin</h3>
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 6px; border-left: 3px solid var(--accent);">
+                        <h4 style="margin: 0 0 0.5rem 0; color: var(--accent);">Import Options</h4>
+                        <p style="margin: 0; font-size: 0.875rem; line-height: 1.5;">
+                            Import plugins from URLs or paste plugin configuration JSON.
+                        </p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Import Method</label>
+                        <select class="form-input" name="importMethod" onchange="app.toggleImportMethod(this.value)">
+                            <option value="url">From URL</option>
+                            <option value="json">From JSON Config</option>
+                        </select>
+                    </div>
+                    
+                    <div id="urlImport">
+                        <div class="form-group">
+                            <label class="form-label">Plugin URL</label>
+                            <input type="url" class="form-input" name="pluginUrl" placeholder="https://example.com/plugin or data:text/html,<html>...</html>">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Plugin Name</label>
+                                <input type="text" class="form-input" name="urlName" placeholder="My Imported Plugin">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Category</label>
+                                <select class="form-input" name="urlCategory">
+                                    <option value="utilities">Utilities</option>
+                                    <option value="productivity">Productivity</option>
+                                    <option value="entertainment">Entertainment</option>
+                                    <option value="tools">Tools</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <input type="text" class="form-input" name="urlDescription" placeholder="What does this plugin do?">
+                        </div>
+                    </div>
+                    
+                    <div id="jsonImport" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Plugin JSON Configuration</label>
+                            <textarea class="form-input" name="jsonConfig" rows="8" placeholder='{"name": "My Plugin", "url": "https://...", "description": "...", "icon": "fas fa-star", "category": "utilities"}'></textarea>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-download"></i> Import Plugin
+                        </button>
+                        <button type="button" class="btn" onclick="app.openMarketplace()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                </form>`;
+            }
+
+            toggleImportMethod(method) {
+                const urlDiv = document.getElementById('urlImport');
+                const jsonDiv = document.getElementById('jsonImport');
+                
+                if (method === 'url') {
+                    urlDiv.style.display = 'block';
+                    jsonDiv.style.display = 'none';
+                } else {
+                    urlDiv.style.display = 'none';
+                    jsonDiv.style.display = 'block';
+                }
+            }
+
+            importPlugin(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const method = formData.get('importMethod');
+                
+                let newPlugin;
+                
+                if (method === 'url') {
+                    const url = formData.get('pluginUrl');
+                    const name = formData.get('urlName');
+                    const description = formData.get('urlDescription');
+                    const category = formData.get('urlCategory');
+                    
+                    if (!url || !name) {
+                        this.showNotification('Please provide URL and name', 'error');
+                        return;
+                    }
+                    
+                    newPlugin = {
+                        id: 'imported_' + Date.now(),
+                        name: name,
+                        description: description || 'Imported plugin',
+                        icon: 'fas fa-globe',
+                        category: category,
+                        version: '1.0.0',
+                        author: 'Imported',
+                        url: url,
+                        type: 'imported'
+                    };
+                } else {
+                    const jsonStr = formData.get('jsonConfig');
+                    if (!jsonStr) {
+                        this.showNotification('Please provide JSON configuration', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const pluginConfig = JSON.parse(jsonStr);
+                        newPlugin = {
+                            id: 'imported_' + Date.now(),
+                            name: pluginConfig.name || 'Imported Plugin',
+                            description: pluginConfig.description || 'Imported from JSON',
+                            icon: pluginConfig.icon || 'fas fa-puzzle-piece',
+                            category: pluginConfig.category || 'other',
+                            version: pluginConfig.version || '1.0.0',
+                            author: pluginConfig.author || 'Imported',
+                            url: pluginConfig.url,
+                            type: 'imported'
+                        };
+                        
+                        if (!newPlugin.url) {
+                            this.showNotification('Plugin configuration must include a URL', 'error');
+                            return;
+                        }
+                    } catch (error) {
+                        this.showNotification('Invalid JSON configuration', 'error');
+                        return;
+                    }
+                }
+                
+                this.plugins.push(newPlugin);
+                this.savePlugins();
+                this.showNotification(`Plugin "${newPlugin.name}" imported successfully!`, 'success');
+                this.openMarketplace();
+            }
+
+            showAddPluginForm() {
+                const body = document.getElementById('marketplaceBody');
+                if (!body) return;
+                
+                body.innerHTML = `<form onsubmit="app.addPlugin(event); return false;">
+                    <h3 style="margin-bottom: 1.5rem;">Install New Plugin</h3>
+                    <div class="form-group">
+                        <label class="form-label">Plugin Name</label>
+                        <input type="text" class="form-input" name="name" required placeholder="My Plugin">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-input" name="description" required placeholder="What does this plugin do?">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Icon</label>
+                            ${this.createIconInput('icon', 'fas fa-puzzle-piece')}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select class="form-input" name="category">
+                                <option value="utilities">Utilities</option>
+                                <option value="productivity">Productivity</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="tools">Tools</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Plugin URL</label>
+                        <input type="url" class="form-input" name="url" required placeholder="https://example.com or data:text/html,<html>...</html>">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            Enter the URL where your plugin is hosted, or use a data URL for inline HTML
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-plus"></i> Install Plugin
+                        </button>
+                        <button type="button" class="btn" onclick="app.openMarketplace()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                </form>`;
+            }
+
+            addPlugin(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                
+                const newPlugin = {
+                    id: 'plugin_' + Date.now(),
+                    name: formData.get('name'),
+                    description: formData.get('description'),
+                    icon: formData.get('icon'),
+                    category: formData.get('category'),
+                    version: '1.0.0',
+                    author: 'User',
+                    url: formData.get('url'),
+                    type: 'custom'
+                };
+                
+                this.plugins.push(newPlugin);
+                this.savePlugins();
+                this.showNotification(`Plugin "${newPlugin.name}" added successfully!`, 'success');
+                this.openMarketplace();
+            }
+
+            editPlugin(pluginId) {
+                const plugin = this.plugins.find(p => p.id === pluginId);
+                if (!plugin) return;
+                
+                const body = document.getElementById('marketplaceBody');
+                if (!body) return;
+                
+                body.innerHTML = `<form onsubmit="app.updatePlugin(event, '${pluginId}'); return false;">
+                    <h3 style="margin-bottom: 1.5rem;">Edit Plugin</h3>
+                    <div class="form-group">
+                        <label class="form-label">Plugin Name</label>
+                        <input type="text" class="form-input" name="name" required value="${plugin.name}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-input" name="description" required value="${plugin.description}">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Icon</label>
+                            ${this.createIconInput('icon', plugin.icon)}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Category</label>
+                            <select class="form-input" name="category">
+                                <option value="utilities" ${plugin.category === 'utilities' ? 'selected' : ''}>Utilities</option>
+                                <option value="productivity" ${plugin.category === 'productivity' ? 'selected' : ''}>Productivity</option>
+                                <option value="entertainment" ${plugin.category === 'entertainment' ? 'selected' : ''}>Entertainment</option>
+                                <option value="tools" ${plugin.category === 'tools' ? 'selected' : ''}>Tools</option>
+                                <option value="other" ${plugin.category === 'other' ? 'selected' : ''}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Plugin URL</label>
+                        <input type="url" class="form-input" name="url" required value="${plugin.url}">
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                        <button type="button" class="btn" onclick="app.openMarketplace()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+                </form>`;
+            }
+
+            updatePlugin(event, pluginId) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                const plugin = this.plugins.find(p => p.id === pluginId);
+                
+                if (!plugin) return;
+                
+                plugin.name = formData.get('name');
+                plugin.description = formData.get('description');
+                plugin.icon = formData.get('icon');
+                plugin.category = formData.get('category');
+                plugin.url = formData.get('url');
+                
+                this.savePlugins();
+                this.showNotification(`Plugin "${plugin.name}" updated successfully!`, 'success');
+                this.openMarketplace();
+                this.refreshViews();
+            }
+
+            deletePlugin(pluginId) {
+                const plugin = this.plugins.find(p => p.id === pluginId);
+                if (!plugin) return;
+                
+                if (confirm(`Are you sure you want to delete "${plugin.name}"? This cannot be undone.`)) {
+                    // Remove plugin assignment first
+                    this.removePluginAssignmentSilent(pluginId);
+                    
+                    // Remove plugin from list
+                    this.plugins = this.plugins.filter(p => p.id !== pluginId);
+                    
+                    this.savePlugins();
+                    this.saveNavigation();
+                    this.showNotification(`Plugin "${plugin.name}" deleted successfully!`, 'success');
+                    this.openMarketplace();
+                    this.refreshViews();
+                }
+            }
+
+            refreshViews() {
+                this.renderNavigation();
+                this.renderTabs(this.currentSection);
+                this.renderContent(this.currentSection, this.currentTab);
+            }
+
+            // Utility methods
+            hasPluginAssigned(section) {
+                if (section.plugin) return true;
+                if (section.tabs) {
+                    return Object.values(section.tabs).some(tab => tab.plugin);
+                }
+                return false;
+            }
+
+            getInstalledPluginsCount() {
+                return this.plugins.length;
+            }
+
+            getAssignedPluginsCount() {
+                const assigned = new Set();
+                Object.values(this.navigation).forEach(section => {
+                    if (section.plugin) assigned.add(section.plugin);
+                    if (section.tabs) {
+                        Object.values(section.tabs).forEach(tab => {
+                            if (tab.plugin) assigned.add(tab.plugin);
+                        });
+                    }
+                });
+                return assigned.size;
+            }
+
+            getTotalTabsCount() {
+                return Object.values(this.navigation).reduce((count, section) => {
+                    return count + (section.tabs ? Object.keys(section.tabs).length : 0);
+                }, 0);
+            }
+
+            // Modal management
+            closeAllModals() {
+                document.querySelectorAll('.modal, .icon-picker-modal').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+
+            // Notification system
+            showNotification(message, type = 'info') {
+                this.debug(`Notification: ${message}`);
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `<i class="fas fa-info-circle"></i><span>${message}</span>`;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 4000);
+            }
+
+            // Data persistence
+            loadNavigation() {
+                if (!this.storageAvailable) return {};
+                
+                try {
+                    const saved = localStorage.getItem('aihub_navigation');
+                    return saved ? JSON.parse(saved) : {};
+                } catch (error) {
+                    console.error('Failed to load navigation:', error);
+                    return {};
+                }
+            }
+
+            saveNavigation() {
+                if (!this.storageAvailable) {
+                    console.warn('Storage not available, changes will not persist');
+                    return;
+                }
+                
+                try {
+                    localStorage.setItem('aihub_navigation', JSON.stringify(this.navigation));
+                    this.debug('Navigation saved to localStorage');
+                } catch (error) {
+                    console.error('Failed to save navigation:', error);
+                }
+            }
+
+            loadPlugins() {
+                if (!this.storageAvailable) return [];
+                
+                try {
+                    const saved = localStorage.getItem('aihub_plugins');
+                    return saved ? JSON.parse(saved) : [];
+                } catch (error) {
+                    console.error('Failed to load plugins:', error);
+                    return [];
+                }
+            }
+
+            savePlugins() {
+                if (!this.storageAvailable) {
+                    console.warn('Storage not available, changes will not persist');
+                    return;
+                }
+                
+                try {
+                    localStorage.setItem('aihub_plugins', JSON.stringify(this.plugins));
+                    this.debug('Plugins saved to localStorage');
+                } catch (error) {
+                    console.error('Failed to save plugins:', error);
+                }
+            }
+        }
+
+        // Initialize the application
+        let app;
+        
+        try {
+            app = new AIHubApp();
+            // Global access for onclick handlers
+            window.app = app;
+            console.log('🚀 AI Hub Pro loaded successfully!');
+        } catch (error) {
+            console.error('Failed to initialize AI Hub Pro:', error);
+            document.body.innerHTML = `
+                <div style="padding: 2rem; color: white; background: #0f172a; height: 100vh;">
+                    <h1>❌ Initialization Error</h1>
+                    <p>Failed to load AI Hub Pro: ${error.message}</p>
+                    <pre>${error.stack}</pre>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
