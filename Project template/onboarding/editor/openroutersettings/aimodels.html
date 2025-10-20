@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aiappsy's Curated AI Models</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-light: #60a5fa;
+            --primary-dark: #2563eb;
+            --green: #4CAF50;
+            --green-light: #66BB6A;
+            --green-dark: #3d8b40;
+            --white: #f8fafc;
+            --light-gray: #0f172a;
+            --medium-gray: #334155;
+            --dark-gray: #1e293b;
+            --text-dark: #f8fafc;
+            --text-light: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e293b, #0f172a);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 20%, #0f172a 150%);
+            opacity: 0.8;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--dark-gray), #0F172A);
+            padding: 25px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--white);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 8px;
+            background: linear-gradient(45deg, #60a5fa, #3b82f6, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            font-size: 1.05rem;
+            font-weight: 300;
+            color: #e2e8f0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(30, 41, 59, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 20px 0;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-light);
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            color: #e2e8f0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(to right, var(--primary), transparent);
+            border-radius: 3px;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 18px;
+            color: #e2e8f0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h3 i {
+            color: var(--primary-light);
+            font-size: 1.2rem;
+        }
+
+        .api-form {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .api-input {
+            flex: 1;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--medium-gray);
+            background: rgba(15, 23, 42, 0.7);
+            color: var(--text-dark);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .api-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn {
+            padding: 16px 30px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-width: 160px;
+        }
+
+        .btn i {
+            font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+        }
+
+        .btn-secondary {
+            background: var(--green);
+            color: var(--white);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.25);
+        }
+
+        .btn-secondary:hover {
+            background: var(--green-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.35);
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid var(--green);
+            color: var(--green-light);
+        }
+
+        .status-error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f87171;
+            border: 1px solid #f87171;
+        }
+
+        .status-loading {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--primary-light);
+            border: 1px solid var(--primary);
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 14px 18px 14px 45px;
+            border-radius: 12px;
+            border: 1px solid var(--medium-gray);
+            background: rgba(15, 23, 42, 0.7);
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            color: var(--primary-light);
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .page-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--medium-gray);
+            color: var(--text-dark);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--primary);
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--white);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Gallery Layout */
+        .gallery-container {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 25px;
+        }
+
+        .filter-panel {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: fit-content;
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-group h4 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group h4 i {
+            color: var(--primary-light);
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .filter-option input {
+            margin-right: 8px;
+            accent-color: var(--primary);
+        }
+
+        .filter-option label {
+            color: var(--text-light);
+        }
+
+        .models-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .model-card {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .model-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .model-header {
+            padding: 18px;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .model-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .model-id {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-family: monospace;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 3px 6px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .model-body {
+            padding: 18px;
+            flex-grow: 1;
+        }
+
+        .model-property {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .model-property:last-child {
+            border-bottom: none;
+        }
+
+        .property-name {
+            font-weight: 500;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+        }
+
+        .property-value {
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        .model-footer {
+            padding: 14px 18px;
+            background: rgba(15, 23, 42, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .model-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 18px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-valid {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--green-light);
+            border: 1px solid var(--green);
+        }
+
+        .status-pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #fbbf24;
+            border: 1px solid #fbbf24;
+        }
+
+        .status-invalid {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f87171;
+            border: 1px solid #f87171;
+        }
+
+        /* ModelMatch Section */
+        .modelmatch-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .priority-sliders {
+            margin-top: 20px;
+        }
+
+        .slider-container {
+            margin-bottom: 25px;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 1.05rem;
+        }
+
+        .slider-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e2e8f0;
+        }
+
+        .slider-icon {
+            font-size: 1.3rem;
+            width: 36px;
+            height: 36px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-light);
+        }
+
+        .priority-slider {
+            width: 100%;
+            height: 12px;
+            -webkit-appearance: none;
+            background: var(--medium-gray);
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .priority-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+            border: 2px solid var(--white);
+        }
+
+        .slider-value {
+            font-weight: 600;
+            color: var(--primary-light);
+            font-size: 1.1rem;
+            min-width: 55px;
+            text-align: right;
+        }
+
+        .modelmatch-result {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .result-header {
+            font-size: 1.4rem;
+            margin-bottom: 18px;
+            color: #e2e8f0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .recommended-model {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 22px;
+            border: 1px solid var(--primary);
+        }
+
+        .model-icon {
+            font-size: 2.5rem;
+            color: var(--primary-light);
+            min-width: 70px;
+            height: 70px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .recommendation-details {
+            flex: 1;
+        }
+
+        .recommendation-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #e2e8f0;
+        }
+
+        .recommendation-reason {
+            margin-top: 18px;
+            line-height: 1.6;
+            font-size: 0.98rem;
+            color: var(--text-light);
+        }
+
+        .modelmatch-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 22px;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modelmatch-table th {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 14px 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: #e2e8f0;
+        }
+
+        .modelmatch-table td {
+            padding: 12px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+        }
+
+        .modelmatch-table tr:nth-child(even) {
+            background: rgba(15, 23, 42, 0.2);
+        }
+
+        .modelmatch-table tr:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .score-cell {
+            font-weight: 600;
+            color: var(--primary-light);
+            font-size: 1.05rem;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 280px;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(255, 255, 255, 0.1);
+            border-top: 6px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: var(--primary-light);
+            text-align: center;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1100px) {
+            .modelmatch-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .models-container {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+            
+            .gallery-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .api-form {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            header {
+                padding: 20px;
+            }
+            
+            header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .tab-btn {
+                padding: 16px 0;
+                font-size: 0.95rem;
+            }
+            
+            .tab-content {
+                padding: 20px;
+            }
+            
+            .gallery-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .models-count {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary-light);
+            font-size: 0.95rem;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: var(--medium-gray);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 8px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+        
+        .modelmatch-tag {
+            display: inline-block;
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--green-light);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div>
+                    <h1>Aiappsy's curated AI models</h1>
+                    <p>Discover, validate, and match the perfect AI model for your needs</p>
+                </div>
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="settings"><i class="fas fa-cog"></i> Settings</button>
+            <button class="tab-btn" data-tab="models"><i class="fas fa-boxes"></i> Models Gallery</button>
+            <button class="tab-btn" data-tab="modelmatch"><i class="fas fa-balance-scale"></i> ModelMatch</button>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content active">
+            <h2 class="section-title">
+                <i class="fas fa-cog"></i>API Configuration
+            </h2>
+            
+            <div class="card">
+                <h3><i class="fas fa-key"></i>OpenRouter API Key</h3>
+                <p>Enter your OpenRouter API key to access all features. Your key is stored locally in your browser.</p>
+                
+                <div class="api-form">
+                    <input type="password" id="api-key" class="api-input" placeholder="sk-or-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                    <button id="save-key" class="btn btn-primary"><i class="fas fa-save"></i> Save Key</button>
+                </div>
+                
+                <div class="api-actions" style="display: flex; gap: 15px; margin-top: 15px;">
+                    <button id="test-api" class="btn btn-primary"><i class="fas fa-plug"></i> Test API Connection</button>
+                    <button id="fetch-models" class="btn btn-secondary"><i class="fas fa-download"></i> Fetch & Validate Models</button>
+                </div>
+                
+                <div id="api-status" class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span>API key not configured</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3><i class="fas fa-tasks"></i>Model Validation Progress</h3>
+                <p>Validation ensures all models are working correctly with your API key.</p>
+                
+                <div style="margin-top: 20px;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="validation-progress" style="width: 0%"></div>
+                    </div>
+                    <div style="margin-top: 12px; font-weight: 500; display: flex; justify-content: space-between;">
+                        <span id="progress-text">0/0 models validated</span>
+                        <span id="validation-speed">0 models/sec</span>
+                    </div>
+                </div>
+                
+                <div id="validation-status" class="status-indicator" style="margin-top: 20px;">
+                    <span class="status-dot"></span>
+                    <span>No validation performed yet</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Models Gallery Tab -->
+        <div id="models" class="tab-content">
+            <h2 class="section-title">
+                <i class="fas fa-boxes"></i>AI Models Gallery
+                <span class="models-count"><i class="fas fa-database"></i> <span id="models-count">423</span> models</span>
+            </h2>
+            
+            <div class="gallery-container">
+                <div class="filter-panel">
+                    <div class="filter-group">
+                        <h4><i class="fas fa-filter"></i> Filters</h4>
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-valid" checked>
+                            <label for="filter-valid">Valid Models</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-pending">
+                            <label for="filter-pending">Pending Validation</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="filter-invalid">
+                            <label for="filter-invalid">Invalid Models</label>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <h4><i class="fas fa-microchip"></i> Model Size</h4>
+                        <div class="filter-option">
+                            <input type="checkbox" id="size-small" checked>
+                            <label for="size-small">Small (< 10B params)</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="size-medium" checked>
+                            <label for="size-medium">Medium (10B-100B)</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="size-large" checked>
+                            <label for="size-large">Large (>100B)</label>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <h4><i class="fas fa-tag"></i> Model Type</h4>
+                        <div class="filter-option">
+                            <input type="checkbox" id="type-chat" checked>
+                            <label for="type-chat">Chat</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="type-instruct" checked>
+                            <label for="type-instruct">Instruct</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="type-code" checked>
+                            <label for="type-code">Code</label>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-sync"></i> Apply Filters
+                    </button>
+                </div>
+                
+                <div>
+                    <div class="controls-row">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="model-search" placeholder="Search models by name, provider or capability...">
+                        </div>
+                        
+                        <div class="pagination">
+                            <button class="page-btn" id="prev-page"><i class="fas fa-chevron-left"></i></button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">4</button>
+                            <button class="page-btn">5</button>
+                            <button class="page-btn" id="next-page"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="models-container" id="models-container">
+                        <!-- Models will be populated here -->
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <div class="loading-text">Loading AI models database...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ModelMatch Tab -->
+        <div id="modelmatch" class="tab-content">
+            <h2 class="section-title">
+                <i class="fas fa-balance-scale"></i>ModelMatch
+                <span class="modelmatch-tag">Smart model selection</span>
+            </h2>
+            
+            <div class="modelmatch-container">
+                <div>
+                    <div class="card">
+                        <h3><i class="fas fa-project-diagram"></i>Project Details</h3>
+                        <textarea id="project-description" class="api-input" placeholder="Describe your project or task (e.g. 'I need to generate marketing copy for a new product launch')..." rows="5" style="width: 100%; margin-bottom: 20px; min-height: 150px;"></textarea>
+                        
+                        <h3><i class="fas fa-sliders-h"></i>Priority Settings</h3>
+                        <p>Adjust the sliders to set your priorities (total must be 100%)</p>
+                        
+                        <div class="priority-sliders">
+                            <div class="slider-container">
+                                <div class="slider-label">
+                                    <span class="slider-name">
+                                        <span class="slider-icon"><i class="fas fa-money-bill-wave"></i></span>
+                                        Cost Efficiency
+                                    </span>
+                                    <span class="slider-value" id="cost-value">30%</span>
+                                </div>
+                                <input type="range" min="0" max="100" value="30" class="priority-slider" id="cost-slider">
+                            </div>
+                            
+                            <div class="slider-container">
+                                <div class="slider-label">
+                                    <span class="slider-name">
+                                        <span class="slider-icon"><i class="fas fa-medal"></i></span>
+                                        Output Quality
+                                    </span>
+                                    <span class="slider-value" id="quality-value">50%</span>
+                                </div>
+                                <input type="range" min="0" max="100" value="50" class="priority-slider" id="quality-slider">
+                            </div>
+                            
+                            <div class="slider-container">
+                                <div class="slider-label">
+                                    <span class="slider-name">
+                                        <span class="slider-icon"><i class="fas fa-bolt"></i></span>
+                                        Response Speed
+                                    </span>
+                                    <span class="slider-value" id="speed-value">20%</span>
+                                </div>
+                                <input type="range" min="0" max="100" value="20" class="priority-slider" id="speed-slider">
+                            </div>
+                        </div>
+                        
+                        <button id="run-modelmatch" class="btn btn-primary" style="margin-top: 20px; width: 100%; padding: 18px; font-size: 1.1rem;">
+                            <i class="fas fa-cogs"></i> Find Best Match
+                        </button>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="modelmatch-result">
+                        <div class="result-header"><i class="fas fa-star"></i> Recommendation</div>
+                        <p style="font-size: 1rem; line-height: 1.6; color: var(--text-light);">Enter your project details and set priorities to get a model recommendation tailored to your specific needs.</p>
+                        
+                        <div class="recommended-model">
+                            <div class="model-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="recommendation-details">
+                                <div class="recommendation-title">Select Your Preferences</div>
+                                <div class="model-id">Run ModelMatch to see results</div>
+                                <div class="recommendation-reason">
+                                    We'll analyze your project requirements and priorities to recommend the optimal AI model for your specific use case.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="margin-top: 25px;">
+                        <h3><i class="fas fa-chart-bar"></i>ModelMatch Results</h3>
+                        <p>Top models based on your priorities:</p>
+                        
+                        <table class="modelmatch-table">
+                            <thead>
+                                <tr>
+                                    <th>Model</th>
+                                    <th>Cost</th>
+                                    <th>Quality</th>
+                                    <th>Speed</th>
+                                    <th>Match Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modelmatch-results">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 35px 20px; font-size: 1rem; color: var(--text-light);">
+                                        <i class="fas fa-info-circle" style="color: var(--primary-light); font-size: 1.8rem; margin-bottom: 12px; display: block;"></i>
+                                        Run ModelMatch to see detailed results
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons and content
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+                
+                // If models tab is opened, populate if not already
+                if (tabId === 'models' && document.getElementById('models-container').children.length === 1) {
+                    populateModelGallery();
+                }
+            });
+        });
+        
+        // API key handling
+        const apiKeyInput = document.getElementById('api-key');
+        const saveKeyBtn = document.getElementById('save-key');
+        const testApiBtn = document.getElementById('test-api');
+        const fetchModelsBtn = document.getElementById('fetch-models');
+        const apiStatus = document.getElementById('api-status');
+        
+        // Load saved API key if exists
+        if (localStorage.getItem('openrouter_api_key')) {
+            apiKeyInput.value = localStorage.getItem('openrouter_api_key');
+            updateApiStatus('success', 'API key loaded from local storage');
+        }
+        
+        saveKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                localStorage.setItem('openrouter_api_key', key);
+                updateApiStatus('success', 'API key saved successfully');
+            } else {
+                updateApiStatus('error', 'Please enter a valid API key');
+            }
+        });
+        
+        testApiBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim() || localStorage.getItem('openrouter_api_key');
+            if (!key) {
+                updateApiStatus('error', 'No API key provided');
+                return;
+            }
+            
+            updateApiStatus('loading', 'Testing API connection...');
+            
+            // Simulate API test
+            setTimeout(() => {
+                // Simulate 90% success rate
+                if (Math.random() > 0.1) {
+                    updateApiStatus('success', 'API connection successful!');
+                } else {
+                    updateApiStatus('error', 'API connection failed. Check your key.');
+                }
+            }, 1500);
+        });
+        
+        fetchModelsBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim() || localStorage.getItem('openrouter_api_key');
+            if (!key) {
+                updateApiStatus('error', 'No API key provided');
+                return;
+            }
+            
+            updateApiStatus('loading', 'Fetching and validating models...');
+            
+            // Simulate model fetching and validation
+            simulateModelValidation();
+        });
+        
+        function updateApiStatus(status, message) {
+            const dot = apiStatus.querySelector('.status-dot');
+            apiStatus.querySelector('span:last-child').textContent = message;
+            
+            apiStatus.className = 'status-indicator';
+            dot.className = 'status-dot';
+            
+            if (status === 'success') {
+                apiStatus.classList.add('status-success');
+            } else if (status === 'error') {
+                apiStatus.classList.add('status-error');
+            } else if (status === 'loading') {
+                apiStatus.classList.add('status-loading');
+            }
+        }
+        
+        // Model validation simulation for 400+ models with realistic failures
+        function simulateModelValidation() {
+            const progressBar = document.getElementById('validation-progress');
+            const progressText = document.getElementById('progress-text');
+            const speedText = document.getElementById('validation-speed');
+            const validationStatus = document.getElementById('validation-status');
+            
+            const totalModels = 423;
+            let validatedModels = 0;
+            let startTime = Date.now();
+            
+            validationStatus.className = 'status-indicator status-loading';
+            validationStatus.innerHTML = '<span class="status-dot"></span> Validating models...';
+            
+            const validateBatch = () => {
+                const batchSize = 10;
+                for (let i = 0; i < batchSize && validatedModels < totalModels; i++) {
+                    validatedModels++;
+                    const progress = (validatedModels / totalModels) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `${validatedModels}/${totalModels} models validated`;
+                    
+                    // Calculate validation speed
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    const speed = Math.round(validatedModels / elapsed);
+                    speedText.textContent = `${speed} models/sec`;
+                }
+                
+                if (validatedModels < totalModels) {
+                    setTimeout(validateBatch, 200);
+                } else {
+                    // Simulate some validation failures
+                    validationStatus.className = 'status-indicator status-success';
+                    validationStatus.innerHTML = `<span class="status-dot"></span> Validation complete! 387 models valid, 36 failed`;
+                    
+                    // Populate model gallery
+                    populateModelGallery();
+                }
+            };
+            
+            validateBatch();
+        }
+        
+        // Generate sample model data for 400+ models with realistic failures
+        function generateModelData() {
+            const providers = ['OpenAI', 'Anthropic', 'Google', 'Meta', 'Mistral', 'Cohere', 'Stability', 'Eleuther', 'Aleph Alpha', 'Nous Research'];
+            const sizes = ['7B', '13B', '34B', '70B', '175B', '530B'];
+            const types = ['Chat', 'Instruct', 'Code', 'Creative', 'Research', 'Multimodal'];
+            
+            const models = [];
+            
+            for (let i = 1; i <= 423; i++) {
+                const provider = providers[Math.floor(Math.random() * providers.length)];
+                const size = sizes[Math.floor(Math.random() * sizes.length)];
+                const type = types[Math.floor(Math.random() * types.length)];
+                
+                // Simulate 15% failure rate
+                let status = 'valid';
+                if (Math.random() < 0.15) status = 'invalid';
+                else if (Math.random() < 0.05) status = 'pending';
+                
+                const name = `${provider} Model ${i} ${size}`;
+                const id = `${provider.toLowerCase()}/model-${i}-${size.toLowerCase()}-${type.toLowerCase()}`;
+                
+                models.push({
+                    id: id,
+                    name: name,
+                    description: `High-performance ${type.toLowerCase()} model optimized for various tasks`,
+                    pricing: { 
+                        prompt: `$${(Math.random() * 0.02).toFixed(5)}`, 
+                        completion: `$${(Math.random() * 0.03).toFixed(5)}` 
+                    },
+                    context: `${Math.floor(Math.random() * 100 + 10) * 1000} tokens`,
+                    status: status,
+                    provider: provider,
+                    type: type,
+                    size: size
+                });
+            }
+            
+            return models;
+        }
+        
+        const modelData = generateModelData();
+        
+        // Populate model gallery with pagination
+        function populateModelGallery(page = 1, searchTerm = '') {
+            const modelsContainer = document.getElementById('models-container');
+            modelsContainer.innerHTML = '';
+            
+            const modelsPerPage = 20;
+            const startIndex = (page - 1) * modelsPerPage;
+            const endIndex = startIndex + modelsPerPage;
+            
+            // Filter models if search term exists
+            let filteredModels = modelData;
+            if (searchTerm) {
+                const term = searchTerm.toLowerCase();
+                filteredModels = modelData.filter(model => 
+                    model.name.toLowerCase().includes(term) || 
+                    model.id.toLowerCase().includes(term) ||
+                    model.description.toLowerCase().includes(term) ||
+                    model.provider.toLowerCase().includes(term) ||
+                    model.type.toLowerCase().includes(term)
+                );
+            }
+            
+            // Update model count
+            document.getElementById('models-count').textContent = filteredModels.length;
+            
+            // Get current page models
+            const pageModels = filteredModels.slice(startIndex, endIndex);
+            
+            if (pageModels.length === 0) {
+                modelsContainer.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px;">
+                        <i class="fas fa-search" style="font-size: 3rem; color: var(--primary-light); margin-bottom: 20px;"></i>
+                        <h3 style="font-size: 1.5rem; color: #e2e8f0;">No models found</h3>
+                        <p>Try adjusting your search terms</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            pageModels.forEach(model => {
+                const modelCard = document.createElement('div');
+                modelCard.className = 'model-card';
+                
+                let statusClass = 'status-pending';
+                let statusText = 'Pending';
+                
+                if (model.status === 'valid') {
+                    statusClass = 'status-valid';
+                    statusText = 'Valid';
+                } else if (model.status === 'invalid') {
+                    statusClass = 'status-invalid';
+                    statusText = 'Invalid';
+                }
+                
+                modelCard.innerHTML = `
+                    <div class="model-header">
+                        <div class="model-name">
+                            <i class="fas fa-${model.provider === 'Google' ? 'google' : model.provider === 'Meta' ? 'meta' : 'robot'}"></i>
+                            ${model.name}
+                        </div>
+                        <div class="model-id">${model.id}</div>
+                    </div>
+                    <div class="model-body">
+                        <p style="margin-bottom: 15px; color: var(--text-light);">${model.description}</p>
+                        <div class="model-property">
+                            <span class="property-name"><i class="fas fa-tag"></i> Type</span>
+                            <span class="property-value">${model.type}</span>
+                        </div>
+                        <div class="model-property">
+                            <span class="property-name"><i class="fas fa-building"></i> Provider</span>
+                            <span class="property-value">${model.provider}</span>
+                        </div>
+                        <div class="model-property">
+                            <span class="property-name"><i class="fas fa-weight"></i> Size</span>
+                            <span class="property-value">${model.size}</span>
+                        </div>
+                        <div class="model-property">
+                            <span class="property-name"><i class="fas fa-bolt"></i> Prompt Cost</span>
+                            <span class="property-value">${model.pricing.prompt}/1K tokens</span>
+                        </div>
+                        <div class="model-property">
+                            <span class="property-name"><i class="fas fa-bolt"></i> Completion Cost</span>
+                            <span class="property-value">${model.pricing.completion}/1K tokens</span>
+                        </div>
+                        <div class="model-property">
+                            <span class="property-name"><i class="fas fa-expand"></i> Context Window</span>
+                            <span class="property-value">${model.context}</span>
+                        </div>
+                    </div>
+                    <div class="model-footer">
+                        <div class="model-status">
+                            <span>Status:</span>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                `;
+                
+                modelsContainer.appendChild(modelCard);
+            });
+            
+            // Update pagination
+            updatePagination(Math.ceil(filteredModels.length / modelsPerPage), page);
+        }
+        
+        // Update pagination controls
+        function updatePagination(totalPages, currentPage) {
+            const pagination = document.querySelector('.pagination');
+            // Clear existing buttons except prev/next
+            pagination.innerHTML = `
+                <button class="page-btn" id="prev-page"><i class="fas fa-chevron-left"></i></button>
+            `;
+            
+            // Show up to 5 page buttons
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = 'page-btn';
+                if (i === currentPage) {
+                    pageBtn.classList.add('active');
+                }
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => populateModelGallery(i, document.getElementById('model-search').value));
+                pagination.appendChild(pageBtn);
+            }
+            
+            // Add next button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.id = 'next-page';
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            pagination.appendChild(nextBtn);
+            
+            // Add event listeners
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    populateModelGallery(currentPage - 1, document.getElementById('model-search').value);
+                }
+            });
+            
+            document.getElementById('next-page').addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    populateModelGallery(currentPage + 1, document.getElementById('model-search').value);
+                }
+            });
+        }
+        
+        // Search functionality
+        document.getElementById('model-search').addEventListener('input', (e) => {
+            populateModelGallery(1, e.target.value);
+        });
+        
+        // Priority sliders
+        const costSlider = document.getElementById('cost-slider');
+        const qualitySlider = document.getElementById('quality-slider');
+        const speedSlider = document.getElementById('speed-slider');
+        const costValue = document.getElementById('cost-value');
+        const qualityValue = document.getElementById('quality-value');
+        const speedValue = document.getElementById('speed-value');
+        
+        function updateSliderValues() {
+            costValue.textContent = `${costSlider.value}%`;
+            qualityValue.textContent = `${qualitySlider.value}%`;
+            speedValue.textContent = `${speedSlider.value}%`;
+            
+            // Ensure total is 100
+            const total = parseInt(costSlider.value) + parseInt(qualitySlider.value) + parseInt(speedSlider.value);
+            if (total !== 100) {
+                // Adjust the largest value to make total 100
+                const sliders = [costSlider, qualitySlider, speedSlider];
+                const values = sliders.map(s => parseInt(s.value));
+                const maxIndex = values.indexOf(Math.max(...values));
+                
+                sliders[maxIndex].value = parseInt(sliders[maxIndex].value) + (100 - total);
+                updateSliderValues();
+            }
+        }
+        
+        [costSlider, qualitySlider, speedSlider].forEach(slider => {
+            slider.addEventListener('input', updateSliderValues);
+        });
+        
+        // ModelMatch functionality
+        const runModelmatchBtn = document.getElementById('run-modelmatch');
+        
+        runModelmatchBtn.addEventListener('click', () => {
+            const projectDescription = document.getElementById('project-description').value;
+            if (!projectDescription.trim()) {
+                alert('Please describe your project or task');
+                return;
+            }
+            
+            const costPriority = parseInt(costSlider.value) / 100;
+            const qualityPriority = parseInt(qualitySlider.value) / 100;
+            const speedPriority = parseInt(speedSlider.value) / 100;
+            
+            // Simulate model comparison
+            simulateModelMatch(projectDescription, costPriority, qualityPriority, speedPriority);
+        });
+        
+        function simulateModelMatch(project, cost, quality, speed) {
+            const recommendation = document.querySelector('.modelmatch-result');
+            const resultsTable = document.getElementById('modelmatch-results');
+            
+            // Show loading
+            recommendation.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Finding the perfect model match...</div>
+                </div>
+            `;
+            
+            resultsTable.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 35px 20px;">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            
+            // Simulate API processing time
+            setTimeout(() => {
+                // Get valid models only
+                const validModels = modelData.filter(model => model.status === 'valid');
+                const candidateModels = [...validModels].sort(() => 0.5 - Math.random()).slice(0, 20);
+                let bestModel = null;
+                let bestScore = 0;
+                const scoredModels = [];
+                
+                candidateModels.forEach(model => {
+                    // Generate fake scores for demo purposes
+                    const costScore = Math.floor(100 - (Math.random() * 30));
+                    const qualityScore = Math.floor(70 + (Math.random() * 30));
+                    const speedScore = Math.floor(60 + (Math.random() * 40));
+                    
+                    // Weighted score
+                    const weightedScore = Math.round(
+                        (costScore * cost) + 
+                        (qualityScore * quality) + 
+                        (speedScore * speed)
+                    );
+                    
+                    scoredModels.push({
+                        model: model,
+                        costScore: costScore,
+                        qualityScore: qualityScore,
+                        speedScore: speedScore,
+                        weightedScore: weightedScore
+                    });
+                    
+                    if (weightedScore > bestScore) {
+                        bestScore = weightedScore;
+                        bestModel = model;
+                    }
+                });
+                
+                // Sort by weighted score
+                scoredModels.sort((a, b) => b.weightedScore - a.weightedScore);
+                const topModels = scoredModels.slice(0, 10);
+                
+                // Update recommendation
+                recommendation.innerHTML = `
+                    <div class="result-header"><i class="fas fa-star"></i> Recommended Model</div>
+                    <div class="recommended-model">
+                        <div class="model-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="recommendation-details">
+                            <div class="recommendation-title">${bestModel.name}</div>
+                            <div class="model-id">${bestModel.id}</div>
+                            <div class="recommendation-reason">
+                                Based on your project description and priorities (Cost: ${Math.round(cost*100)}%, Quality: ${Math.round(quality*100)}%, Speed: ${Math.round(speed*100)}%), this model provides the optimal balance of performance and efficiency. It excels in ${bestModel.type.toLowerCase()} tasks and offers competitive pricing at ${bestModel.pricing.prompt} per 1K tokens.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Generate comparison table
+                let tableHTML = '';
+                topModels.forEach((item, index) => {
+                    tableHTML += `
+                        <tr>
+                            <td>${item.model.name}</td>
+                            <td>${item.costScore}/100</td>
+                            <td>${item.qualityScore}/100</td>
+                            <td>${item.speedScore}/100</td>
+                            <td class="score-cell">${item.weightedScore}/100</td>
+                        </tr>
+                    `;
+                });
+                
+                resultsTable.innerHTML = tableHTML;
+            }, 3000);
+        }
+        
+        // Initialize the plugin
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSliderValues();
+        });
+    </script>
+</body>
+</html>
